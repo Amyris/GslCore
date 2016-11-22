@@ -1,0 +1,362 @@
+%{
+// F# code goes here
+open System
+open AstTypes
+open pragmaTypes
+open Amyris.Bio
+open constants
+
+let uppercase (s: string) = s.ToUpper()
+
+let parse_error_rich = Some(AstErrorHandling.handleParseError)
+
+%}
+
+
+%start start // parser function
+%token <PString> ID
+%token <PInt>    INT
+%token <PString> STRING
+%token <PString> DOCSTRING
+%token <PString> QUOTED_STRING
+%token <PString> LINKER
+%token <PString> AAMUTATION
+%token <PString> DNAMUTATION
+%token <PString> PVALUE
+%token <PString> PNAME
+%token <PString> VARIABLE
+%token <PUnit> TILDE
+%token <PUnit> MARKER
+%token <PUnit> SEMICOLON
+// TODO: convert all tokens to positioned tokens?
+%token HYPHEN OPENSQBRACKET DOLLAR CLOSESQBRACKET
+%token COLON STAR SLASH AT LBRACE RBRACE EXCLM EQUALS CARAT COMMA
+%token LET CUT END OPEN FOR IN DO
+%token START_ROUGHAGE END_ROUGHAGE GREATERTHAN LESSTHAN DOT
+%token DOUBLEQUOTE
+%token UMINUS
+
+%token NEWLINE EOF
+
+// arithmetic expression tokens
+%token LPAREN RPAREN PLUS  // multiply = STAR, minus = HYPHEN, divide = SLASH
+
+%left HYPHEN PLUS
+%left SLASH STAR
+%nonassoc UMINUS // dummy token to imbue negation with maximum precedence
+
+// What the parser will finally produce
+%type <AstTreeHead> start
+
+// Start of grammar
+
+%%
+
+// ==================
+// overall code structure
+// ==================
+
+start: Final { AstTreeHead($1) }
+
+Final:
+    | CodeSection EOF   { Block(nodeWrap $1) } // Collection of assemblies
+    | EOF               { Block(nodeWrap []) } // Empty gsl file
+
+ScopedBlock:
+    | DO CodeSection END                { Block(nodeWrap $2) }
+
+CodeSection:
+    | Line                              { match $1 with | Some(l) -> [l] | None -> [] }
+    | Line CodeSection                  { match $1 with | Some(l) -> l::$2 | None -> $2 }
+
+// Main line dispatch
+Line:
+	| NEWLINE						 { None }
+    | AssemblyPart                   { Some($1) }
+    | DOCSTRING			     	     { Some(Docstring(tokenAsNode $1)) }
+    | L2ExpLine       				 { Some($1) }
+    | START_ROUGHAGE RoughageLineList END_ROUGHAGE  { Some(Block(nodeWrap $2)) } // insert roughage sections as scoped blocks
+    | Pragma                         { Some($1) }
+    | TypedVariableDeclaration       { Some($1) }
+    | FunctionCall                   { Some($1) }
+    | FunctionDeclaration            { Some($1) }
+    | ScopedBlock                    { Some($1) }
+    //| CutLine                        { $1 }
+    //| ForLine                        { $1 }
+    //| OpenLine                       { $1 }
+
+// ==================
+// pragmas aka compiler directives
+// ==================
+
+PragmaValue:
+    | VARIABLE          { (tokenToVariable $1 NotYetTyped) }
+    | PVALUE            { String(tokenAsNode $1) }
+
+PragmaValues:
+    | PragmaValue PragmaValues { $1::$2 }
+    | PragmaValue              { [$1] }
+
+Pragma:
+    | PNAME PragmaValues { (createPragma $1 $2) }
+    | PNAME { (createPragma $1 []) }
+
+Pragmas:
+    |  Pragma {[$1]}
+    |  Pragma Pragmas {$1::$2}
+
+InlinePragmas:
+    | LBRACE Pragmas RBRACE { $2 }
+    | LBRACE Pragmas RBRACE InlinePragmas { $2@$4 }
+
+
+// ==================
+// variable declarations
+// ==================
+
+// A complete let expression, deriving type from the context.
+TypedVariableDeclaration:
+	| LET ID EQUALS VARIABLE NEWLINE		  { createVariableBinding $2 NotYetTyped (tokenToVariable $4 NotYetTyped) }
+    | LET ID EQUALS IntExp NEWLINE            { createVariableBinding $2 IntType $4 }
+    | LET ID EQUALS StringLiteral NEWLINE     { createVariableBinding $2 StringType $4 }
+    | LET ID EQUALS FloatLiteral NEWLINE      { createVariableBinding $2 FloatType $4 }
+    | LET ID EQUALS CompletePart NEWLINE      { createVariableBinding $2 PartType $4 }
+    | LET ID EQUALS AssemblyPart NEWLINE      { createVariableBinding $2 PartType $4 }
+
+// ==================
+// function declarations
+// ==================
+
+// TODO: we should fix how we store function args to retain positions.
+FunctionDefArgs:
+    | ID { [ $1.i ] }
+    | ID COMMA FunctionDefArgs { $1.i::$3 }
+
+FunctionDeclaration:
+    | LET ID LPAREN FunctionDefArgs RPAREN EQUALS CodeSection END { createFunctionDeclaration $2 $4 $7 }
+
+// ==================
+// function calls
+// ==================
+
+// Things that can be passed as args to functions.
+TypedValue:
+	| VARIABLE      { createTypedValue NotYetTyped (tokenToVariable $1 NotYetTyped) } // passing variables to functions
+    | IntExp        { createTypedValue IntType $1 } // integer expressions
+    | StringLiteral { createTypedValue StringType $1 }
+    | FloatLiteral  { createTypedValue FloatType $1 } // no support yet for floating point math
+    | CompletePart  { createTypedValue PartType $1 }
+    | AssemblyPart  { createTypedValue PartType $1 }
+
+// A list of comma-separated values that acquire type information.
+CommaSeparatedTypedValues:
+    | TypedValue COMMA CommaSeparatedTypedValues  { $1::$3 }
+    | TypedValue { [$1] }
+
+FunctionCall:
+    | ID LPAREN CommaSeparatedTypedValues RPAREN { createFunctionCall $1 $3 }
+
+// ==================
+// literals
+// ==================
+
+// values written out in source
+IntLiteral:
+    | INT           { Int(tokenAsNode $1) }
+
+FloatLiteral:
+    | INT DOT INT   { createFloat $1 $3 } // float literal
+
+StringLiteral:
+    | STRING        { String(tokenAsNode $1) } // string literal
+
+// ==================
+// integer expressions
+// ==================
+
+IntExp:
+    | IntLiteral                    { $1 }
+    | VARIABLE                      { (tokenToVariable $1 IntType) }
+    | LPAREN IntExp RPAREN          { $2 }
+    | HYPHEN IntExp %prec UMINUS    { (negate $2) }
+    | IntExp STAR IntExp          { (createBinaryOp Multiply $1 $3) }
+    | IntExp SLASH IntExp           { (createBinaryOp Divide $1 $3) }
+    | IntExp PLUS IntExp          { (createBinaryOp Add $1 $3) }
+    | IntExp HYPHEN IntExp       { (createBinaryOp Subtract $1 $3) }
+
+// ==================
+// parts
+// ==================
+
+// FIXME: should push this to the AST
+Linker: LINKER  { match $1.i.Split([| '-' |]) with
+                  | [| a;b;c |] -> {l1 = a ; l2 = b; orient = c}
+                  | _ -> failwithf "bad linker format '%s'" ($1.i)
+                }
+
+Part:
+    | LPAREN AssemblyPart RPAREN    { $2 }
+    // gene part with a linker
+    | Linker HYPHEN ID              { createGenePart $3 (Some($1)) }
+    // gene part without a linker
+    | ID                            { createGenePart $1 None }
+    | MARKER                        { createPartWithBase (Marker(tokenAsNode $1)) }
+    // Inline DNA sequence  / gatca /
+    | SLASH ID SLASH                { createPartWithBase (InlineDna(tokenAsNodeAfter uppercase $2)) }
+    // Inline amino acid sequence  / ACDEFGH etc /
+    | SLASH DOLLAR ID SLASH         { createPartWithBase (InlineProtein(tokenAsNodeAfter uppercase $3))}
+    // Inline amino acid sequence with stop / ACDEFGH* etc /
+    | SLASH DOLLAR ID STAR SLASH    { createPartWithBase (InlineProtein(tokenAsNodeAfter (fun s -> (s |> uppercase, "*") ||> (+) ) $3 )) }
+    // Simple inline stop codon
+    | SLASH DOLLAR STAR SLASH       { createPartWithBase (InlineProtein(nodeWrap "*")) }
+    | TILDE                         { createPartWithBase (HetBlock(tokenAsNode $1)) }
+    // Part variable
+    | VARIABLE                      { createPartWithBase (tokenToVariable $1 PartType) }
+    // External part reference
+    | AT ID                         { createPartWithBase (PartId(tokenAsNode $2)) }
+
+// parts may have a trailing list of modifications
+PartMaybeMods:
+    | Part          { $1 }
+    | Part ModList  { stuffModsIntoPart $1 $2 }
+
+// parts may have inline pragmas following their mods
+
+PartMaybePragma: // User can place an inline {#foo bar ; #cat dog} style pragma after a part to specify options allow for that here
+    | PartMaybeMods InlinePragmas       { stuffPragmasIntoPart $1 $2 }
+    | PartMaybeMods                     { $1 }
+
+// parts may be reversed by prepending an exclaimation point
+PartFwdRev:    // User can specify a part forward or ! for reverse
+    | PartMaybePragma { $1 }
+    | EXCLM PartMaybePragma { revPart $2 }
+
+// name mangle to keep future refactorings clean
+CompletePart:
+    | PartFwdRev {$1}
+
+// ==================
+// modifications to parts
+// ==================
+
+RelPos:
+    | IntExp      { ($1, None) } // rather than creating these as AST nodes here, we pass them on to Slice so it can apply context
+    | IntExp ID   { ($1, (Some $2)) }
+
+Slice: // Slice ranges of form  [ a : b] where a or b may be qualified with ~ to be approximate
+    | OPENSQBRACKET RelPos COLON RelPos CLOSESQBRACKET                { createParseSlice $2 $4 false false }
+    | OPENSQBRACKET TILDE RelPos COLON RelPos CLOSESQBRACKET          { createParseSlice $3 $5 true false }
+    | OPENSQBRACKET RelPos COLON TILDE RelPos CLOSESQBRACKET          { createParseSlice $2 $5 false true }
+    | OPENSQBRACKET TILDE RelPos COLON TILDE RelPos CLOSESQBRACKET    { createParseSlice $3 $6 true true }
+
+Mod:
+    | DNAMUTATION    { createMutation $1 NT }
+    | AAMUTATION     { createMutation $1 AA }
+    | Slice          { $1 }
+	| DOT ID         { DotMod(tokenAsNode $2) }
+
+ModList:
+    | Mod                           { [ $1 ] }
+    | ModList Mod                   { $2 :: $1 }
+
+// ==================
+// part assemblies
+// ==================
+
+PartList:
+    | CompletePart                          { [$1] }
+    | CompletePart SEMICOLON PartList       { $1::$3 }
+
+
+// Grouping of parts; creates a single part wrapping the contents.
+AssemblyPart:
+    | PartList 					{ createAssemblyPart $1 }
+
+
+
+// =====================
+// Level 2 Constructs
+// =====================
+
+// gene name, allow string literals or regular identifiers
+L2IdWrap:
+    | ID     	{ tokenAsNode $1 }
+    | STRING 	{ tokenAsNode $1 }
+
+// A level2 id can have an optional prefix and the ID parts can be specified
+// as strings if that makes things easier for the user.   E.g. "gfoo bar"."!!! :) my really cool part"
+// Question - what to do about gene prefixes.  e.g. g"my cool part"  or "gmy cool part".  Former looks
+// better / cleaner but has grammatical consequences.
+
+L2Id:
+    | L2IdWrap  				{ createL2Id None $1 }
+    | L2IdWrap DOT L2IdWrap 	{ createL2Id (Some($1)) $3 }
+
+// foo^
+L2Locus:
+    | L2Id CARAT   { $1 }
+
+// pFoo>Bar
+L2ExpElement:
+    | L2Id GREATERTHAN L2Id		{ createL2Element $1 $3 } 
+
+// List of semicolon separated expression elements
+L2ExpElementList:
+    | L2ExpElement { [$1] }
+    | L2ExpElement SEMICOLON L2ExpElementList { $1::$3 }
+
+// L2 expression line.  Optional locus knockout followed by over expression constructs
+L2ExpLine:
+    | L2Locus        						{ createL2Expression (Some($1)) [] } //  HO^  - simple locus only
+    | L2Locus SEMICOLON L2ExpElementList 	{ createL2Expression (Some($1)) $3 } // HO^ ; pABC1>DEF2..
+    | L2ExpElementList  					{ createL2Expression None $1 } //  pABC1>DEF2..
+
+// ================================
+// Roughage sections
+// ================================
+
+// gene name
+RID:
+    | ID  { createL2IdNode None (tokenAsNode $1) }
+    | ID DOT ID { createL2IdNode (Some(tokenAsNode $1)) (tokenAsNode $3) }
+
+RoughageMarker:
+	| OPENSQBRACKET ID CLOSESQBRACKET { tokenAsNode $2 }
+
+//[mURA3]
+RoughageMarkerMaybe:
+    | RoughageMarker { Some($1) }
+    | { None }
+
+RoughagePartFwd:
+	| RID GREATERTHAN RID  { createRoughagePart RoughageFwd $1 $3 }
+
+RoughagePartRev:
+	| RID LESSTHAN RID  { createRoughagePart RoughageRev $3 $1 }
+
+// pFoo>Bar[mURA3]
+// Bar<pFoo-pCat>Dog
+RoughageElement:
+    | RoughagePartFwd RoughageMarkerMaybe { createRoughageElement $1 None $2 } // pGAL7>ERG12
+
+    | RoughagePartRev HYPHEN RoughagePartFwd RoughageMarkerMaybe { createRoughageElement $1 (Some($3)) $4 } // ALD6<pTAD2-pKAR2>ACS2
+
+RoughageElementList:
+    | RoughageElement { [$1] }
+    | RoughageElement COLON COLON RoughageElementList { $1::$4 }
+
+// foo^
+RoughageLocus:
+    | RID CARAT   { (Some($1), None) }  //  e.g. HO^
+    | RID CARAT RoughageMarker { (Some($1), Some($3)) } // e.g. HO^[mURA3LO]
+
+RoughageLine:
+    | RoughageLocus        { createRoughageLine $1 [] } //  HO^
+    | RoughageLocus COLON COLON RoughageElementList {  createRoughageLine $1 $4 } // HO^::pABC1>DEF2..
+    | RoughageElementList  { createRoughageLine (None, None) $1 } //  pABC1>DEF2..
+
+RoughageLineList:
+    | RoughageLine                    { [$1] }
+    | NEWLINE RoughageLineList        { $2 } // handle blank lines
+    | NEWLINE                         { [] }
+    | RoughageLine RoughageLineList   { $1::$2 }

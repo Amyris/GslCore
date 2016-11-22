@@ -1,0 +1,25 @@
+source https://nuget.org/api/v2
+
+nuget FSharp.Core redirects: force
+nuget Amyris.Bio >= 2.0.11 framework: >= net45
+nuget FSharp.Data
+nuget Newtonsoft.Json
+nuget FsLexYacc < 7
+nuget FsLexYacc.Runtime < 7
+nuget FParsec
+nuget MathNet.Numerics
+
+group Build
+  source https://nuget.org/api/v2
+
+  nuget SourceLink.Fake
+  nuget FAKE
+  nuget FSharp.Formatting
+
+  github fsharp/FAKE modules/Octokit/Octokit.fsx
+
+group Test
+  source https://nuget.org/api/v2
+
+  nuget NUnit ~> 2
+  nuget NUnit.Runners ~> 2

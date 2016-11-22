@@ -1,0 +1,138 @@
+﻿{
+module GslLexer
+open System
+open GslParser
+open AstTypes
+open Microsoft.FSharp.Text.Lexing
+
+let newline (lexbuf:LexBuffer<_>) =
+    lexbuf.EndPos <- lexbuf.EndPos.NextLine
+
+/// Union type to separately enumerate the different tokenizer modes.
+type GslTokenizerMode =
+    | Main
+    | PragmaLine
+    | InlinePragma
+    | InlineRoughage
+}
+
+let num = ['0'-'9']+
+let intNum = '-'? num
+let ident = ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let pval = [^ ';' '#' '}' ' ' '\t' '\n' '\r'][^ ';' '}' ' ' '\t' '\n' '\r']*
+let pvalVariable = '&' ident
+let pvalAllowSemicolons = [^ '#' '}' ' ' '\t' '\n' '\r'][^ '}' ' ' '\t' '\n' '\r']*
+let whitespace = ' ' | '\t'
+let newline = '\n' | '\r' '\n' | '\r'
+let pname =  '#'['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
+let aa = 'A'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'K'|'L'|'M'|'N'|'P'|'Q'|'R'|'S'|'T'|'V'|'W'|'Y'|'*'  // Amino acids
+let dna = 'A' | 'T' | 'C' | 'G' | 'a' | 't' | 'c' | 'g'
+let linker = ['0'-'9' 'A'-'Z']
+let string = ['\"'][^ '\"']*['\"']  // Quoted strings
+
+// Each set of lexer rules also accepts a function that sets which tokenizer the running lexer is using.
+rule main setTokenizer = parse
+    | num { INT(tokenizeInt lexbuf) }
+    | linker '-' linker '-' ['0' '1'] { LINKER(tokenizeString lexbuf) }
+    | "let" { LET } // let foo = bar  alias definition
+    | "cut" { CUT } // cut <expression>  crisprs
+    | "do" { DO } // start of a scoped block
+    | "end" { END } // end block
+    | "for" { FOR } // for statement
+    | "in" { IN } // part of for statement
+    | "open" { OPEN } // open external file
+    | '&' ident { VARIABLE(tokenizeStringTrimFirstChar lexbuf) } // variable reference
+    | ident { ID(tokenizeString lexbuf) }
+    | '~' { TILDE(tokenizeUnit lexbuf) }
+    | ':' { COLON }
+    | ';' { SEMICOLON(tokenizeUnit lexbuf) }
+    | '[' { OPENSQBRACKET }
+    | ']' { CLOSESQBRACKET }
+    | '-' { HYPHEN }
+    | '/' { SLASH }
+    | ',' { COMMA }
+    | '$' { DOLLAR }
+    | '!' { EXCLM }
+    | '.' { DOT }
+    | '*' { STAR }
+    | '@' { AT }
+    | '=' { EQUALS }
+    | '+' { PLUS }
+    | '(' { LPAREN }
+    | ')' { RPAREN }
+    | "<@" { setTokenizer InlineRoughage; START_ROUGHAGE }
+    | '{' { setTokenizer InlinePragma; LBRACE }
+	| string { STRING(tokenizeStringLiteral lexbuf) }
+    | pname { setTokenizer PragmaLine; PNAME(tokenizeStringTrimFirstChar lexbuf) } // #pname ...
+    | "###" { MARKER(tokenizeUnit lexbuf) }
+    | '$' aa num aa { AAMUTATION(tokenizeString lexbuf) }
+    | '*' dna intNum dna { DNAMUTATION(tokenizeString lexbuf) }
+	| '^' { CARAT } // Needed for L2 syntax
+    | '>' { GREATERTHAN } // For L2 syntax
+    | "(*" { comment lexbuf; main setTokenizer lexbuf }
+	| "///" { docstring (new System.Text.StringBuilder()) lexbuf }
+    | "//" { comment1 lexbuf }
+    | newline  { newline lexbuf; NEWLINE }
+    | whitespace  { main setTokenizer lexbuf}
+    | eof { EOF }
+    | _  { failwithf "Unrecognized input '%s'" (lexeme lexbuf) }
+
+// Multi line comment, just chews up the comment, counts lines, and returns unit.
+and comment = parse
+    | "(*" { comment lexbuf; comment lexbuf } // Recurse on comment to always require matching (* *) even in nested comments.
+    | "*)" { () }
+    | newline  { newline lexbuf; comment lexbuf }
+    | eof { failwithf "Unterminated comment." }
+    | _ { comment lexbuf }
+
+// Docstring.  Note that this isn't really a parser rule set exactly, as it always returns exactly one
+// token and then returns control to the main rule.
+and docstring buffer = parse
+	| newline {
+        let d = DOCSTRING({i = buffer.ToString(); pos = getPos lexbuf} ) in
+            newline lexbuf; d}
+	| eof { EOF }
+	| _ { docstring (buffer.Append(lexeme lexbuf)) lexbuf }
+
+// Single line comment.  This is similar to docstrings, in that it is really just a subparsing function
+// that returns exactly one token.
+and comment1 = parse
+    | newline  { newline lexbuf; NEWLINE }
+    | eof { EOF }
+    | _ { comment1 lexbuf }
+
+// Single line pragma statement  e.g #foo blah &* blah *()((( etc etc
+and pragmaLine setTokenizer = parse
+    | newline { newline lexbuf; setTokenizer Main; NEWLINE }
+    | eof { EOF }
+    | whitespace { pragmaLine setTokenizer lexbuf }
+    | pvalVariable { VARIABLE(tokenizeStringTrimFirstChar lexbuf) }
+    | pvalAllowSemicolons { PVALUE(tokenizeString lexbuf) }
+    | pname { failwithf "Encountered more than one pragma in a single pragma line: %s" (lexeme lexbuf) }
+
+/// Tokenizer for inline pragmas.
+and inlinePragmaParts setTokenizer = parse
+    | newline       { failwithf "Unexpected end of line in inline pragma." }
+    | eof           { failwithf "Unexpected end of file in inline pragma." }
+    | whitespace    { inlinePragmaParts setTokenizer lexbuf }
+    | ';'           { inlinePragmaParts setTokenizer lexbuf }
+    | '}'           { setTokenizer Main; RBRACE }
+    | pname         { PNAME(tokenizeStringTrimFirstChar lexbuf) }  // #foo
+    | pvalVariable  { VARIABLE(tokenizeStringTrimFirstChar lexbuf) }
+    | pval          { PVALUE(tokenizeString lexbuf) }
+    | _             { failwithf "Unexpected character char='%s' in inline pragma." (lexeme lexbuf) }
+
+and roughage setTokenizer = parse
+    | ident { ID(tokenizeString lexbuf) }
+    | ':' { COLON }
+    | '^' { CARAT }
+    | '.' { DOT }
+    | '[' { OPENSQBRACKET }
+    | ']' { CLOSESQBRACKET }
+    | '>' { GREATERTHAN }
+    | '<' { LESSTHAN }
+    | '-' { HYPHEN }
+	| whitespace { roughage setTokenizer lexbuf }
+    | "@>" { setTokenizer Main ; END_ROUGHAGE}
+    | newline { newline lexbuf; NEWLINE }
+    | eof { failwithf "Encountered end of file inside a roughage section, missing a '@>'." }
