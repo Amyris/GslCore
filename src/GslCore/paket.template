@@ -1,0 +1,21 @@
+type project
+owners
+    Amyris
+authors
+    Amyris
+projectUrl
+    http://github.com/AmyrisInc/GslCore
+iconUrl
+    https://raw.githubusercontent.com/Amyris/Amyris.Bio/master/docs/files/img/amyris_logo.png
+licenseUrl
+    http://github.com/AmyrisInc/GslCore/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2016
+tags
+    GSL compiler amyris yeast F#
+summary
+    Core library for GSL compiler
+description
+    Core library and plugin defintions for the Amyris Genotype Specification Language (GSL) compiler.
