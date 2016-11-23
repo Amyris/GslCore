@@ -39,11 +39,11 @@ let assertTreesEqual (expected: AstTreeHead) (actual: AstTreeHead) =
 
 /// Assert that passed tree decompiles to the provided source literal.
 /// Optionally trim leading and trailing whitespace.
-let assertDecompilesTo trim (source: string) (tree: AstTreeHead) =
+let assertDecompilesTo (source: string) (tree: AstTreeHead) =
     let treeAsText = decompile tree.wrappedNode
-    let expected, actual =
-        if trim then (source.Trim(), treeAsText.Trim())
-        else (source, treeAsText)
+
+    let cleanString (s: string) = s.Trim().Replace("\r\n", "\n")
+    let expected, actual = cleanString source, cleanString treeAsText
 
     // search for where the two strings differ, if they do
     let diffPos =
@@ -77,7 +77,7 @@ let assertDecompilesTo trim (source: string) (tree: AstTreeHead) =
 let assertRoundtrip source astItems =
     let tree = lexparse (GslSourceCode(source)) |> returnOrFail
     assertTreesEqual (treeify astItems) tree
-    assertDecompilesTo true source tree
+    assertDecompilesTo source tree
 
 /// Parse and run op on parsed tree.
 let compile op source =
@@ -111,7 +111,7 @@ let sourceCompareTest op sourceIn expectedSource =
     |> compile op 
     |> failIfBad (Some(sourceIn))
     |> returnOrFail
-    |> assertDecompilesTo true expectedSource
+    |> assertDecompilesTo expectedSource
 
 ///<summary>
 ///Given GSL source code, parse it, reprint the AST, and compare

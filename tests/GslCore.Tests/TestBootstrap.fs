@@ -37,7 +37,7 @@ type TestBootstrapping() =
         |> lift bootstrapToTree
         |> failIfBad (Some(source))
         |> returnOrFail
-        |> assertDecompilesTo true source
+        |> assertDecompilesTo source
 
 
     let testPhase1 node =
@@ -67,7 +67,7 @@ type TestBootstrapping() =
         |> testPhase1
         |> failIfBad None
         |> returnOrFail
-        |> assertDecompilesTo true source
+        |> assertDecompilesTo source
 
         printfn "Source in: %s" source
 
