@@ -57,7 +57,6 @@
     <FsLex Include="GslLexer.fsl">
       <OtherFlags>--unicode</OtherFlags>
     </FsLex>
-    <Compile Include="semversion.fs" />
     <Compile Include="constants.fs" />
     <Compile Include="markers.fs" />
     <Compile Include="utils.fs" />

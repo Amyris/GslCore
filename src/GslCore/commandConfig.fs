@@ -4,9 +4,9 @@ open System
 open commonTypes
 open pragmaTypes
 open Amyris.Bio.utils
-open semversion
 
-let version = sprintf "%d.%d.%d" versionMajor versionMinor versionPatch
+let v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version
+let version = v.ToString()
 
 let libRoot =
     match Environment.GetEnvironmentVariable("GSL_LIB") with
