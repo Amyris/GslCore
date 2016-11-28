@@ -1,3 +1,7 @@
+#### 0.4.2 - November 28 2016
+* Fix semantic versioning to use reflection.
+* Add --plugins command line argument.
+
 #### 0.4.1 - November 28 2016
 * Eliminate part reuse datatype in favor of retaining information about source PPP.
 

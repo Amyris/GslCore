@@ -79,7 +79,10 @@ let private tryParseArg (a: CmdLineArgSpec) argList =
 
 /// Parse all command line arguments, and return a list of parsed args and file names
 /// or fail with an exception.
-let private parseAllCommandLineArgs (argSpecs: CollectedCommandLineArgs) (argList: string list) =
+let private parseAllCommandLineArgs
+        (plugins: Plugin list)
+        (argSpecs: CollectedCommandLineArgs)
+        (argList: string list) =
     /// Parse one item and return the rest of the arg list, the parsed arg set,
     /// and any file names we've accumulated.
     let parseOneItem (h:string) (argList:string list) (accumulatedArgs: ParsedCmdLineArg list) files =
@@ -89,6 +92,10 @@ let private parseAllCommandLineArgs (argSpecs: CollectedCommandLineArgs) (argLis
             let arg = h.[2..]
             if arg = "help" then
                 printfn "%s" (usageText argSpecs)
+                (argList, accumulatedArgs, files)
+            elif arg = "plugins" then
+                let pluginNames = plugins |> List.map (fun p -> p.name) |> String.concat "\n"
+                printfn "Installed plugins:\n%s" pluginNames
                 (argList, accumulatedArgs, files)
             else
                 match argSpecs.TryFind arg with
@@ -162,7 +169,7 @@ let loadGlobalAssets (opts:ParsedOptions) =
 /// input files.
 let configure loadGA argSpecs (plugins: Plugin list) (argList:string list) =
 
-    let parsedArgs, files = parseAllCommandLineArgs argSpecs argList
+    let parsedArgs, files = parseAllCommandLineArgs plugins argSpecs argList
 
     /// Use the args to update the builtin options.
     let parsedOptions =

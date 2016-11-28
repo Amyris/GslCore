@@ -6,7 +6,7 @@ open pragmaTypes
 open Amyris.Bio.utils
 
 let v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version
-let version = v.ToString()
+let version = sprintf "%d.%d.%d" v.Major v.Minor v.Build
 
 let libRoot =
     match Environment.GetEnvironmentVariable("GSL_LIB") with
@@ -118,6 +118,11 @@ let builtinCmdLineArgs =
             {name = "only_phase1"; param = []; alias = [];
              desc = "expand GSL just through the phase 1 pipeline, and emit intermediate GSL"}
          proc = fun _ opts -> {opts with onlyPhase1 = true}};
+
+        {spec=
+            {name = "plugins"; param = []; alias = [];
+             desc = "List all plugins installed in this build of the compiler."}
+         proc = fun _ opts -> opts};
 
       
     ]
