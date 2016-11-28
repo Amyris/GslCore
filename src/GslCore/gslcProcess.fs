@@ -61,19 +61,7 @@ let expandAssembliesForOutput (s:ATContext) (aList:seq<Assembly>) =
 
     let assemblies =
         aList
-        |> Seq.mapi
-            (fun i a ->
-                {id = Some(i)
-                 dnaParts = expandAssembly opts.verbose rgs library a
-                 name =
-                    match a.name with
-                    | None -> sprintf "A%d" i
-                    | Some(s) -> s;
-                 uri = a.uri;
-                 linkerHint = a.linkerHint;
-                 pragmas = a.pragmas;
-                 designParams = a.designParams;
-                 docStrings = a.docStrings})
+        |> Seq.mapi (fun i a -> expandAssembly opts.verbose rgs library i a)
         |> List.ofSeq
 
     if opts.verbose then
@@ -103,7 +91,7 @@ let expandAssembliesForOutput (s:ATContext) (aList:seq<Assembly>) =
 
 /// Promote long slices to regular rabits to avoid trying to build
 /// impossibly long things with oligos.
-let cleanLongSlices _ (a:AssemblyOut) =
+let cleanLongSlices _ (a:DnaAssembly) =
     let cleanedParts =
         a.dnaParts |> List.map (fun s ->
             if (s.sliceType = INLINEST &&
@@ -123,7 +111,7 @@ let cleanLongSlices _ (a:AssemblyOut) =
 // we run into trouble during primer generation if a virtual part (fuse) gets between two parts that
 // would otherwise get fused anyway (a dna slice and a linker for example).   Strip out the fuse diective
 // in this case, otherwise primer doesn't get built against the real target
-let preProcessFuse _ (a: AssemblyOut) =
+let preProcessFuse _ (a: DnaAssembly) =
     let rec proc (l:DNASlice list) res =
         match l with
             | [] -> List.rev res

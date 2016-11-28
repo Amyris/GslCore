@@ -54,7 +54,7 @@ let checkPrimers (primers : DivergedPrimerPair list list) =
                 | None, None -> () // fine
             | GAP -> ()
 
-let checkPrimersVAssembly (pa:(DivergedPrimerPair list*AssemblyOut) list) =
+let checkPrimersVAssembly (pa:(DivergedPrimerPair list*DnaAssembly) list) =
     for pList, assembly in pa do
 
         let assemblySeq =

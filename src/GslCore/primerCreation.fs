@@ -558,7 +558,7 @@ let tuneTails
         fwd',rev'
 
 /// Time to design some primers given a list of assemblyout structures
-let designPrimers (opts:ParsedOptions) (linkedTree : AssemblyOut list) =
+let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
     let verbose = opts.verbose
 
     /// Do some sanity checking of generated primers some tail of a must be a prefix of B

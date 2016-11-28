@@ -7,7 +7,7 @@ open utils
 open constants
 
 /// Clone manager formatted output
-let dumpCM (outDir:string) (tag:string) (assemblies: AssemblyOut list) (primers : DivergedPrimerPair list list option) =
+let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers : DivergedPrimerPair list list option) =
     
     let primers' = match primers with
                         | None -> List.init assemblies.Length (fun _ -> None)

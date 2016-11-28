@@ -64,7 +64,7 @@ let formatBreed (b:Breed) =
     | B_LINKER -> "B_LINKER" 
 
 ///  Write out a JSON file representing the output assembly list to a given path. 
-let dumpJsonAssemblies (outFile:string) (assemblies : AssemblyOut list) =
+let dumpJsonAssemblies (outFile:string) (assemblies : DnaAssembly list) =
 
     use outF = new StreamWriter(outFile)
     let assemblyHash =

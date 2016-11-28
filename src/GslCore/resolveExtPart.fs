@@ -88,7 +88,7 @@ let fetchSequence (verbose:bool) (library:Map<string,char array>) (ppp:PPP) (par
                             | None -> pid;
                          pragmas = ppp.pr;
                          breed = B_X; // will be replaced at final submission
-                         partReuse = []}// flag_new_gsl 8/12/15 Added "rabitCandidates"
+                         materializedFrom = Some(ppp)}// flag_new_gsl 8/12/15 Added "rabitCandidates"
                     else
                         // Otherwise, they are taking a hutch part and doing something to it,
                         // so the hutch is just another DNA source and they are effectively
@@ -155,7 +155,7 @@ let fetchSequence (verbose:bool) (library:Map<string,char array>) (ppp:PPP) (par
                             | None -> pid;
                          pragmas = ppp.pr;
                          breed = B_X; // they are hacking rabit, all bets are off
-                         partReuse = []}// flag_new_gsl 8/12/15 Added "rabitCandidates"
+                         materializedFrom = Some(ppp)}// flag_new_gsl 8/12/15 Added "rabitCandidates"
 
             else
                 // Part is in the library
@@ -183,7 +183,7 @@ let fetchSequence (verbose:bool) (library:Map<string,char array>) (ppp:PPP) (par
                  dnaSource = "library";
                  pragmas = ppp.pr;
                  breed = B_X;
-                 partReuse = []}// flag_new_gsl 8/12/15 Added "rabitCandidates"
+                 materializedFrom = Some(ppp)}// flag_new_gsl 8/12/15 Added "rabitCandidates"
 
         | _ as x ->
             failwithf "ERROR: unimplemented external partSpace %s\n" x
@@ -265,7 +265,7 @@ let applySliceToExtSequence
          dnaSource = match pr.TryGetOne("dnasrc") with Some(d) -> d | None -> extPart.id;
          pragmas = pr;
          breed = B_X;
-         partReuse = []}// flag_new_gsl 8/12/15 Added "rabitCandidates"
+         materializedFrom = None}// flag_new_gsl 8/12/15 Added "rabitCandidates"
     else
         // Otherwise, they are taking a hutch part and doing something to it, so the hutch is just another
         // DNA source and they are effectively building a new rabit
@@ -317,4 +317,4 @@ let applySliceToExtSequence
          dnaSource = match pr.TryGetOne("dnasrc") with Some(d) -> d | None -> extPart.id;
          pragmas = pr;
          breed = B_X;
-         partReuse = []}// flag_new_gsl 8/12/15 Added "rabitCandidates"
+         materializedFrom = None}// flag_new_gsl 8/12/15 Added "rabitCandidates"

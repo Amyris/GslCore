@@ -10,12 +10,12 @@ open commonTypes
 
 /// Text representation of the assemblies to stdout
 /// dumpFlat file format
-let dumpFlat (outFile:string) (assembliesIn : AssemblyOut list) =
+let dumpFlat (outFile:string) (assembliesIn : DnaAssembly list) =
     if outFile <> "-" then printfn "Writing flat format to %s" outFile
     let outF = if outFile = "-" then None else Some(new StreamWriter(outFile))
 
     /// Assign ids to any linkers present
-    let assignLinkPartNumbers (al:AssemblyOut list) =
+    let assignLinkPartNumbers (al:DnaAssembly list) =
         // get linker list
         let unlabeled =
             seq { // find unlabeled parts

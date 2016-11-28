@@ -110,7 +110,7 @@ type AssemblyTransformationMessageKind = | ATError | ATWarning
 type AssemblyTransformationMessage =
     {msg: string;
      kind: AssemblyTransformationMessageKind;
-     assembly: AssemblyOut;
+     assembly: DnaAssembly;
      stackTrace: System.Diagnostics.StackTrace option}
     with
     member x.Format(verbose) =
@@ -137,7 +137,7 @@ type IAssemblyTransform =
     inherit IConfigurable<IAssemblyTransform>
     /// Perform a transformation of an assembly.
     abstract member TransformAssembly :
-        ATContext -> AssemblyOut -> Result<AssemblyOut, AssemblyTransformationMessage>
+        ATContext -> DnaAssembly -> Result<DnaAssembly, AssemblyTransformationMessage>
 
 // =======================
 // plugin behavior defintion for output file generation
@@ -146,7 +146,7 @@ type IAssemblyTransform =
 type OutputGenerationData =
     {ga: GlobalAssets;
      opts: ParsedOptions;
-     assemblies: AssemblyOut list;
+     assemblies: DnaAssembly list;
      primers: DivergedPrimerPair list list option}
 
 /// Interface specification for output file format providers.

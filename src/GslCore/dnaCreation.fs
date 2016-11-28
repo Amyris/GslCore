@@ -214,7 +214,7 @@ let expandMarkerPart
      dnaSource = dnaSource;
      pragmas = ppp.pr;
      breed = B_MARKER;
-     partReuse = []}
+     materializedFrom = Some(ppp)}
 
 let expandInlineDna
     dnaSource
@@ -246,7 +246,7 @@ let expandInlineDna
      dnaSource = dnaSource;
      pragmas = ppp.pr;
      breed = B_INLINE;
-     partReuse = []}
+     materializedFrom = Some(ppp)}
 
 let expandGenePart
     verbose
@@ -335,7 +335,7 @@ let expandGenePart
              dnaSource = dnaSource;
              pragmas = ppp.pr;
              breed = B_X;
-             partReuse = []}
+             materializedFrom = Some(ppp)}
         else // no :( - wasn't in genome or library
             failwithf "undefined gene '%s' %O\n" g gp.part.where
     else
@@ -477,16 +477,6 @@ let expandGenePart
                 else B_X
             | x -> x
 
-        // This is a part that is a good candidate for trying to reuse existing parts from thumper.
-        let rabitPartReuseData = 
-            let breedThumper, insertName =
-                match breed with
-                | B_UPSTREAM -> "U", "US_" + g
-                | B_DOWNSTREAM -> "D", "DS_" + g
-                // Todo: Add more breed code
-                | _ -> "?","??"
-            RabitReuseData({breed = breedThumper; insertName = insertName})
-
         // Note regarding orientation: We are currently building a single piece
         // of final DNA left to right. There is no consideration for stitch
         // orientation, so even (in RYSEworld) B stitch parts are laid out left
@@ -523,7 +513,7 @@ let expandGenePart
          sliceType = (if isMarker then MARKER else REGULAR);
          pragmas = ppp.pr;
          breed = breed;
-         partReuse = [rabitPartReuseData]}
+         materializedFrom = Some(ppp)}
 
 /// Take a parsed assembly definition and translate it
 /// to underlying DNA pieces, checking the structure in the process.
@@ -532,6 +522,7 @@ let expandAssembly
     verbose
     (rgs:GenomeDefs)
     (library:Map<string,char array>)
+    index
     (a:Assembly) =
 
     let rec expandPPPList pppList =
@@ -593,7 +584,20 @@ let expandAssembly
                         sliceType = FUSIONST;
                         pragmas = EmptyPragmas;
                         breed = B_VIRTUAL;
-                        partReuse = [];
+                        materializedFrom = None; // TODO: should we mark this as associated with this ppp?
                        }
             } |> List.ofSeq |> recalcOffset
-    expandPPPList a.parts
+    let materializedParts = expandPPPList a.parts
+
+    {id = Some(index)
+     dnaParts = materializedParts
+     name =
+        match a.name with
+        | None -> sprintf "A%d" index
+        | Some(s) -> s;
+     uri = a.uri;
+     linkerHint = a.linkerHint;
+     pragmas = a.pragmas;
+     designParams = a.designParams;
+     docStrings = a.docStrings;
+     materializedFrom = a}

@@ -7,6 +7,7 @@ open ThumperProxyTypes
 open DesignParams
 open RefGenome
 open uri
+open LegacyParseTypes
 
 type Platform = MegaStitch | NoPlatform
 
@@ -77,11 +78,6 @@ let formatST (s:SliceType) =
     | INLINEST -> "INLINE"
     | FUSIONST ->"FUSION"
 
-type RabitReuseData = {breed: string; insertName: string}
-
-/// Marginally extensible type to allow storing information that plugins can use later.
-type PartReuse = | RabitReuseData of RabitReuseData
-
 /// Represents one piece of DNA for assembly, capturing its origins and relevant details
 type DNASlice =
    {id: int option;
@@ -106,11 +102,10 @@ type DNASlice =
     pragmas: PragmaCollection;
     dnaSource: string ;
     breed: Breed;
-    /// possible existing parts that could implement.  Amyris specific.
-    partReuse: PartReuse list
-}
+    /// Keep track of the part this slice was materialized from.
+    materializedFrom: PPP option}
 
-type AssemblyOut =
+type DnaAssembly =
    {id: int option;
     dnaParts: DNASlice list;
     name: string;
@@ -118,8 +113,8 @@ type AssemblyOut =
     linkerHint: string;
     pragmas: PragmaCollection;
     designParams: DesignParams;
-    docStrings: string list
-    }
+    docStrings: string list;
+    materializedFrom: Assembly}
 
 /// Model a primer which diverges and has body/tail parts.
 /// The body part anneals to the intended amplification target and the tail

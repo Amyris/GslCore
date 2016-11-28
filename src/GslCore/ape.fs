@@ -22,7 +22,7 @@ let formatGB (dna : char array) =
     
 /// Emit APE (genbank) format
 ///  outDir : string   tag: string  prefix for files  assemblies : List of AssemblyOut
-let dumpAPE (outDir:string) (tag:string) (assemblies : AssemblyOut list) =
+let dumpAPE (outDir:string) (tag:string) (assemblies : DnaAssembly list) =
     let mon = [| "JAN" ; "FEB" ; "MAR" ; "APR" ; "MAY" ; "JUN" ; "JUL" ; "AUG" ; "SEP" ; "OCT"; "NOV" ; "DEC" |]
     for a in assemblies do
         let path = sprintf "%s.%d.ape" tag (match a.id with None -> failwith "ERROR: unassigned assembly id" | Some(i) -> i )

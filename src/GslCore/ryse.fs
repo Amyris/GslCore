@@ -151,7 +151,7 @@ let getHutchInfoViaWeb ri =
 
 
 /// Determine which sets of linkers to use for a design
-let getLinkerSetsForDesign (aIn: AssemblyOut) =
+let getLinkerSetsForDesign (aIn: DnaAssembly) =
     let defaultLinkers = ["0";"2";"A";"3";"9"]
     if aIn.linkerHint = "" then
         (defaultLinkers, defaultLinkers)
@@ -222,7 +222,7 @@ let mapRyseLinkers
         (opts:ParsedOptions)
         (hutchAncillary : Map<int,HutchRabit>)
         (ryseLinkers:Map<string,RYSELinker>)
-        (aIn : AssemblyOut) =
+        (aIn : DnaAssembly) =
 
     let printVerbose msg =
         if opts.verbose then printfn "%s" msg
@@ -273,7 +273,7 @@ let mapRyseLinkers
              dnaSource = "";
              pragmas = EmptyPragmas;
              breed = B_LINKER;
-             partReuse = []}// flag_new_gsl 8/12/15 Added "rabitCandidates"
+             materializedFrom = None}// flag_new_gsl 8/12/15 Added "rabitCandidates"
 
         let noLinkersLeftMsg =
             sprintf "mapRyseLinkers: out of linkers.  Started with %A" startLinkers

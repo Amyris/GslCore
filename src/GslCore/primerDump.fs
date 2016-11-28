@@ -7,7 +7,7 @@ open Amyris.Bio.biolib
 open System
 
 /// Dump out all the primers/primerparts to define the construct
-let simplePrimerDump (file:string) (primers:DivergedPrimerPair list list) (assemblies:AssemblyOut list) =
+let simplePrimerDump (file:string) (primers:DivergedPrimerPair list list) (assemblies:DnaAssembly list) =
     // User wants primers now
     if file <> "-" then printfn "Writing primers to %s" file
     let outF = if file = "-" then None else Some(new StreamWriter(file))
@@ -17,7 +17,7 @@ let simplePrimerDump (file:string) (primers:DivergedPrimerPair list list) (assem
                             | None -> stdout.WriteLine(s)
                             | Some(x) -> x.WriteLine(s)
 
-    let dumpOne i (primerList:DivergedPrimerPair list,assembly:AssemblyOut) =
+    let dumpOne i (primerList:DivergedPrimerPair list,assembly:DnaAssembly) =
         let name = assembly.name
         for dpp in primerList do
             match dpp with

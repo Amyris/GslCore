@@ -78,7 +78,7 @@ let apeOutputPlugin = outputPlugin "APE (A Plasmid Editor) output file format" (
 
 
  /// Create output file with user or algorithm documentation of the designs
-let private dumpDocStrings (path:string) (assemblies:AssemblyOut list) =
+let private dumpDocStrings (path:string) (assemblies:DnaAssembly list) =
     use outF = new StreamWriter(path)
     for a in assemblies do
         outF.WriteLine(sprintf "@name=%s" a.name)
