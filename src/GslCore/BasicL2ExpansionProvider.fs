@@ -113,11 +113,16 @@ let generateOutputsTitrations (args: L2DesignParams) =
     |> GslSourceCode
 
 let basicL2ExpansionPlugin =
-   {name = "level 2 ko titration";
+   {name = "basic_L2_provider";
+    description = Some "Basic implemention of L2 promoter titration.";
     behaviors =
-        [L2KOTitration(
-           {jobScorer = l2JobScorer ;
-            explicitLocusProvider = generateOutputsExplicitLocus
-            implicitLocusProvider = generateOutputsTitrations})];
+       [{name = None;
+         description = None;
+         behavior =
+            L2KOTitration(
+               {jobScorer = l2JobScorer ;
+                explicitLocusProvider = generateOutputsExplicitLocus
+                implicitLocusProvider = generateOutputsTitrations})}
+       ];
     providesPragmas = []
     providesCapas = []}

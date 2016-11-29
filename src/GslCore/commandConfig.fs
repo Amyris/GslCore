@@ -122,7 +122,7 @@ let builtinCmdLineArgs =
         {spec=
             {name = "plugins"; param = []; alias = [];
              desc = "List all plugins installed in this build of the compiler."}
-         proc = fun _ opts -> opts};
+         proc = fun _ opts -> {opts with listPlugins = true}};
 
       
     ]
@@ -172,4 +172,5 @@ let defaultOpts:ParsedOptions =
     lexOnly = false
     refList = false
     refDump = None
+    listPlugins = false
     }

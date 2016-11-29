@@ -21,9 +21,10 @@ type ParsedOptions =
     doParallel: bool;
     verbose: bool;
     noPrimers: bool;
-    lexOnly: bool
-    refList : bool
-    refDump : string option
+    lexOnly: bool;
+    refList : bool;
+    refDump : string option;
+    listPlugins: bool;
     }
 
 type DNAIntervalType = ANNEAL | RYSELINKER | AMP | SANDWICH

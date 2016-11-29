@@ -105,4 +105,8 @@ type AutodeskJsonOutputProvider (outPath: (string) option) =
         :> IOutputFormat
     override x.DoOutput(path, data) = dumpJsonAssemblies path data.assemblies
 
-let autodeskJsonOutputPlugin = outputPlugin "Autodesk json output file format" (AutodeskJsonOutputProvider(None))
+let autodeskJsonOutputPlugin =
+    outputPlugin
+        "autodesk_json"
+        (Some "Autodesk json output file format provider, for connecting to the Autodesk Genetic Constructor.")
+        (AutodeskJsonOutputProvider(None))

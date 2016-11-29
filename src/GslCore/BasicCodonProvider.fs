@@ -380,7 +380,12 @@ type BasicCodonProvider = {parameters: CodonOptParams option; cache: CodonTableC
 
 /// Plugin providing basic codon optimization and lookup.
 let basicCodonProviderPlugin = 
-    {name = "basic codon optimization";
-     behaviors = [CodonProvider({parameters = None; cache = None})];
+    {name = "basic_codon_provider";
+     description = Some("Simple codon optimization plugin providing basic behaviors.");
+     behaviors =
+       [{name = None;
+         description = None;
+         behavior = CodonProvider({parameters = None; cache = None})}
+       ];
      providesPragmas = [];
      providesCapas = []}

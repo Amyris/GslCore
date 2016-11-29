@@ -173,25 +173,46 @@ type PluginBehavior =
         | CodonProvider(c) -> c.ProvidedArgs()
         | _ -> []
 
-let configureBehavior arg b =
-    match b with
-    | OutputFormat(f) -> OutputFormat(f.Configure(arg))
-    | AssemblyTransform(a) -> AssemblyTransform(a.Configure(arg))
-    | CodonProvider(c) -> CodonProvider(c.Configure(arg))
-    | b -> b
+/// Wrapper around behavior to allow giving individual behaviors names and descriptions.
+type PluginBehaviorWrapper =
+   {name: string option;
+    description: string option;
+    behavior: PluginBehavior}
+    with
+    /// Provide a sequence of strings describing this behavior.
+    member x.Info =
+        seq {
+            match x.name with | Some(n) -> yield sprintf "Name: %s" n | None -> ()
+            match x.description with | Some(d) -> yield sprintf "Description: %s" d | None -> ()
+            yield sprintf "Type: %s" (GetUnionCaseName x.behavior)}
+        |> String.concat "\n"
 
-/// Customize this data structure to include extensions to compiler
+let configureBehavior arg b =
+    match b.behavior with
+    | OutputFormat(f) -> {b with behavior = OutputFormat(f.Configure(arg))}
+    | AssemblyTransform(a) -> {b with behavior = AssemblyTransform(a.Configure(arg))}
+    | CodonProvider(c) -> {b with behavior = CodonProvider(c.Configure(arg))}
+    | AlleleSwapAA _
+    | L2KOTitration _ -> b
+
+/// Data structure specifying one or more behaviors
 type Plugin =
-   {name: string;
-    behaviors: PluginBehavior list;
+   {/// short name
+    name: string;
+    /// longer description
+    description: string option;
+    /// behaviors provided by this plugin
+    behaviors: PluginBehaviorWrapper list;
+    /// new pragmas provided by this plugin
     providesPragmas: pragmaTypes.PragmaDef list;
+    /// new capabilities enabled by this plugin
     providesCapas: string list}
     with
     /// Return specs for any command line args this plugin provides.
     member x.ProvidedArgs() =
         x.behaviors
         |> List.map 
-            (fun b -> b.ProvidedArgs())
+            (fun b -> b.behavior.ProvidedArgs())
         |> List.concat
     /// Given parsed command line args, update any behaviors that need them, returning a configured
     /// plugin.
@@ -204,27 +225,57 @@ type Plugin =
                     |> List.map (configureBehavior arg))
                 x.behaviors
         {x with behaviors = configuredBehaviors}
+    /// Provide a extended description of this plugin and capabilities it provides.
+    member x.Info =
+        let indent (s: string) =
+            s.Split('\n')
+            |> Array.map (sprintf "    %s")
+            |> String.concat "\n"
+
+        let args = x.ProvidedArgs()
+
+        seq {
+            yield sprintf "Name: %s" x.name
+            match x.description with | Some(d) -> yield sprintf "Description:\n    %s" d | None -> ()
+            if not (x.behaviors.IsEmpty) then
+                yield "Behaviors:"
+                yield
+                    x.behaviors
+                    |> List.map (fun b -> indent b.Info)
+                    |> String.concat "\n\n"
+            if not (x.providesPragmas.IsEmpty) then
+                yield "Provides pragmas:"
+                for p in x.providesPragmas -> indent (formatPragma p)
+            if not (x.providesCapas.IsEmpty) then
+                yield "Provides capas:"
+                for c in x.providesCapas -> indent c
+            if not (args.IsEmpty) then
+                yield "Provides command line arguments:"
+                for a in args do yield! (printCmdLineArg a)
+            
+        } |> String.concat "\n"
+
 
 /// Get all of the allele swap providers from a plugin.
 let getAlleleSwapAAProviders (plugin: Plugin) =
     plugin.behaviors
-    |> List.choose (fun b -> match b with | AlleleSwapAA(a) -> Some(a) | _ -> None)
+    |> List.choose (fun b -> match b.behavior with | AlleleSwapAA(a) -> Some(a) | _ -> None)
 
 let getL2KOTitrationProviders (plugin: Plugin) =
     plugin.behaviors
-    |> List.choose (fun b -> match b with | L2KOTitration(a) -> Some(a) | _ -> None)
+    |> List.choose (fun b -> match b.behavior with | L2KOTitration(a) -> Some(a) | _ -> None)
 
 let getAssemblyTransformers (plugin: Plugin) =
     plugin.behaviors
-    |> List.choose (fun b -> match b with | AssemblyTransform(a) -> Some(a.TransformAssembly) | _ -> None)
+    |> List.choose (fun b -> match b.behavior with | AssemblyTransform(a) -> Some(a.TransformAssembly) | _ -> None)
 
 let getOutputProviders (plugin: Plugin) =
     plugin.behaviors
-    |> List.choose (fun b -> match b with | OutputFormat(a) -> Some(a) | _ -> None)
+    |> List.choose (fun b -> match b.behavior with | OutputFormat(a) -> Some(a) | _ -> None)
 
 let getCodonProviders (plugin: Plugin) =
     plugin.behaviors
-    |> List.choose (fun b -> match b with | CodonProvider(a) -> Some(a) | _ -> None)
+    |> List.choose (fun b -> match b.behavior with | CodonProvider(a) -> Some(a) | _ -> None)
 
 /// Use a provider extraction function to get every provider from a list of plugins.
 let getAllProviders mode plugins =

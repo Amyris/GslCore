@@ -32,11 +32,18 @@ module fixtures =
 
     let testOutputPlugin argName argAlias desc =
        {name = "test plugin";
-        behaviors = [OutputFormat({data = None; argName = argName; argAlias = argAlias; desc = desc})];
+        description = None;
+        behaviors =
+           [{name = None;
+             description = None;
+             behavior = OutputFormat({data = None; argName = argName; argAlias = argAlias; desc = desc})}
+           ];
         providesPragmas = [];
         providesCapas = []}
 
-    let getOutputProvider plugin = match plugin.behaviors with | [OutputFormat(op)] -> op :?> TestOutputFormat
+    let getOutputProvider plugin =
+        match plugin.behaviors with
+        | [{behavior = OutputFormat(op)}] -> op :?> TestOutputFormat
 
 [<TestFixture>]
 type TestPluginSystem() = 

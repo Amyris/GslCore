@@ -1,3 +1,6 @@
+#### 0.4.3 - November 28 2016
+* Extend plugin format description and improve plugin help listing.
+
 #### 0.4.2 - November 28 2016
 * Fix semantic versioning to use reflection.
 * Add --plugins command line argument.

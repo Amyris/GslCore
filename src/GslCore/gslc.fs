@@ -134,6 +134,10 @@ let configureGslc unconfiguredPlugins argv =
                 if not s.opts.quiet && not s.opts.refList && s.opts.refDump.IsNone then
                     printf "// GSL compiler version %s\n" version
 
+                if s.opts.listPlugins then
+                    let pluginDescs = s.plugins |> List.map (fun p -> p.Info) |> String.concat "\n\n"
+                    printfn "Installed plugins:\n%s" pluginDescs
+
                 Continue(s)
             with e ->
                 Exit(1, Some(sprintf "An error occurred during configuration:\n%s" e.Message))

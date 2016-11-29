@@ -31,9 +31,11 @@ type ConfigurableOutputProvider<'T> (param: 'T option) =
             | None -> ()
 
 /// Create a basic plug and play output plugin.
-let outputPlugin name provider =
+let outputPlugin name desc provider =
    {name = name;
-    behaviors = [OutputFormat(provider)];
+    description = desc;
+    behaviors =
+       [{name = None; description = None; behavior = OutputFormat(provider)}];
     providesPragmas = [];
     providesCapas = []}
 
@@ -48,7 +50,12 @@ type GslFlatFileOutputProvider (outPath) =
         :> IOutputFormat
     override x.DoOutput(path, data) = dumpFlat path data.assemblies
 
-let flatFileOutputPlugin = outputPlugin "GSL flat file output file format" (GslFlatFileOutputProvider(None))
+let flatFileOutputPlugin =
+    outputPlugin
+        "flat_file"
+        (Some "GSL flat file output provider.")
+        (GslFlatFileOutputProvider(None))
+
 
 type CloneManagerOutputProvider (outParams) =
     inherit ConfigurableOutputProvider<(string*string)>(outParams)
@@ -61,7 +68,11 @@ type CloneManagerOutputProvider (outParams) =
         :> IOutputFormat
     override x.DoOutput((path,tag), data) = dumpCM path tag data.assemblies data.primers
 
-let cloneManagerOutputPlugin = outputPlugin "Clone Manager output file format" (CloneManagerOutputProvider(None))
+let cloneManagerOutputPlugin =
+    outputPlugin
+        "clone_manager"
+        (Some "Clone Manager output format provider.")
+        (CloneManagerOutputProvider(None))
 
 type ApeOutputProvider (outParams) =
     inherit ConfigurableOutputProvider<(string*string)>(outParams)
@@ -74,7 +85,11 @@ type ApeOutputProvider (outParams) =
         :> IOutputFormat
     override x.DoOutput((path,tag), data) = dumpAPE path tag data.assemblies
 
-let apeOutputPlugin = outputPlugin "APE (A Plasmid Editor) output file format" (ApeOutputProvider(None))
+let apeOutputPlugin =
+    outputPlugin
+        "APE"
+        (Some "APE (A Plasmid Editor) output format provider.")
+        (ApeOutputProvider(None))
 
 
  /// Create output file with user or algorithm documentation of the designs
@@ -97,7 +112,11 @@ type DocstringOutputProvider (outPath) =
         :> IOutputFormat
     override x.DoOutput(path, data) = dumpDocStrings path data.assemblies
 
-let docstringOutputPlugin = outputPlugin "GSL docstring output file format" (DocstringOutputProvider(None))
+let docstringOutputPlugin =
+    outputPlugin
+        "docstring_file"
+        (Some "GSL docstring output format provider.  Enables dumping of assembly docstrings.")
+        (DocstringOutputProvider(None))
 
 
 type PrimerOutputProvider (outPath) =
@@ -114,7 +133,11 @@ type PrimerOutputProvider (outPath) =
         | Some(primers) -> primerDump.simplePrimerDump path primers data.assemblies
         | None -> failwithf "--primers was selected but no primers were produced.  Did you also pass --noprimers?"
 
-let primerOutputPlugin = outputPlugin "primer description file format" (PrimerOutputProvider(None))
+let primerOutputPlugin =
+    outputPlugin
+        "primer_file"
+        (Some "Primer description file format output provider.  Enables dumping of assembly primer data.")
+        (PrimerOutputProvider(None))
 
 
 let basicOutputPlugins = [
