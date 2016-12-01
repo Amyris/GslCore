@@ -1,3 +1,6 @@
+#### 0.4.4 - November 28 2016
+* Depuplicate command line args in usage message and include aliases.
+
 #### 0.4.3 - November 28 2016
 * Extend plugin format description and improve plugin help listing.
 

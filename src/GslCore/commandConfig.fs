@@ -142,18 +142,24 @@ let printCmdLineArg a =
     let rPad = String.replicate (padSize - larg.Length) " "
     let descLines = a.desc.Split [|'\n'|]
     let firstLine = larg + rPad + "-" + descLines.[0]
-    let otherLines =
-        Array.map (fun (l:string) -> (String.replicate (padSize+1) " ") + l) (descLines.[1..])
+
+    let formatOtherLine l = (String.replicate (padSize+1) " ") + l
+    let otherLines = descLines.[1..] |> Array.map formatOtherLine
 
     seq {
         yield firstLine
-        for l in otherLines -> l}
+        for l in otherLines -> l
+        if not a.alias.IsEmpty then
+            let aliases = a.alias |> List.map (sprintf "--%s") |> String.concat ", "
+            yield (sprintf "(aliases: %s)" aliases) |> formatOtherLine
+    }
 
 /// Format arg usage and help text.
 let usageText (args: CollectedCommandLineArgs) =
     let argLines =
         args.Specs
-        |> List.ofSeq
+        |> Set.ofSeq
+        |> Set.toList
         |> List.sortBy (fun s -> s.name)
         |> List.map printCmdLineArg
         |> Seq.concat
