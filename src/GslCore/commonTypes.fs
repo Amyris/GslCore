@@ -8,6 +8,7 @@ open DesignParams
 open RefGenome
 open uri
 open LegacyParseTypes
+open Amyris.Dna
 
 type Platform = MegaStitch | NoPlatform
 
@@ -83,7 +84,7 @@ let formatST (s:SliceType) =
 type DNASlice =
    {id: int option;
     extId: string option;
-    dna: char array;
+    dna: Dna;
     sourceChr: string;
     sourceFr: int<ZeroOffset>;
     sourceTo: int<ZeroOffset>;
@@ -121,12 +122,12 @@ type DnaAssembly =
 /// The body part anneals to the intended amplification target and the tail
 /// hangs out and anneals for stitching purposes
 type Primer =
-    {tail: char array;
-     body: char array;
+    {tail: Dna;
+     body: Dna;
      annotation: DNAInterval list}
     with
     member x.Primer
-        with get() = Array.append x.tail x.body
+        with get() = DnaOps.append x.tail x.body
 
     member x.lenLE(maxOligo) =
         x.tail.Length + x.body.Length<=maxOligo
@@ -143,6 +144,6 @@ type DivergedPrimerPair =
     | DPP of PrimerPair
     | GAP
 
-type RYSELinker = {name:string; dna:char array}
+type RYSELinker = {name:string; dna: Dna}
 
 
