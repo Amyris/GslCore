@@ -10,10 +10,11 @@ open Amyris.Bio.primercore
 open Amyris.Bio
 open Amyris.Bio.utils
 open Amyris.Bio.biolib
+open Amyris.Dna
 open DesignParams
 
 /// Check if tail of A overlaps head of B
-let checkTailAOverlapsHeadB (a:char array) (b:char array) =
+let checkTailAOverlapsHeadB (a: Dna) (b: Dna) =
     let rec maxOverlap i =
         if i >= a.Length-12 then
             false
@@ -24,7 +25,7 @@ let checkTailAOverlapsHeadB (a:char array) (b:char array) =
 
     maxOverlap (max (a.Length-b.Length) 0)
 
-let checkBContainedInA (a:char array) (b:char array) =
+let checkBContainedInA (a: Dna) (b: Dna) =
     let rec checkAt i =
         if i > a.Length-b.Length then
             false
@@ -34,7 +35,7 @@ let checkBContainedInA (a:char array) (b:char array) =
             checkAt (i+1)
     checkAt 0
 
-let checkParallelOverlap (a:char array) (b:char array) =
+let checkParallelOverlap (a: Dna) (b: Dna) =
     if (checkTailAOverlapsHeadB a b) ||
        (checkTailAOverlapsHeadB b a) ||
        (checkBContainedInA a b)  ||
@@ -42,16 +43,15 @@ let checkParallelOverlap (a:char array) (b:char array) =
     then
         () // test passes
     else
-        failwithf "insufficient overlap in checkParallelOverlap \na=%s \nb=%s"
-            (a |> arr2seq) (b |> arr2seq)
+        failwithf "insufficient overlap in checkParallelOverlap \na=%O \nb=%O" a b
 
-let checkAntiParallelOverlap (a:char array) (b:char array) =
+let checkAntiParallelOverlap (a: Dna) (b: Dna) =
     let rec maxOverlap i =
         if i < 11 then
-            failwithf "insufficient overlap in checkAntiparallelOvelap a=%s b=%s bRC=%s"
-                (a |> arr2seq) (b |> arr2seq) (b |> revComp |> arr2seq)
+            failwithf "insufficient overlap in checkAntiparallelOvelap a=%O b=%O bRC=%O"
+                a b (b.RevComp())
 
-        if a.[..i] = (b.[..i] |> revComp) then () else maxOverlap (i-1)
+        if a.[..i] = (b.[..i].RevComp()) then () else maxOverlap (i-1)
 
     maxOverlap ((min a.Length b.Length)-1)
 
@@ -131,7 +131,7 @@ let tuneTails
         revTailLenMax
         (fwd:Primer)
         (rev:Primer)
-        (middleDNA : char array) =
+        (middleDNA : Dna) =
     // Input is two sets of primers like this where the region between | symbols is an inline sequence.
     // Output is adjust primer tails that have a better annealing length
 
@@ -166,19 +166,21 @@ let tuneTails
     /// downstream rabit. Downstream rabit is included to deal with seamless designs without a linker
     let revTemplate =
         match revTailLenFixed with
-        | Some(n) -> revComp middleDNA.[..n-1]
-        | None -> Array.concat [middleDNA; fwd.body] |> revComp
+        | Some(n) -> middleDNA.[..n-1].RevComp()
+        | None ->
+            DnaOps.append middleDNA fwd.body
+            |> DnaOps.revComp
 
     /// the body part of the reverse oligo, which corresponds to the upstream rabit, + middleDNA (linker + sandwich seqs).
     /// Upstream rabit is included to deal with seamless designs without a linker
     let fwdTemplate =
         match fwdTailLenFixed with
-        | Some(n) ->  middleDNA.[middleDNA.Length-n..]
-        | None -> Array.concat [rev.body |> revComp; middleDNA]
+        | Some(n) -> middleDNA.[middleDNA.Length-n..]
+        | None -> DnaOps.append (rev.body.RevComp()) (middleDNA)
 
     /// The reverse primer body (end of upstream rabit) + middleDNA (linkers + sandwich sequence) + the forward
     /// primer body (beginning of downstream rabit)
-    let fullTemplate = Array.concat [ rev.body |> revComp ; middleDNA ; fwd.body ]
+    let fullTemplate = DnaOps.concat [ rev.body.RevComp() ; middleDNA ; fwd.body ]
 
     /// Target Tm for middle annealing part.  Cheat if it's a linker and we just want to keep this part (ideally) full length
     let annealTarget = match firmMiddle with | Some(x) -> x | None -> dp.seamlessOverlapTm
@@ -236,18 +238,18 @@ let tuneTails
         let updateFwd (s:TuneState) =
             {s with bestFwdDelta =
                     if s.fb < 5 then 999.0<C>
-                    else dp.targetTm - (Amyris.Bio.primercore.temp dp.pp fwd.body s.fb) }
+                    else dp.targetTm - (Amyris.Bio.primercore.temp dp.pp fwd.body.arr s.fb) }
 
         let updateRev (s:TuneState) =
             {s with bestRevDelta =
                     if s.rb < 5 then 999.0<C>
-                    else dp.targetTm - (Amyris.Bio.primercore.temp dp.pp rev.body s.rb) }
+                    else dp.targetTm - (Amyris.Bio.primercore.temp dp.pp rev.body.arr s.rb) }
 
         let updateAnneal (s:TuneState) =
             {s with bestAnnealDelta =
                     annealTarget
                   - (Amyris.Bio.primercore.temp
-                        dp.pp (fullTemplate.[X-s.ft+1..]) ((Y+s.rt-1)-(X-s.ft+1)+1))}
+                        dp.pp (fullTemplate.[X-s.ft+1..].arr) ((Y+s.rt-1)-(X-s.ft+1)+1))}
 
         /// Takes in a move (union case Tunestep) and updates the TuneState accordingly
         let makeMove = function
@@ -440,14 +442,14 @@ let tuneTails
         if fwd.tail.Length = 0 || rev.tail.Length = 0 then annealTarget
         else Amyris.Bio.primercore.temp
                 dp.pp
-                (fullTemplate.[X-fwd.tail.Length+1..])
+                (fullTemplate.[X-fwd.tail.Length+1..].arr)
                 ((Y+rev.tail.Length-1)-(X-fwd.tail.Length+1)+1)
 
     if verbose then
-        printfn "tuneTailOpt: starting fwdTail=%s" (fwd.tail |> arr2seq)
-        printfn "tuneTailOpt: starting fwdBody=%s" (fwd.body |> arr2seq)
-        printfn "tuneTailOpt: starting revTail=%s" (rev.tail |> arr2seq)
-        printfn "tuneTailOpt: starting revBody=%s" (rev.body |> arr2seq)
+        printfn "tuneTailOpt: starting fwdTail=%O" fwd.tail
+        printfn "tuneTailOpt: starting fwdBody=%O" fwd.body
+        printfn "tuneTailOpt: starting revTail=%O" rev.tail
+        printfn "tuneTailOpt: starting revBody=%O" rev.body
         printfn "tuneTailOpt: starting fwdTailLenFixed=%s"
             (match fwdTailLenFixed with | None -> "no" | Some(x) -> sprintf "yes %d" x)
         printfn "tuneTailOpt: starting revTailLenFixed=%s"
@@ -456,16 +458,16 @@ let tuneTails
         printfn "tuneTailOpt: starting revTailLenMin=%d" revTailLenMin
         printfn "tuneTailOpt: starting startAnnealTm=%f" (startAnnealTm/1.0<C>)
         printfn "tuneTailOpt: starting annealTarget=%f" (annealTarget/1.0<C>)
-        printfn "tuneTailOpt: starting middleDNA=%s" (middleDNA |> arr2seq)
-        printfn "tuneTailOpt: starting fwdTemplate=%s" (fwdTemplate |> arr2seq)
-        printfn "tuneTailOpt: starting revTemplate=%s" (revTemplate |> arr2seq)
-        printfn "tuneTailOpt: starting fullTemplate=%s" (fullTemplate |> arr2seq)
+        printfn "tuneTailOpt: starting middleDNA=%O" middleDNA
+        printfn "tuneTailOpt: starting fwdTemplate=%O" fwdTemplate
+        printfn "tuneTailOpt: starting revTemplate=%O" revTemplate
+        printfn "tuneTailOpt: starting fullTemplate=%O" fullTemplate
 
     let rec trimIfNeeded (p:Primer) =
         if p.lenLE(dp.pp.maxLength) then p else
-        let ampTemp = Amyris.Bio.primercore.temp dp.pp p.body p.body.Length
+        let ampTemp = Amyris.Bio.primercore.temp dp.pp p.body.arr p.body.Length
         let ampDelta = abs (ampTemp - dp.targetTm)
-        let annealTemp = Amyris.Bio.primercore.temp dp.pp p.tail p.tail.Length
+        let annealTemp = Amyris.Bio.primercore.temp dp.pp p.tail.arr p.tail.Length
         let annealDelta = abs (annealTemp - dp.seamlessOverlapTm)
         if ampDelta < annealDelta && p.body.Length > dp.pp.minLength then
             trimIfNeeded { p with body = p.body.[..p.body.Length-2]}
@@ -481,8 +483,8 @@ let tuneTails
         fwd',rev'
     else
         // precalculate the fwd / rev body temps for reference
-        let fwdAmpTm = Amyris.Bio.primercore.temp dp.pp fwd.body fwd.body.Length
-        let revAmpTm = Amyris.Bio.primercore.temp dp.pp rev.body rev.body.Length
+        let fwdAmpTm = Amyris.Bio.primercore.temp dp.pp fwd.body.arr fwd.body.Length
+        let revAmpTm = Amyris.Bio.primercore.temp dp.pp rev.body.arr rev.body.Length
 
         // Start optimization of tail/body with full length tail and body for the original designed primers.
         // This may well be too long for the max oligo length but the tuneTailsOpt function will adjust till they are legal
@@ -504,13 +506,13 @@ let tuneTails
         if verbose then
             printfn "tuneTailOpt: ending ft=%d fb=%d" (finalParams.ft) (finalParams.fb)
             printfn "tuneTailOpt: ending rt=%d rb=%d" (finalParams.rt) (finalParams.rb)
-            printfn "tuneTailOpt: ending fwd %s|%s"
-                (fwdTemplate.[fwdTemplate.Length-f..] |> arr2seq) (fwd.body.[..finalParams.fb-1] |> arr2seq)
-            printfn "tuneTailOpt: ending middle %s" (middleDNA |> arr2seq)
-            printfn "tuneTailOpt: ending template %s" (fullTemplate |> arr2seq)
-            printfn "tuneTailOpt: ending rev %s|%s"
-                (rev.body.[..finalParams.rb-1] |> revComp |> arr2seq)
-                (revTemplate.[revTemplate.Length-r..] |> revComp |> arr2seq)
+            printfn "tuneTailOpt: ending fwd %O|%O"
+                (fwdTemplate.[fwdTemplate.Length-f..]) (fwd.body.[..finalParams.fb-1])
+            printfn "tuneTailOpt: ending middle %O" middleDNA
+            printfn "tuneTailOpt: ending template %O" fullTemplate
+            printfn "tuneTailOpt: ending rev %O|%O"
+                (rev.body.[..finalParams.rb-1].RevComp())
+                (revTemplate.[revTemplate.Length-r..].RevComp())
 
         assert(finalParams.fb<=fwd.body.Length)
         assert(finalParams.rb<=rev.body.Length)
@@ -630,8 +632,8 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 let task: OligoTask =
                    {tag = if fwd then "PF" else "PR";
                     temp =
-                        if fwd then s.dna.[0..min (s.dna.Length-1) (2*approxMargin)]
-                        else (revComp s.dna).[0..min s.dna.Length (2*approxMargin)];
+                        if fwd then s.dna.[0..min (s.dna.Length-1) (2*approxMargin)].arr
+                        else s.dna.RevComp().[0..min s.dna.Length (2*approxMargin)].arr;
                     align = ANCHOR.CENTERLEFT;
                     strand = STRAND.TOP;
                     offset = 0;
@@ -644,7 +646,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
             else
                 let task: OligoTask =
                     {tag = if fwd then "PF" else "PR";
-                     temp = if fwd then s.dna else revComp s.dna;
+                     temp = if fwd then s.dna.arr else s.dna.RevComp().arr;
                      align = ANCHOR.LEFT;
                      strand = STRAND.TOP;
                      offset = 0;
@@ -705,8 +707,8 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
             //            <---------------o  rev
             //                               ~~~~~~~~~<
             //
-            let fwd = {tail = revComp (r.oligo.[..bestR-1]); body = f.oligo; annotation = []}
-            let rev = {tail = revComp (f.oligo.[..bestF-1]); body = r.oligo; annotation = []}
+            let fwd = {tail = Dna(revComp (r.oligo.[..bestR-1])); body = Dna(f.oligo); annotation = []}
+            let rev = {tail = Dna(revComp (f.oligo.[..bestF-1])); body = Dna(r.oligo); annotation = []}
 
             let leftOverlap = min fwd.tail.Length rev.body.Length
             let rightOverlap = min fwd.body.Length rev.tail.Length
@@ -747,14 +749,14 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
             let x =
                 if next.dna.Length < 10 then
                     if verbose then
-                        printf "WARNING: template dna (%s) (len=%d) %s too short for succcessful primer design\n"
-                            next.description next.dna.Length (arr2seq next.dna)
+                        printf "WARNING: template dna (%s) (len=%d) %O too short for succcessful primer design\n"
+                            next.description next.dna.Length next.dna
                     None
                 else
                     if next.sourceFrApprox then
                         let task =
                            {tag ="PF";
-                            temp = next.dna.[0..min (next.dna.Length-1) margin];
+                            temp = next.dna.[0..min (next.dna.Length-1) margin].arr;
                             align = ANCHOR.CENTERLEFT;
                             strand = STRAND.TOP;
                             offset =0;
@@ -764,7 +766,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     else
                         let task =
                            {tag = "PF";
-                            temp = next.dna;
+                            temp = next.dna.arr;
                             align = ANCHOR.LEFT;
                             strand = STRAND.TOP;
                             offset = 0;
@@ -779,9 +781,9 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 else failwithf "failed primer design for design %s" errorName
             | Some(oligo) ->
                 // Oligo design might have chopped off DNA , so cut accordingly
-                primerCheck oligo.oligo (next.dna.[oligo.offset..])
+                primerCheck oligo.oligo (next.dna.[oligo.offset..].arr)
                 // Annotation regions for the oligo
-                {tail = [||]; body = oligo.oligo; annotation = []}, oligo.offset
+                {tail = Dna(""); body = Dna(oligo.oligo); annotation = []}, oligo.offset
 
         linkerFwd2Iterative dp.pp (2*approxMargin)
 
@@ -795,13 +797,13 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
 
         let rec linkerRev2Iterative pen margin =
             match last with
-            | None -> { body = [||]; tail=[||] ; annotation=[]},0
+            | None -> { body = Dna(""); tail=Dna("") ; annotation=[]},0
             | Some(ds) ->
                 let x =
                     if ds.sourceToApprox then
                         let task =
                            {tag = "PR";
-                            temp = (revComp ds.dna).[0..min (ds.dna.Length-1) margin];
+                            temp = ds.dna.RevComp().[0..min (ds.dna.Length-1) margin].arr;
                             align = ANCHOR.CENTERLEFT;
                             strand = STRAND.TOP;
                             offset = 0;
@@ -814,7 +816,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     else
                         let task =
                            {tag = "PR";
-                            temp = revComp ds.dna;
+                            temp = ds.dna.RevComp().arr;
                             align = ANCHOR.LEFT;
                             strand = STRAND.TOP;
                             offset = 0;
@@ -826,8 +828,9 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     if margin < 3*approxMargin then linkerRev2Iterative pen (margin+10)
                     else failwithf "failed primer design for design %s" errorName
                 | Some(oligo) ->
-                    primerCheck oligo.oligo ((revComp ds.dna).[oligo.offset..])
-                    {tail = [||]; body = oligo.oligo; annotation = []}, oligo.offset
+                    primerCheck oligo.oligo (ds.dna.RevComp().[oligo.offset..].arr)
+                    {tail = Dna(""); body = Dna(oligo.oligo); annotation = []}, oligo.offset
+
 
         linkerRev2Iterative dp.pp (2*approxMargin)
 
@@ -853,7 +856,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
 
         /// Chop bases off a primer whose tail is a linker until it meets the length requirement
         let trimLinkerTailBody (p:Primer) =
-            let tailTargetTM = if p.tail.Length=0 then 0.0<C> else temp dp.pp p.tail p.tail.Length
+            let tailTargetTM = if p.tail.Length=0 then 0.0<C> else temp dp.pp p.tail.arr p.tail.Length
             let bodyTargetTm = dp.targetTm
 
             let rec find bLen tLen =
@@ -866,8 +869,8 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     else
                         let bLen' = bLen - 1
                         let tLen' = tLen - 1
-                        let bTm = temp dp.pp p.body bLen'
-                        let tTm = temp dp.pp (p.tail.[p.tail.Length-tLen'..]) tLen'
+                        let bTm = temp dp.pp p.body.arr bLen'
+                        let tTm = temp dp.pp (p.tail.[p.tail.Length-tLen'..].arr) tLen'
                         if abs(tTm-tailTargetTM) < abs(bTm-bodyTargetTm) then
                             // Pick on tail, it's not doing so bad
                             find bLen (tLen-1)
@@ -974,7 +977,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     printf "primerpos directive: fwdTailLenMax = %A revTailLenMax = %A\n" fwdTailLenMax revTailLenMax
 
                 // Tail consists of internal sequence and reverse oligo concatenated.
-                let fwdRunway = Array.concat [(biolib.revComp hd.dna); primerR.body] |> biolib.revComp
+                let fwdRunway = DnaOps.concat([hd.dna.RevComp(); primerR.body]).RevComp()
 
                 // Up to how many bases can we use for tail?
                 let fwdTailLen =
@@ -989,7 +992,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 //  prev ppppppppppppppppppp iiiiiii nnnnnnnnnnnnnnn next
                 //                    <<<<<<<<<<<<<<<<<<<<<<<<<
                 // Rev tail consists of internal sequence and fwd oligo concatenated
-                let revRunway = Array.concat [hd.dna; primerF.body] |> biolib.revComp
+                let revRunway = DnaOps.concat([hd.dna; primerF.body]).RevComp()
                 let revTailLen =
                     min revRunway.Length (dp.pp.maxLength - primerR.body.Length)
                     |> min revTailLenMax
@@ -1081,8 +1084,8 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
 
                 let revTail =
                     match sandwichR with
-                    | None -> hd.dna |> revComp
-                    | Some(s) -> Array.concat [s.dna; hd.dna]  |> revComp
+                    | None -> hd.dna.RevComp()
+                    | Some(s) -> DnaOps.append s.dna hd.dna |> DnaOps.revComp
 
                 // Build data for tuneTails.  For the purpose of assignment, body is the part that
                 // amplifies the neighbouring regions.
@@ -1090,8 +1093,8 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
 
                 // TUNING STEP
 
-                let fwdArg = {primerF' with tail = (if primerF'.body.Length>0 then hd.dna else [||])}
-                let revArg = {primerR' with tail = (if primerR'.body.Length>0 then revTail else [||])}
+                let fwdArg = {primerF' with tail = (if primerF'.body.Length>0 then hd.dna else Dna(""))}
+                let revArg = {primerR' with tail = (if primerR'.body.Length>0 then revTail else Dna(""))}
 
                 // Mildly evil setup.  We can have one or two sandwich pieces on the side, and
                 // fwd/reverse starting primers crossing them.
@@ -1113,20 +1116,20 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     match sandwichR,sandwichF with
                     | None,None -> revArg, hd.dna, fwdArg, 0,0
                     | Some(r),None ->
-                       ({revArg with tail = Array.concat [r.dna ; hd.dna] |> revComp},
-                        Array.concat [r.dna; hd.dna],
+                       ({revArg with tail = DnaOps.append r.dna hd.dna |> DnaOps.revComp},
+                        DnaOps.append r.dna hd.dna,
                         fwdArg,
                         r.dna.Length,
                         0)
                     | None,Some(f) ->
-                       (revArg,Array.concat [hd.dna; f.dna],
-                        {fwdArg with tail = Array.concat [hd.dna;f.dna]},
+                       (revArg, DnaOps.append hd.dna f.dna,
+                        {fwdArg with tail = DnaOps.append hd.dna f.dna},
                         0,
                         f.dna.Length)
                     | Some(r),Some(f) ->
-                       ({revArg with tail = Array.concat [r.dna; hd.dna] |> revComp},
-                        Array.concat [r.dna; hd.dna; f.dna],
-                        {fwdArg with tail = Array.concat [hd.dna; d.dna]},
+                       ({revArg with tail = DnaOps.append r.dna hd.dna |> DnaOps.revComp},
+                        DnaOps.concat [r.dna; hd.dna; f.dna],
+                        {fwdArg with tail = DnaOps.append hd.dna d.dna},
                         r.dna.Length,
                         f.dna.Length)
 
@@ -1181,11 +1184,11 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                          revMiddleLen,
                          Microsoft.FSharp.Core.int.MaxValue)
                     elif isLinker then
-                        let linkerTm = temp dp.pp hd.dna hd.dna.Length
+                        let linkerTm = temp dp.pp hd.dna.arr hd.dna.Length
                         ///beginning of linker.
-                        let fwdTailLenMax = (Array.length midArg) - lenSR
+                        let fwdTailLenMax = midArg.Length - lenSR
                         ///end of linker.
-                        let revTailLenMax = (Array.length midArg) - lenSF
+                        let revTailLenMax = midArg.Length - lenSF
                         //None,((0.8 * float fwdMiddleLen)|>round),fwdTailLenMax,Some(linkerTm),None,((0.8 * float revMiddleLen)|>int),revTailLenMax
                         let revTailLenMin =
                             max revMiddleLen hd.dna.Length  // Estimate of middle overlap length but since linker, don't go under 80% of actual linker
@@ -1199,7 +1202,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                          revTailLenMin,
                          revTailLenMax)
                     else
-                        let linkerTm = temp dp.pp hd.dna hd.dna.Length
+                        let linkerTm = temp dp.pp hd.dna.arr hd.dna.Length
                         (None,
                          ((0.8 * float fwdMiddleLen)|>round),
                          Microsoft.FSharp.Core.int.MaxValue,
@@ -1230,23 +1233,23 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 let primerF =
                     if lenSF=0 then primerF
                     else {primerF with
-                                  body = Array.concat [primerF.tail.[primerF.tail.Length-lenSF..]; primerF.body];
+                                  body = DnaOps.append primerF.tail.[primerF.tail.Length-lenSF..] primerF.body;
                                   tail = primerF.tail.[..primerF.tail.Length-lenSF-1]}
                 let primerR =
                     if lenSR=0 then primerR
                     else {primerR with
-                                  body = Array.concat [primerR.tail.[primerR.tail.Length-lenSR..]; primerR.body];
+                                  body = DnaOps.append primerR.tail.[primerR.tail.Length-lenSR..] primerR.body;
                                   tail = primerR.tail.[..primerR.tail.Length-lenSR-1]}
                 // HACK FIXFIX - turning off for linkerless adventure 20140820
                 //assert ( primerF.tail.Length >= fwdTailLenMin)
                 //assert (primerR.tail.Length = 0 || primerR.tail.Length >= revTailLenMin)
 
                 if not (primerF.lenLE(dp.pp.maxLength)) then
-                    failwithf "for %s primer design violates length constraint in procAssembly primerF %d not <= %d for %s"
-                        errorName primerF.Primer.Length dp.pp.maxLength (arr2seq primerF.Primer)
+                    failwithf "for %s primer design violates length constraint in procAssembly primerF %d not <= %d for %O"
+                        errorName primerF.Primer.Length dp.pp.maxLength primerF.Primer
                 if not (primerR.lenLE(dp.pp.maxLength)) then
-                    failwithf "for %s primer design violates length constraint in procAssembly primerR %d not <= %d for %s"
-                        errorName primerR.Primer.Length dp.pp.maxLength (arr2seq primerR.Primer)
+                    failwithf "for %s primer design violates length constraint in procAssembly primerR %d not <= %d for %O"
+                        errorName primerR.Primer.Length dp.pp.maxLength primerR.Primer
                 assert(primerR.lenLE(dp.pp.maxLength))
 
                 // Ensure primers overlap
@@ -1293,7 +1296,8 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 | _ -> None,None
 
             let primerR'',offsetR = linkerRev2 dp errorName prevAmp
-            let sandwichDNA = match sandwich with | None -> [||] | Some(dna) -> (dna.dna |> revComp)
+            let sandwichDNA =
+                match sandwich with | None -> Dna("") | Some(dna) -> dna.dna.RevComp()
 
             /// Proto primer including tail with linker and potential sandwich sequence.  Could still be too long
             let primerR' =
@@ -1304,8 +1308,8 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     primerR''
                 else
                     {primerR'' with
-                               tail = last.dna |> revComp;
-                               body = Array.concat [sandwichDNA; primerR''.body ]}
+                               tail = last.dna.RevComp();
+                               body = DnaOps.append sandwichDNA primerR''.body}
                     |> trimLinkerTailBody
             //
             // Body, [sandwich],  tail  (linker)
@@ -1329,7 +1333,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                                   iType = DNAIntervalType.AMP}]}
             match prevAmp with
             | None -> assert(primerR.Primer.Length=0)
-            | Some(ds) -> primerCheck primerR.Primer ((revComp ds.dna).[offsetR..])
+            | Some(ds) -> primerCheck primerR.Primer.arr (ds.dna.RevComp().[offsetR..].arr)
 
             let sliceOut' =
                 match prev with
@@ -1358,7 +1362,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     else failwith "expected preceding linker adjacent to terminal inline sequence"
                 | p::_ -> last::(cutRight p offsetR)::sliceOut  |> List.rev
 
-            (DPP({fwd = {body=[||]; tail =[||]; annotation = []}; rev = primerR; name = errorName})::primersOut |> List.rev,
+            (DPP({fwd = {body=Dna(""); tail =Dna(""); annotation = []}; rev = primerR; name = errorName})::primersOut |> List.rev,
              sliceOut') // Last linker
         | hd::tl when hd.sliceType = INLINEST ->
             let prevNew = hd::prev
