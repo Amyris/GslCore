@@ -96,7 +96,7 @@ type DNASlice =
     destFwd: bool;
     /// is this slice created by PCR
     amplified: bool;
-    template: char array option;
+    template: Dna option;
     sliceName: string;
     uri: Uri option;
     description: string ;

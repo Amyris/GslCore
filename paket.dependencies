@@ -1,7 +1,7 @@
 source https://nuget.org/api/v2
 
 nuget FSharp.Core redirects: force
-nuget Amyris.Bio >= 2.0.13 framework: >= net45
+nuget Amyris.Bio >= 2.0.14 framework: >= net45
 nuget FSharp.Data
 nuget Newtonsoft.Json
 nuget FsLexYacc < 7
