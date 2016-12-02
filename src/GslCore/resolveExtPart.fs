@@ -7,8 +7,9 @@ open ryse
 open applySlices
 open Amyris.Bio.biolib
 open constants
+open Amyris.Dna
 
-type ExtFetchSeq = { id : string ; dna : string ; source : string ;  name : string}
+type ExtFetchSeq = { id : string ; dna : Dna ; source : string ;  name : string}
 type ExtFetchResult = | EXT_FETCH_OK of ExtFetchSeq | EXT_FAIL of string
 
 let legalPrefixes = [ ("r","rabit") ; ("b","biobrick")  ]
@@ -24,7 +25,7 @@ let legalPartPrefix (pid:string) =
 
     checkPrefix legalPrefixes
 
-let fetchSequence (verbose:bool) (library:Map<string,char array>) (ppp:PPP) (partId:PartIdLegacy) =
+let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:PartIdLegacy) =
 // Sequence can come either from the libary or preferably from the hutch directly
     let pid = partId.id
     let sliceName =
@@ -51,7 +52,7 @@ let fetchSequence (verbose:bool) (library:Map<string,char array>) (ppp:PPP) (par
                     // Have part from the hutch.  We might just use it verbatim or we might be
                     // some modifications to it to make a new part
                     let rabit = hr.RabitSpecs.[0]
-                    let dna = rabit.DnaElementSpecs.[0].DnaSequence.ToUpper()
+                    let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
 
                     // Check for slice modifications.  We can't handle any other type of mod at this point, so
                     // ensure there are none.
@@ -61,7 +62,7 @@ let fetchSequence (verbose:bool) (library:Map<string,char array>) (ppp:PPP) (par
                     // Look for simple case.  If we are just using the part from the hutch unadulterated, then
                     // we specify things differently, referring to the external id
                     if partId.mods.Length = 0 then
-                        let dna = dna.ToCharArray() |> (if ppp.fwd then id else revComp)
+                        let dna = if ppp.fwd then dna else dna.RevComp()
                         {id = None; 
                          extId = Some(pid.[1..]); 
                          sliceName = sliceName;
@@ -122,8 +123,8 @@ let fetchSequence (verbose:bool) (library:Map<string,char array>) (ppp:PPP) (par
                                 finalSlice partId.id
                     
                         let finalDNA =
-                            dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1].ToCharArray()
-                            |> (if ppp.fwd then id else revComp)
+                            dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
+                            |> (if ppp.fwd then id else DnaOps.revComp)
 
                         let name1 =
                             if partId.mods.Length = 0 then rabit.Name
@@ -190,7 +191,7 @@ let fetchSequence (verbose:bool) (library:Map<string,char array>) (ppp:PPP) (par
 
 
 /// Get the full part sequence for this external reference, don't apply any slice mods to it
-let fetchFullPartSequence (_ (* verbose*):bool) (library:Map<string,char array>) (partId:PartIdLegacy) =
+let fetchFullPartSequence (_ (* verbose*):bool) (library: SequenceLibrary) (partId:PartIdLegacy) =
 // Sequence can come either from the libary or preferably from the hutch directly
     let pid = partId.id
     match legalPartPrefix pid with
@@ -206,12 +207,12 @@ let fetchFullPartSequence (_ (* verbose*):bool) (library:Map<string,char array>)
                     // Have part from the hutch.  We might just use it verbatim or we might be
                     // some modifications to it to make a new part
                     let rabit = hr.RabitSpecs.[0]
-                    let dna = rabit.DnaElementSpecs.[0].DnaSequence.ToUpper()
+                    let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
                     EXT_FETCH_OK({dna = dna; source = "hutch"; id = pid; name = rabit.Name})
             else
                 // Part is in the library
                 EXT_FETCH_OK(
-                   {dna = library.[libName] |> Amyris.Bio.utils.arr2seq;
+                   {dna = library.[libName];
                     source = "library";
                     id = pid;
                     name = libName})
@@ -241,7 +242,7 @@ let applySliceToExtSequence
         match pr.TryGetOne("name") with | Some(n) -> n | None -> ""
     let uri = pr.TryGetOne("uri")
     if partId.mods.Length = 0 then
-        let dna = extPart.dna.ToCharArray() |> if fwd then (id) else (revComp)
+        let dna = extPart.dna |> if fwd then id else DnaOps.revComp
         
         {id = None;
          extId = Some(extPart.id.[1..]);
@@ -287,8 +288,8 @@ let applySliceToExtSequence
                 finalSlice extPart.id
                                 
         let finalDNA =
-            extPart.dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1].ToCharArray()
-            |> (if fwd then id else revComp)
+            extPart.dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
+            |> (if fwd then id else DnaOps.revComp)
 
         let name1 =
             if partId.mods.Length = 0 then extPart.name

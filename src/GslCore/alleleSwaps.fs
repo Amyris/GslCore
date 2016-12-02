@@ -4,6 +4,7 @@
 /// Support for introducing mutations into genes
 ///
 open Amyris.Bio
+open Amyris.Dna
 open System
 open constants
 open DesignParams
@@ -38,11 +39,12 @@ consider double HB
 
 /// Build a reverse lookup table of possible codons encoding a particular amino
 /// acid, avoiding a provided list of non starters
-let makeRevLookup (avoid:Set<char array>) =
-    codons |> Array.fold (fun (aaMap:Map<char,Set<char array> >) codon ->
+let makeRevLookup (avoid:Set<Dna>) =
+    DnaConstants.codons
+    |> Array.fold (fun (aaMap:Map<char,Set<Dna> >) codon ->
         if avoid.Contains(codon) then aaMap
         else
-            let aa = codon2aa codon
+            let aa = DnaOps.codon2aa codon
             if aaMap.ContainsKey(aa) then
                 aaMap.Remove(aa).Add(aa,aaMap.[aa].Add(codon) )
             else
@@ -53,43 +55,47 @@ let makeRevLookup (avoid:Set<char array>) =
 // Yeast specific, we'll need to change this potentially
 let rareCodons =
     ["CTC" ; "CGC" ; "CGA" ; "CGG"]
-    |> List.map (fun s -> s.ToCharArray()) |> Set.ofSeq
+    |> List.map Dna
+    |> Set.ofSeq
 
-let polyG = ["GGG"] |> List.map (fun s -> s.ToCharArray()) |> Set.ofSeq
+let polyG =
+    ["GGG"]
+    |> List.map Dna
+    |> Set.ofSeq
 
 /// list of possible codons encoding each amino acid
 let aa2Codons = makeRevLookup polyG
 let aa2CodonsNonCare = makeRevLookup (rareCodons + polyG)
 
 /// Count #differences between two codons
-let diff (c1:char array) (c2:char array) =
-    Array.map2 (fun a b -> if a=b then 0 else 1) c1 c2 |> Array.sum
+let diff (c1: Dna) (c2: Dna) =
+    Array.map2 (fun a b -> if a = b then 0 else 1) c1.arr c2.arr |> Array.sum
 
 /// How far left is desired change - want a codon change that minimizes base
 /// pair changes on right hand side
-let diffLeft (c1:char array) (c2:char array) =
-    Array.mapi2 (fun i a b -> if a<>b then (i+1) else 0) c1 c2 |> Array.sum
+let diffLeft (c1: Dna) (c2: Dna) =
+    Array.mapi2 (fun i a b -> if a<>b then (i+1) else 0) c1.arr c2.arr |> Array.sum
 
 /// How far right is desired change - want a codon change that minimizes base
 /// pair changes on left hand side
-let diffRight (c1:char array) (c2:char array) =
-    Array.mapi2 (fun i a b -> if a<>b then (4-i) else 0) c1 c2 |> Array.sum
+let diffRight (c1: Dna) (c2: Dna) =
+    Array.mapi2 (fun i a b -> if a<>b then (4-i) else 0) c1.arr c2.arr |> Array.sum
 
 /// Count GC bases in sequence
-let gcCount (c:char array) =
-    c |> Array.fold (fun t c ->
-        if c = 'G' || c = 'C' || c = 'g' || c = 'c' then t+1 else t) 0    
+let gcCount (c: Dna) =
+    c.arr |> Array.sumBy (fun c ->
+        if c = 'G' || c = 'C' || c = 'g' || c = 'c' then 1 else 0)
 
 /// Pick a codon for an amino acid that is maximally different to a given codon
 /// given a comparison function cmp that gives a positive score for degree of difference
 let selectMutCodonBase
-    cmp (cl:CodonLookup) (minFreq:float) (origCodon:char array) (targetAA:char) =
+    cmp (cl:CodonLookup) (minFreq:float) (origCodon: Dna) (targetAA:char) =
 
     aa2Codons.[targetAA]
     |> Set.fold
         (fun (bestDiff, bestGC, bestFreq, bestCodon) thisCodon ->
             let thisFreq =
-                match cl.Codon(arr2seq thisCodon) with
+                match cl.Codon(thisCodon.str) with
                 | None -> 0.0
                 | Some(f) -> f.relFreq1
 
@@ -102,7 +108,7 @@ let selectMutCodonBase
             if better then (d,gcCount thisCodon,thisFreq,thisCodon)
             else (bestDiff,bestGC,bestFreq,bestCodon)
             )
-        (-1,-1,0.0,[||])
+        (-1, -1, 0.0, Dna(""))
     |> fun (_,_,_,codon) -> codon
 
 /// Find codon that is maximally different given a function to calculate different
@@ -193,19 +199,18 @@ let private classicPromoterNT gene name (f:sgd.Feature) (rg:GenomeDef) (m:Mutati
 
     let existing =
         rg.Dna(errorDesc,sprintf "%d" f.chr , genomicCoord,genomicCoord)
-        |> if f.fwd then (id) else (revComp) // single base pair array
+        |> (if f.fwd then id else DnaOps.revComp) // single base pair array
 
     if existing.[0] <> m.f then
         let diag =
             if f.fwd then
                 rg.Dna(errorDesc,sprintf "%d" f.chr , genomicCoord,(f.l+2)*1<ZeroOffset>)
             else
-                rg.Dna(errorDesc,sprintf "%d" f.chr , (f.r-2)*1<ZeroOffset>,genomicCoord)
-                |> revComp  
+                rg.Dna(errorDesc,sprintf "%d" f.chr , (f.r-2)*1<ZeroOffset>,genomicCoord).RevComp()  
 
         failwithf
-            "ERROR: g%s promoter mutation at %d should be base %c a (in gene orientation) and is %c instead\n leading gene oriented seq=%s"
-            name m.loc m.f (existing.[0]) (arr2seq diag)
+            "ERROR: g%s promoter mutation at %d should be base %c a (in gene orientation) and is %c instead\n leading gene oriented seq=%O"
+            name m.loc m.f (existing.[0]) diag
                         
     // Ensure we capture promoter and stay far enough away from b
     let a = (b-800<ZeroOffset>)
@@ -266,9 +271,9 @@ let classicAAMut (dp:AlleleSwapDesignParams) =
             (dp.mutOff < 30<ZeroOffset> ||
              (dp.mutOff < 1000<ZeroOffset> && dp.len-dp.mutOff > 2500<ZeroOffset>)
         )) then
-        let mutSeq = selectMutCodonRight dp.codonLookup minFreq currentCodon dp.m.t |> arr2seq
+        let mutSeq = selectMutCodonRight dp.codonLookup minFreq currentCodon dp.m.t
 
-        assert( (mutSeq.ToCharArray() |> translate).[0] = dp.m.t)
+        assert( (mutSeq.arr |> translate).[0] = dp.m.t)
         // 5' end design, need to rewrite promoter and put in marker
         //                                   b
         // a......-1; marker ; a...ATG.......Mutation ; HB ...  HB + 700
@@ -277,12 +282,21 @@ let classicAAMut (dp:AlleleSwapDesignParams) =
 
         // 3' end design, classic
         sprintf
-            "%s[~%A:~-100] {#name %s.5us} ;### ;%s[~%A:%A] {#name %s.hb} ;/%s/ {#inline };~ ;%s[%A:~%A]"
-            dp.gene (zero2One a) dp.name dp.gene (zero2One a2) (zero2One (dp.mutOff-1<ZeroOffset>)) dp.name 
-            mutSeq dp.gene (dp.mutOff+3<ZeroOffset> |> zero2One) (dp.mutOff+703<ZeroOffset> |> zero2One)
+            "%s[~%A:~-100] {#name %s.5us} ;### ;%s[~%A:%A] {#name %s.hb} ;/%O/ {#inline };~ ;%s[%A:~%A]"
+            dp.gene
+            (zero2One a)
+            dp.name
+            dp.gene
+            (zero2One a2)
+            (zero2One (dp.mutOff-1<ZeroOffset>))
+            dp.name 
+            mutSeq
+            dp.gene
+            (dp.mutOff+3<ZeroOffset> |> zero2One)
+            (dp.mutOff+703<ZeroOffset> |> zero2One)
     else
-        let mutSeq = selectMutCodonLeft dp.codonLookup minFreq currentCodon dp.m.t |> arr2seq
-        assert( (mutSeq.ToCharArray() |> translate).[0] = dp.m.t)
+        let mutSeq = selectMutCodonLeft dp.codonLookup minFreq currentCodon dp.m.t
+        assert( (mutSeq.arr |> translate).[0] = dp.m.t)
                 
         //  a            b                       c
         //  US700.......Mutation; HB ; dnaToDS200 ; marker ; 800bp downstream including 200bp repeat
@@ -339,7 +353,7 @@ let expandAS
         let l',r' = if f.fwd then f.l,f.r+3  else f.l-3,f.r
         let orf =
             rg.Dna(errorDesc,sprintf "%d" f.chr,l'*1<ZeroOffset>,r'*1<ZeroOffset>)
-            |> if f.fwd then id else revComp
+            |> (if f.fwd then id else DnaOps.revComp)
 
         /// Orf sequence plus "orfPlusMargin" 
         let orfPlus =
@@ -348,7 +362,7 @@ let expandAS
                 sprintf "%d" f.chr,
                 ((l'-orfPlusMargin ) |> max 0)*1<ZeroOffset>,
                 (r'+orfPlusMargin)*1<ZeroOffset>)
-            |> if f.fwd then id else revComp
+            |> (if f.fwd then id else DnaOps.revComp)
 
         let x1 = z2i b
         let x2 = (z2i b) + 2
@@ -361,11 +375,11 @@ let expandAS
         let currentCodon = orf.[x1..x2]
 
         // Ensure we are in the right place in the gene
-        if not (codon2aa currentCodon = m.f) && asAACheck then
-            printfn "ORF: %s" (arr2seq orf)
+        if not (codon2aa currentCodon.arr = m.f) && asAACheck then
+            printfn "ORF: %O" orf
             failwithf
-                "ERROR: for mutation %c%d%c , gene %s has amino acid %c (%s) in that position not %c"
-                m.f m.loc m.t g (codon2aa currentCodon) (arr2seq currentCodon) m.f
+                "ERROR: for mutation %c%d%c , gene %s has amino acid %c (%O) in that position not %c"
+                m.f m.loc m.t g (codon2aa currentCodon.arr) currentCodon m.f
         
         let designParams ={ verbose=verbose
                             longStyle=longStyle

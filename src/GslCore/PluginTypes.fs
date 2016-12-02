@@ -11,6 +11,7 @@ open AstTypes
 open RefGenome
 open Amyris.Bio.IO.CodonUsage
 open utils
+open Amyris.Dna
 
 /// Interface specification for plugins that want to inject command line arguments and
 /// be configured from the command line.
@@ -47,7 +48,7 @@ type ICodonProvider =
 
 /// Helpful wrapper type for handing around GSLC's static assets and caches.
 type GlobalAssets =
-    {seqLibrary: Map<string, char []>;
+    {seqLibrary: SequenceLibrary;
      codonProvider: ICodonProvider;
      rgs: Map<string, GenomeDef>;}
 // =========================
@@ -72,8 +73,8 @@ type AlleleSwapDesignParams = {
     m:Mutation
     len:int<ZeroOffset>
     mutOff:int<ZeroOffset>
-    orf:char[]
-    orfPlus:char[]
+    orf: Dna
+    orfPlus: Dna
 }
 
 type AlleleSwapProvider = { jobScorer:AlleleSwapJobAccept ; provider:AlleleSwapDesignParams -> GslSourceCode }

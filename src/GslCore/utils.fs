@@ -13,18 +13,6 @@ let ambId (i :int option) = match i with None -> "?" | Some(i) -> string(i)
 /// Produce a padding string of spaces n long
 let pad n = String.replicate n " "
 
-/// upper case a DNA array of chars
-let basesUpper (c:char []) =
-    c |> Array.map (fun b -> match b with
-                                | 'a' -> 'A'
-                                | 't' -> 'T'
-                                | 'c' -> 'C'
-                                | 'a' -> 'G'
-                                | 'n' -> 'N'
-                                | _ as x when x>='a' && x<='z' -> char(int(x)-int('a') + int('A'))
-                                | _ as x -> x
-                    )
-
 let limitTo n (s:string) = if s.Length > n then s.Substring(0,n) else s
 
 ///Returns the case name of the object with union type 'ty.

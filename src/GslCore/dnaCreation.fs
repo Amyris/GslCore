@@ -10,6 +10,7 @@ open commonTypes
 open applySlices
 open Amyris.Bio
 open Amyris.ErrorHandling
+open Amyris.Dna
 
 // ================================================================================================
 // Slice manipulation routines for getting from gene notation down to specific genomics coordinates
@@ -183,7 +184,7 @@ let getUri (ppp:PPP) = ppp.pr.TryGetOne("uri")
 /// Expand a marker part into DNA pieces.
 /// Exception on failure.
 let expandMarkerPart
-    (library:Map<string,char array>)
+    (library: SequenceLibrary)
     dnaSource
     (ppp:PPP) =
 
@@ -221,13 +222,13 @@ let expandInlineDna
     (ppp:PPP)
     (dna:string) =
 
-    let dnaArr = dna.ToCharArray() |> (if ppp.fwd then (id) else (revComp))
+    let dna = Dna(dna) |> (if ppp.fwd then id else DnaOps.revComp)
 
     {id = None;
      extId = None;
      sliceName = getSliceName ppp;
      uri = getUri ppp;
-     dna = dnaArr;
+     dna = dna;
      sourceChr = "inline";
      sourceFr = 0<ZeroOffset>;
      sourceTo = (dna.Length-1)*1<ZeroOffset>;
@@ -235,13 +236,13 @@ let expandInlineDna
      sourceFrApprox = false;
      sourceToApprox = false;
      // NB - for now allow that this might be amplified, but could change later
-     template = Some dnaArr;
+     template = Some dna;
      amplified = false;
      // Don't assign coordinates to pieces until later when we decide how they are getting joined up
      destFr = 0<ZeroOffset>;
      destTo = 0<ZeroOffset>;
      destFwd = ppp.fwd;
-     description = (if ppp.fwd then dna else "!"+dna );
+     description = (if ppp.fwd then dna.str else "!" + dna.str);
      sliceType = INLINEST;
      dnaSource = dnaSource;
      pragmas = ppp.pr;
@@ -251,7 +252,7 @@ let expandInlineDna
 let expandGenePart
     verbose
     (rgs:GenomeDefs)
-    (library:Map<string,char array>)
+    (library: SequenceLibrary)
     (a:Assembly)
     dnaSource
     (ppp:PPP)
@@ -305,7 +306,7 @@ let expandGenePart
 
             let finalDNA =
                 dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
-                |> (if ppp.fwd then (id) else (revComp))
+                |> (if ppp.fwd then id else DnaOps.revComp)
 
             let name1 =
                 if gp.part.mods.Length = 0 then gp.part.gene

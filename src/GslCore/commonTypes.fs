@@ -10,7 +10,7 @@ open uri
 open LegacyParseTypes
 open Amyris.Dna
 
-type Platform = MegaStitch | NoPlatform
+type SequenceLibrary = Map<string, Dna>
 
 /// Instructions gleaned from command line
 type ParsedOptions =
