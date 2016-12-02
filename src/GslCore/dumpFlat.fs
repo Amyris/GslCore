@@ -48,7 +48,7 @@ let dumpFlat (outFile:string) (assembliesIn : DnaAssembly list) =
         sprintf "NA %s" a.name |> w
         match a.uri with Some(u) -> sprintf "NU %s" u |> w | None -> ()
         sprintf "NP %d" (a.dnaParts.Length) |> w
-        sprintf "AS %s" (String.Join("",a.dnaParts |> List.map (fun d -> arr2seq d.dna))) |> w
+        sprintf "AS %s" (a.Sequence().str) |> w
         sprintf "" |> w
         
         for p in a.dnaParts do
@@ -64,7 +64,7 @@ let dumpFlat (outFile:string) (assembliesIn : DnaAssembly list) =
             sprintf "RT %A" p.sourceTo |> w
             sprintf "LE %d" p.dna.Length |> w
             sprintf "FW %s" (if p.sourceFwd then "+" else "-") |> w
-            sprintf "SQ\n%s\n//\n" (format60 p.dna) |> w
+            sprintf "SQ\n%s\n//\n" (format60 p.dna.arr) |> w
         sprintf "" |> w
         
     // Now emit a summary of the assembly parts

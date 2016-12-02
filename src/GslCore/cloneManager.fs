@@ -29,10 +29,7 @@ let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers 
                             | None -> a.dnaParts |> List.map (fun _ -> None)
                             | Some(p) -> p |> List.map (Some)
 
-        let totSequence =
-            a.dnaParts
-            |> List.map (fun p -> p.dna)
-            |> DnaOps.concat
+        let totSequence = a.Sequence()
 
         let deGT(x:string) = x.Replace(">","&gt;").Replace("<" , "&lt;")
 

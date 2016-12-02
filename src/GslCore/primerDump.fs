@@ -5,6 +5,7 @@ open commonTypes
 open Amyris.Bio.utils
 open Amyris.Bio.biolib
 open System
+open Amyris.Dna
 
 /// Dump out all the primers/primerparts to define the construct
 let simplePrimerDump (file:string) (primers:DivergedPrimerPair list list) (assemblies:DnaAssembly list) =
@@ -26,61 +27,61 @@ let simplePrimerDump (file:string) (primers:DivergedPrimerPair list list) (assem
                     let cols = seq {
                                     yield name
                                     yield (sprintf "%d" i)
-                                    yield (arr2seq dpp.fwd.Primer)
-                                    yield (arr2seq dpp.rev.Primer) 
-                                    yield (arr2seq dpp.fwd.tail)
-                                    yield (arr2seq dpp.fwd.body)
-                                    yield (arr2seq dpp.rev.tail)
-                                    yield (arr2seq dpp.rev.body)
+                                    yield (dpp.fwd.Primer.str)
+                                    yield (dpp.rev.Primer.str) 
+                                    yield (dpp.fwd.tail.str)
+                                    yield (dpp.fwd.body.str)
+                                    yield (dpp.rev.tail.str)
+                                    yield (dpp.rev.body.str)
                                     //
                                     // These two designs are the "medieval" versions (Credit to Max for the term)
                                     // which have complete overlap between the two primers, ensuring an insanely high TM
                                     // They also function as bridge primers
                                     //
-                                    yield ([| dpp.rev.body |> revComp ; dpp.fwd.body |] |> Array.concat |> arr2seq)
-                                    yield ([| dpp.fwd.body |> revComp ; dpp.rev.body |] |> Array.concat |> arr2seq)
+                                    yield ([| dpp.rev.body.RevComp() ; dpp.fwd.body |] |> DnaOps.concat |> fun d -> d.str)
+                                    yield ([| dpp.fwd.body.RevComp() ; dpp.rev.body |] |> DnaOps.concat |> fun d -> d.str)
 
                                     // Emit primer pieces individually and Tms
                                     let tm (a:char array) = Amyris.Bio.primercore.temp assembly.designParams.pp a a.Length |> fun t -> sprintf "%3.1f" (t*1.0/(1.0<Amyris.Bio.primercore.C>))
 
                                     yield ( match dpp.fwd.Interval DNAIntervalType.ANNEAL with 
-                                                        | Some(i) -> dpp.fwd.Primer.[i.il..i.ir] |> arr2seq
+                                                        | Some(i) -> dpp.fwd.Primer.[i.il..i.ir].str
                                                         | None -> ""
                                           )
                                     yield ( match dpp.fwd.Interval DNAIntervalType.SANDWICH with 
-                                                        | Some(i) -> dpp.fwd.Primer.[i.il..i.ir] |> arr2seq
+                                                        | Some(i) -> dpp.fwd.Primer.[i.il..i.ir].str
                                                         | None -> ""
                                           )
                                     yield ( match dpp.fwd.Interval DNAIntervalType.AMP with 
-                                                        | Some(i) -> dpp.fwd.Primer.[i.il..i.ir] |> arr2seq
+                                                        | Some(i) -> dpp.fwd.Primer.[i.il..i.ir].str
                                                         | None -> ""
                                           )
                                     yield ( match dpp.rev.Interval DNAIntervalType.ANNEAL with 
-                                                        | Some(i) -> dpp.rev.Primer.[i.il..i.ir] |> arr2seq
+                                                        | Some(i) -> dpp.rev.Primer.[i.il..i.ir].str
                                                         | None -> ""
                                           )
                                     yield ( match dpp.rev.Interval DNAIntervalType.SANDWICH with 
-                                                        | Some(i) -> dpp.rev.Primer.[i.il..i.ir] |> arr2seq
+                                                        | Some(i) -> dpp.rev.Primer.[i.il..i.ir].str
                                                         | None -> ""
                                           )
                                     yield ( match dpp.rev.Interval DNAIntervalType.AMP with 
-                                                        | Some(i) -> dpp.rev.Primer.[i.il..i.ir] |> arr2seq
+                                                        | Some(i) -> dpp.rev.Primer.[i.il..i.ir].str
                                                         | None -> ""
                                           )
                                     yield ( match dpp.fwd.Interval DNAIntervalType.ANNEAL with 
-                                                        | Some(i) -> dpp.fwd.Primer.[i.il..i.ir] |> tm
+                                                        | Some(i) -> dpp.fwd.Primer.[i.il..i.ir].arr |> tm
                                                         | None -> ""
                                           ) 
                                     yield ( match dpp.fwd.Interval DNAIntervalType.AMP with 
-                                                | Some(i) -> dpp.fwd.Primer.[i.il..i.ir] |> tm
+                                                | Some(i) -> dpp.fwd.Primer.[i.il..i.ir].arr |> tm
                                                 | None -> ""
                                         )
                                     yield ( match dpp.rev.Interval DNAIntervalType.ANNEAL with 
-                                                        | Some(i) -> dpp.rev.Primer.[i.il..i.ir] |> tm
+                                                        | Some(i) -> dpp.rev.Primer.[i.il..i.ir].arr |> tm
                                                         | None -> ""
                                           )
                                     yield ( match dpp.rev.Interval DNAIntervalType.AMP with 
-                                                        | Some(i) -> dpp.rev.Primer.[i.il..i.ir] |> tm
+                                                        | Some(i) -> dpp.rev.Primer.[i.il..i.ir].arr |> tm
                                                         | None -> ""
                                           )
 

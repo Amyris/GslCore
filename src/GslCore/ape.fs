@@ -7,6 +7,7 @@ open commonTypes
 open constants
 open Amyris.Bio.utils
 open utils
+open Amyris.Dna
         
 /// Format a dna sequence in genbank human readable form
 let formatGB (dna : char array) =
@@ -58,8 +59,9 @@ FEATURES             Location/Qualifiers
 
         sprintf "ORIGIN\n" |> w
         
-        let dnaJoined = a.dnaParts |> List.map (fun p -> p.dna) |> Array.concat
-        formatGB dnaJoined |> w
+        a.Sequence().arr
+        |> formatGB
+        |> w
 
       
             

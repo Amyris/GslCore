@@ -7,6 +7,7 @@ open LegacyParseTypes
 open commonTypes
 open Amyris.Bio.utils
 open Amyris.Bio.biolib
+open Amyris.Dna
 open shared
 open System.Collections.Generic
 open constants
@@ -74,7 +75,7 @@ let loadRyseLinkers (f:string) =
 
     eachLineIn f |> Seq.choose (fun l ->
         match l.Split([|' ' ; '\t' |]) with
-        | [| n ; s |] -> Some({name = n ; dna = s.ToCharArray()})
+        | [| n ; s |] -> Some({name = n ; dna = Dna(s)})
         | _ -> None)
     |> Seq.map (fun rl -> (rl.name,rl)) |> Map.ofSeq
 
@@ -250,7 +251,7 @@ let mapRyseLinkers
         let prepLinker (n:string) =
             let linker = ryseLinkers.[n]
             // DNA for the linker
-            let dna = linker.dna |> fun x -> if phase then x else revComp x
+            let dna = linker.dna |> fun x -> if phase then x else x.RevComp()
             // Build the linker entry
             {id = None;
              extId = None;
@@ -487,7 +488,7 @@ let sbolLinker (linker:RYSELinker) =
      sequence =
         Some(
             {id = {identity = seqUri; name = None; description = None};
-             elements = arr2seq linker.dna});
+             elements = linker.dna.str});
      subcomponents = [];
      gslProg = None}
 

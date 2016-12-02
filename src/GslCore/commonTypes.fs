@@ -117,6 +117,11 @@ type DnaAssembly =
     designParams: DesignParams;
     docStrings: string list;
     materializedFrom: Assembly}
+    with
+    member x.Sequence() =
+        x.dnaParts
+        |> Seq.map (fun p -> p.dna)
+        |> DnaOps.concat
 
 /// Model a primer which diverges and has body/tail parts.
 /// The body part anneals to the intended amplification target and the tail

@@ -9,7 +9,7 @@ let checkAnnotation (p:Primer) errorDesc =
     for a in p.annotation do
         if a.il < 0 then
             failwithf "primer annotation il (%d) < 0 p=%s %s"
-                a.il (p.Primer |> arr2seq) errorDesc
+                a.il (p.Primer.str) errorDesc
         if a.ir >= p.tail.Length + p.body.Length then
             failwithf "primer annotation ir (%d) off end len=%d %s"
                 a.ir  (p.tail.Length+p.body.Length) errorDesc
@@ -39,33 +39,31 @@ let checkPrimers (primers : DivergedPrimerPair list list) =
                             f.il f.ir r.il r.ir
                     let s1 = dpp.fwd.Primer.[f.il..f.ir]
                     let s2 = dpp.rev.Primer.[r.il..r.ir]
-                    let s2' = Amyris.Bio.biolib.revComp s2
+                    let s2' = s2.RevComp()
 
                     if s1 <> s2' then
                         failwithf
-                            "primer annotation anneal region fails antiparallel test\nfwd  =%s\nrev  =%s\nrcrev=%s\nname=%s\n"
-                            (arr2seq s1) (arr2seq s2) (arr2seq s2') dpp.name
+                            "primer annotation anneal region fails antiparallel test\nfwd  =%O\nrev  =%O\nrcrev=%O\nname=%s\n"
+                            s1 s2 s2' dpp.name
                 | None, Some(x) ->
-                    failwithf "primer annotation single anneal region rev %d-%d %s"
-                        x.il x.ir (arr2seq dpp.rev.Primer)
+                    failwithf "primer annotation single anneal region rev %d-%d %O"
+                        x.il x.ir dpp.rev.Primer
                 | Some(x), None ->
-                    failwithf "primer annotation single anneal region fwd %d-%d %s"
-                        x.il x.ir (arr2seq dpp.fwd.Primer)
+                    failwithf "primer annotation single anneal region fwd %d-%d %O"
+                        x.il x.ir dpp.fwd.Primer
                 | None, None -> () // fine
             | GAP -> ()
 
 let checkPrimersVAssembly (pa:(DivergedPrimerPair list*DnaAssembly) list) =
     for pList, assembly in pa do
 
-        let assemblySeq =
-            assembly.dnaParts |> List.map (fun slice -> slice.dna)
-            |> Array.concat |> arr2seq
+        let assemblySeq = assembly.Sequence()
 
         for primer in pList do
             match primer with
             | DPP(dpp) ->
                 // Ensure assembly contains primer
-                let fwd = dpp.fwd.Primer |> arr2seq
+                let fwd = dpp.fwd.Primer
                 if not (assemblySeq.Contains(fwd)) then
                     failwithf
                         "fwd primer validation failure.  Primer %s\ntail=%s\nhead=%s\n does not occur in assembly %s\n%s"
