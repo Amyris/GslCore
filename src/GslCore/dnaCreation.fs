@@ -220,9 +220,9 @@ let expandMarkerPart
 let expandInlineDna
     dnaSource
     (ppp:PPP)
-    (dna: Dna) =
+    (dnaFwd: Dna) =
 
-    let dna = dna |> DnaOps.revCompIf (not ppp.fwd)
+    let dna = dnaFwd |> DnaOps.revCompIf (not ppp.fwd)
 
     {id = None;
      extId = None;
@@ -242,7 +242,7 @@ let expandInlineDna
      destFr = 0<ZeroOffset>;
      destTo = 0<ZeroOffset>;
      destFwd = ppp.fwd;
-     description = (if ppp.fwd then dna.str else "!" + dna.str);
+     description = (if ppp.fwd then dnaFwd.str else "!" + dnaFwd.str);
      sliceType = INLINEST;
      dnaSource = dnaSource;
      pragmas = ppp.pr;

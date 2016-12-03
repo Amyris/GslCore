@@ -159,7 +159,7 @@ let private createLegacyPart part =
             let genePart = {gene = gw.x.gene; mods = mods; where = where}
             ok (GENEPART({part=genePart; linker=gw.x.linker})))
     | Marker(_) -> ok MARKERPART
-    | InlineDna(s) -> ok (INLINEDNA(Dna(s.x)))
+    | InlineDna(s) -> ok (INLINEDNA(Dna(s.x, true, AllowAmbiguousBases)))
     | InlineProtein(s) -> ok (INLINEPROT s.x)
     | HetBlock(_) -> ok HETBLOCK
     | PartId(p) ->

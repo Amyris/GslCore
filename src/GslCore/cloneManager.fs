@@ -62,8 +62,6 @@ let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers 
                 | Some(DPP(dp)) ->
                     // Diverged primer pair off this part, need to show them
 
-                    let x = "foo"
-                    x.Substring(0,1) |> ignore
                     if dp.rev.Primer.Length <> 0 then
                         // Simple example, tail is part of the linker region.
                         // It might not span the entire region
