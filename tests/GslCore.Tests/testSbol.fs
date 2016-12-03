@@ -3,6 +3,7 @@ open System
 open System.IO
 open System.Xml
 open NUnit.Framework
+open Amyris.Dna
 
 open sbolExample
 
@@ -31,8 +32,8 @@ type TestSbolProvider() =
 
     [<Test>]
     member x.TestSbolEmitting() =
-        let seq = seqFromDna "ATCG"
-        let subseq = seqFromDna "AAAA"
+        let seq = seqFromDna (Dna "ATCG")
+        let subseq = seqFromDna (Dna "AAAA")
         let subcd =
            {id={identity="test subcomp URI"; name=None; description=None};
             roles=["test sc role URI"];
