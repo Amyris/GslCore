@@ -1,3 +1,6 @@
+#### 0.4.5 - December 2 2016
+* Refactor core to use the Amyris.Dna domain type.
+
 #### 0.4.4 - November 28 2016
 * Depuplicate command line args in usage message and include aliases.
 
