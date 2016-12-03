@@ -499,11 +499,9 @@ type PrimerType =
 /// Create the SBOL objects for a primer.
 let sbolPrimer
         (name:string)
-        (tailChars:char array)
-        (bodyChars:char array)
+        (tail: Dna)
+        (body: Dna)
         (kind:PrimerType) =
-
-    let tail, body = arr2seq tailChars, arr2seq bodyChars
 
     // make tail and body items
     let tailComp =
@@ -530,7 +528,7 @@ let sbolPrimer
     let fullComp =
        {id = {identity = uri.createTempUri(); name = Some(name); description = None};
         roles = [primerRole];
-        sequence = Some(sbolExample.seqFromDna (tail + body));
+        sequence = Some(sbolExample.seqFromDna (DnaOps.append tail body));
         subcomponents = [tailSubcomp; bodySubcomp];
         gslProg = None}
 
@@ -544,7 +542,7 @@ let sbolDnaElement
         (name:string)
         (desc:string option)
         (compUri:Uri option)
-        (dna:string)
+        (dna: Dna)
         (ampPrimers:ComponentDefinition*ComponentDefinition)
         (quickchangePrimers:(ComponentDefinition*ComponentDefinition) option) =
 
@@ -575,7 +573,7 @@ let sbolRabit
         (compUri:Uri option)
         breed
         (orientation:Orientation)
-        (dna:string)
+        (dna:Dna)
         (dnaElements:ComponentDefinition list)
         (linker5p, linker3p) =
 
