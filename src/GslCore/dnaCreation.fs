@@ -168,8 +168,8 @@ let realizeSequence verbose fwd (rg:GenomeDef) (gp:GenePartWithLinker) =
 
     let left', right' = if feat.fwd then left, right else right, left
     rg.Dna(errorDesc, sprintf "%d" feat.chr, left', right')
-        |> (if feat.fwd then id else DnaOps.revComp)
-        |> (if fwd then id else DnaOps.revComp)
+        |> DnaOps.revCompIf (not feat.fwd)
+        |> DnaOps.revCompIf (not fwd)
 
 
 /// Extract slice name from a PPP, if it has one.
@@ -222,7 +222,7 @@ let expandInlineDna
     (ppp:PPP)
     (dna: Dna) =
 
-    let dna = dna |> (if ppp.fwd then id else DnaOps.revComp)
+    let dna = dna |> DnaOps.revCompIf (not ppp.fwd)
 
     {id = None;
      extId = None;
@@ -306,7 +306,7 @@ let expandGenePart
 
             let finalDNA =
                 dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
-                |> (if ppp.fwd then id else DnaOps.revComp)
+                |> DnaOps.revCompIf (not ppp.fwd)
 
             let name1 =
                 if gp.part.mods.Length = 0 then gp.part.gene
@@ -439,9 +439,9 @@ let expandGenePart
 
         let dna =
             rg'.Dna(errorDesc,sprintf "%d" feat.chr,left',right')
-            |> (if feat.fwd then id else DnaOps.revComp)
+            |> DnaOps.revCompIf (not feat.fwd)
             // One potential final flip if user wants DNA backwards
-            |> (if ppp.fwd then id else DnaOps.revComp)
+            |> DnaOps.revCompIf (not ppp.fwd)
 
         let description1 =
             match gp.part.mods with

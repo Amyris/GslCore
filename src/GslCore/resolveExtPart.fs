@@ -124,7 +124,7 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
                     
                         let finalDNA =
                             dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
-                            |> (if ppp.fwd then id else DnaOps.revComp)
+                            |> DnaOps.revCompIf (not ppp.fwd)
 
                         let name1 =
                             if partId.mods.Length = 0 then rabit.Name
@@ -242,7 +242,7 @@ let applySliceToExtSequence
         match pr.TryGetOne("name") with | Some(n) -> n | None -> ""
     let uri = pr.TryGetOne("uri")
     if partId.mods.Length = 0 then
-        let dna = extPart.dna |> if fwd then id else DnaOps.revComp
+        let dna = extPart.dna |> DnaOps.revCompIf (not fwd)
         
         {id = None;
          extId = Some(extPart.id.[1..]);
@@ -289,7 +289,7 @@ let applySliceToExtSequence
                                 
         let finalDNA =
             extPart.dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
-            |> (if fwd then id else DnaOps.revComp)
+            |> DnaOps.revCompIf (not fwd)
 
         let name1 =
             if partId.mods.Length = 0 then extPart.name

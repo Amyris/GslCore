@@ -199,7 +199,7 @@ let private classicPromoterNT gene name (f:sgd.Feature) (rg:GenomeDef) (m:Mutati
 
     let existing =
         rg.Dna(errorDesc,sprintf "%d" f.chr , genomicCoord,genomicCoord)
-        |> (if f.fwd then id else DnaOps.revComp) // single base pair array
+        |> DnaOps.revCompIf (not f.fwd)
 
     if existing.[0] <> m.f then
         let diag =
@@ -362,7 +362,7 @@ let expandAS
         let l',r' = if f.fwd then f.l,f.r+3  else f.l-3,f.r
         let orf =
             rg.Dna(errorDesc,sprintf "%d" f.chr,l'*1<ZeroOffset>,r'*1<ZeroOffset>)
-            |> (if f.fwd then id else DnaOps.revComp)
+            |> DnaOps.revCompIf (not f.fwd)
 
         /// Orf sequence plus "orfPlusMargin" 
         let orfPlus =
@@ -371,7 +371,7 @@ let expandAS
                 sprintf "%d" f.chr,
                 ((l'-orfPlusMargin ) |> max 0)*1<ZeroOffset>,
                 (r'+orfPlusMargin)*1<ZeroOffset>)
-            |> (if f.fwd then id else DnaOps.revComp)
+            |> DnaOps.revCompIf (not f.fwd)
 
         let x1 = z2i b
         let x2 = (z2i b) + 2
@@ -485,7 +485,7 @@ let private generateHBCore
         (down.Length/3*3)
         |> min (match targetAALen with | None -> 120 | Some(v) -> v*3)
 
-    let downTrans = down.[0..transLen-1] |> (if fwd then id else DnaOps.revComp)
+    let downTrans = down.[0..transLen-1] |> DnaOps.revCompIf (not fwd)
     let current = DnaOps.translate downTrans
 
     // Pick alternative codons
@@ -498,9 +498,9 @@ let private generateHBCore
             selectMutCodon cl minFreq orig aa)
         |> DnaOps.concat
         // If the template was flipped to get translation right, flip it back
-        |> (if fwd then id else DnaOps.revComp)
+        |> DnaOps.revCompIf (not fwd)
 
-    let altRetranslated = alt |> (if fwd then id else DnaOps.revComp) |> DnaOps.translate
+    let altRetranslated = alt |> DnaOps.revCompIf (not fwd) |> DnaOps.translate
 
     if localVerbose then printf "templat: %O\n" downTrans.[0..min 60 downTrans.Length]
     if localVerbose then printf "    alt: %O\n" alt
