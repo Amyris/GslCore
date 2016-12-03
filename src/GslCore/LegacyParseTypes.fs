@@ -3,6 +3,7 @@ open Microsoft.FSharp.Text.Lexing
 open Amyris.Bio.primercore
 open Amyris.ErrorHandling
 open Amyris
+open Amyris.Dna
 open constants
 open System
 open uri
@@ -27,7 +28,7 @@ type GenePartWithLinker = {part:GenePart; linker:Linker option}
 type Part =
     | GENEPART of GenePartWithLinker 
     | MARKERPART
-    | INLINEDNA of string 
+    | INLINEDNA of Dna 
     | INLINEPROT of string 
     | HETBLOCK 
     | SOURCE_CODE of GslSourceCode
@@ -94,7 +95,7 @@ let rec printPPP ppp =
     let partOut = 
         match ppp.part with
         | HETBLOCK -> "~ " // don't do anything at this level
-        | INLINEDNA(s) -> sprintf "/%s/ " s   // inline DNA sequence
+        | INLINEDNA(s) -> sprintf "/%O/ " s   // inline DNA sequence
         | INLINEPROT(s) -> sprintf "/$%s/ " s // inline protein sequence
         | MARKERPART -> "### "
         | PARTID(p) -> sprintf "@%s" p.id + (expandMods p.mods)
@@ -158,7 +159,7 @@ let private createLegacyPart part =
             let genePart = {gene = gw.x.gene; mods = mods; where = where}
             ok (GENEPART({part=genePart; linker=gw.x.linker})))
     | Marker(_) -> ok MARKERPART
-    | InlineDna(s) -> ok (INLINEDNA s.x)
+    | InlineDna(s) -> ok (INLINEDNA(Dna(s.x)))
     | InlineProtein(s) -> ok (INLINEPROT s.x)
     | HetBlock(_) -> ok HETBLOCK
     | PartId(p) ->

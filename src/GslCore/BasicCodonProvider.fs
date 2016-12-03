@@ -11,6 +11,7 @@ open pragmaTypes
 open Amyris.Bio.biolib
 open Amyris.Bio.IO.CodonUsage
 open Amyris.Bio.SuffixTree
+open Amyris.Dna
 open RefGenome
 open PluginTypes
 open commandConfig
@@ -135,7 +136,7 @@ let scoreWithCoords (rng:MersenneTwister) (cop : CodonOptParams) (stPrefix:Suffi
 /// Genome specific data needed to generate a codon optimized sequence
 type CodonOptData =
    {freq : Map<string,float>
-    codonAvoid : string list}
+    codonAvoid : Dna list}
 
 
 //let loadCodonData (gd:GenomeDef) =
@@ -322,7 +323,7 @@ let doCodonOpt verbose (cop:CodonOptParams) (codoptData:CodonOptData) (localSeed
                                 )
                              )
     let final = {count = count ; best = best ; prot = p}
-    final.best.chrom |> arr2seq // convert to final DNA sequence as a string
+    final.best.chrom |> Dna
 
 /// Given a library root, load (and cache) genomes on demand
 type CodonTableCache(libRoot:string) = class

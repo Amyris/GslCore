@@ -82,9 +82,10 @@ type GenomeDef(libDir: string, name: string) as this = class
         match x.Env.TryFind("codonavoid") with
         | None -> []
         | Some(x) ->
-                    x.Split([| ' ' ; '\t' |])
-                    |> List.ofArray
-                    |> List.map (fun s -> s.Replace('U','T'))
+            x.Split([| ' ' ; '\t' |])
+            |> List.ofArray
+            |> List.map (fun s -> s.Replace('U','T'))
+            |> List.map Dna
     
     /// Return array of all genomic features we have loaded
     member x.GetAllFeats() =

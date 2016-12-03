@@ -168,8 +168,8 @@ let realizeSequence verbose fwd (rg:GenomeDef) (gp:GenePartWithLinker) =
 
     let left', right' = if feat.fwd then left, right else right, left
     rg.Dna(errorDesc, sprintf "%d" feat.chr, left', right')
-        |> (if feat.fwd then id else revComp)
-        |> (if fwd then id else revComp)
+        |> (if feat.fwd then id else DnaOps.revComp)
+        |> (if fwd then id else DnaOps.revComp)
 
 
 /// Extract slice name from a PPP, if it has one.
@@ -220,9 +220,9 @@ let expandMarkerPart
 let expandInlineDna
     dnaSource
     (ppp:PPP)
-    (dna:string) =
+    (dna: Dna) =
 
-    let dna = Dna(dna) |> (if ppp.fwd then id else DnaOps.revComp)
+    let dna = dna |> (if ppp.fwd then id else DnaOps.revComp)
 
     {id = None;
      extId = None;
@@ -439,9 +439,9 @@ let expandGenePart
 
         let dna =
             rg'.Dna(errorDesc,sprintf "%d" feat.chr,left',right')
-            |> (if feat.fwd then id else revComp)
+            |> (if feat.fwd then id else DnaOps.revComp)
             // One potential final flip if user wants DNA backwards
-            |> (if ppp.fwd then id else revComp)
+            |> (if ppp.fwd then id else DnaOps.revComp)
 
         let description1 =
             match gp.part.mods with
@@ -522,7 +522,7 @@ let expandGenePart
 let expandAssembly
     verbose
     (rgs:GenomeDefs)
-    (library:Map<string,char array>)
+    (library: SequenceLibrary)
     index
     (a:Assembly) =
 
@@ -568,7 +568,7 @@ let expandAssembly
                         extId = None;
                         sliceName = "fusion";
                         uri = None; // TODO: uri for fusion parts?
-                        dna = [||];
+                        dna = Dna("");
                         sourceChr = "";
                         sourceFr = 0<ZeroOffset>;
                         sourceTo = 0<ZeroOffset>;

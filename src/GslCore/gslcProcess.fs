@@ -70,7 +70,7 @@ let expandAssembliesForOutput (s:ATContext) (aList:seq<Assembly>) =
             printf "log: dnaPart: %s\n" a.name
             for p in a.dnaParts do
                 printf "log:      %s\n" p.description
-                printf "%s\n" (format60 p.dna)
+                printf "%s\n" (format60 p.dna.arr)
 
     // Check for reused pieces and number them accordingly
     // Make a list of all parts, determine unique set and assign ids

@@ -40,7 +40,7 @@ type ICodonProvider =
     ///</summary>
     // FIXME: this should both accept and return a domain type from Amyris.Bio.  May need to
     // define a domain type for AA sequences to match Amyris.Dna
-    abstract member DoCodonOpt : bool -> int option -> GenomeDef -> string -> string
+    abstract member DoCodonOpt : bool -> int option -> GenomeDef -> string -> Dna
 
     ///Provide a codon usage lookup table for the given ref genome.
     abstract member GetCodonLookupTable : GenomeDef -> CodonLookup
