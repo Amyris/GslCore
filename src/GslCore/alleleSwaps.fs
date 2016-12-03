@@ -273,7 +273,7 @@ let classicAAMut (dp:AlleleSwapDesignParams) =
         )) then
         let mutSeq = selectMutCodonRight dp.codonLookup minFreq currentCodon dp.m.t
 
-        assert( (mutSeq.arr |> translate).[0] = dp.m.t)
+        assert( (DnaOps.translate mutSeq).[0] = dp.m.t)
         // 5' end design, need to rewrite promoter and put in marker
         //                                   b
         // a......-1; marker ; a...ATG.......Mutation ; HB ...  HB + 700
@@ -296,7 +296,7 @@ let classicAAMut (dp:AlleleSwapDesignParams) =
             (dp.mutOff+703<ZeroOffset> |> zero2One)
     else
         let mutSeq = selectMutCodonLeft dp.codonLookup minFreq currentCodon dp.m.t
-        assert( (mutSeq.arr |> translate).[0] = dp.m.t)
+        assert( (DnaOps.translate mutSeq).[0] = dp.m.t)
                 
         //  a            b                       c
         //  US700.......Mutation; HB ; dnaToDS200 ; marker ; 800bp downstream including 200bp repeat
@@ -304,9 +304,18 @@ let classicAAMut (dp:AlleleSwapDesignParams) =
         let a = if (zero2One a') = 0<OneOffset> then 1<OneOffset> else zero2One a'
         let c = 200<OneOffset> 
         sprintf
-            "%s[~%A:%A] {#name %s.hb} ;~ ;/%s/ {#inline };%s[%A:~%AE] ;### ;%s[1E:~%AE] {#name %s.3ds} "
-            dp.gene a ((zero2One (dp.mutOff-1<ZeroOffset>))) dp.name  mutSeq
-            dp.gene (dp.mutOff+3<ZeroOffset> |> zero2One) c dp.gene (c+600<OneOffset>) dp.name
+            "%s[~%A:%A] {#name %s.hb} ;~ ;/%O/ {#inline };%s[%A:~%AE] ;### ;%s[1E:~%AE] {#name %s.3ds} "
+            dp.gene
+            a
+            ((zero2One (dp.mutOff-1<ZeroOffset>))) 
+            dp.name
+            mutSeq
+            dp.gene
+            (dp.mutOff+3<ZeroOffset> |> zero2One)
+            c
+            dp.gene
+            (c+600<OneOffset>)
+            dp.name
     |> GslSourceCode
             
 
@@ -444,9 +453,9 @@ let private generateHBCore
         (targetAALen:int option)
         (dp:DesignParams)
         (fwd:bool)
-        (up:char array)
-        (prefix:char array)
-        (down:char array) =
+        (up: Dna)
+        (prefix: Dna)
+        (down: Dna) =
     // Parameters
     // Want ~10 amino acids changed
     // 
@@ -461,7 +470,7 @@ let private generateHBCore
     let meltHBNeighbour = 60.0<C>
     let maxOligoLen = dp.pp.maxLength
 
-    let upRev = revComp up
+    let upRev = up.RevComp()
     // TODO - if we are near the 5' end of the gene we should use non rare
     // codons.  Can't currently figure out position from params
     // Also need to ensure we don't chew back past 5' start codon
@@ -476,8 +485,8 @@ let private generateHBCore
         (down.Length/3*3)
         |> min (match targetAALen with | None -> 120 | Some(v) -> v*3)
 
-    let downTrans = down.[0..transLen-1] |> (if fwd then id else revComp)
-    let current = downTrans |> translate
+    let downTrans = down.[0..transLen-1] |> (if fwd then id else DnaOps.revComp)
+    let current = DnaOps.translate downTrans
 
     // Pick alternative codons
     let alt =
@@ -485,19 +494,21 @@ let private generateHBCore
         |> Array.mapi (fun i aa -> 
             let orig = downTrans.[i*3..i*3+2]
             // ensure we passed in something sensible
-            assert ( (translate orig).[0] = aa )
+            assert ( (DnaOps.translate orig).[0] = aa )
             selectMutCodon cl minFreq orig aa)
-        |> Array.concat
+        |> DnaOps.concat
         // If the template was flipped to get translation right, flip it back
-        |> (if fwd then id else revComp)
+        |> (if fwd then id else DnaOps.revComp)
 
-    if localVerbose then printf "templat: %s\n" (downTrans.[0..min 60 downTrans.Length] |> arr2seq)
-    if localVerbose then printf "    alt: %s\n" (arr2seq alt)
-    if localVerbose then printf "Current:%s\n" (arr2seq current)
-    if localVerbose then printf "Alt    :%s\n" (alt |> (if fwd then id else revComp) |> translate |> arr2seq)
+    let altRetranslated = alt |> (if fwd then id else DnaOps.revComp) |> DnaOps.translate
+
+    if localVerbose then printf "templat: %O\n" downTrans.[0..min 60 downTrans.Length]
+    if localVerbose then printf "    alt: %O\n" alt
+    if localVerbose then printf "Current:%O\n" current
+    if localVerbose then printf "Alt    :%s\n" (altRetranslated |> arr2seq)
 
      // ensure the sequence still reads the same amino acids out
-    assert (downTrans |> translate = (alt |> (if fwd then id else (revComp) ) |> translate) )
+    assert (DnaOps.translate downTrans = altRetranslated )
     
     match targetAALen with
     | Some(v) -> alt.[..v*3-1]
@@ -527,10 +538,10 @@ let private generateHBCore
         let hbLenPrimerParams = 30.0 // Cost of hb not reaching desired # amino acid changes
         let rec transitionOpt left right i =
             // Eval position i
-            let AB = Array.append prefix (alt.[..i-1])
+            let AB = DnaOps.append prefix alt.[..i-1]
     
             let penHB = { dp.pp with maxLength = maxOligoLen - minC}
-            let task = { tag ="HBFwd" ; temp = AB; align = ANCHOR.LEFT ; strand = STRAND.TOP ; offset=0 ; targetTemp = meltHB;
+            let task = { tag ="HBFwd" ; temp = AB.arr; align = ANCHOR.LEFT ; strand = STRAND.TOP ; offset=0 ; targetTemp = meltHB;
                             sequencePenalties  = None}
     
             let score,primerLen,move =
@@ -540,7 +551,7 @@ let private generateHBCore
                     // HB primer designed, what's left for the C region?
                 
                     let primer1 =
-                        if o1.oligo.Length % 3 = 0 then o1.oligo
+                        if o1.oligo.Length % 3 = 0 then Dna(o1.oligo)
                         else AB.[0..((o1.oligo.Length/3+1)*3)-1]
 
                     let penC =
@@ -549,7 +560,7 @@ let private generateHBCore
                             minLength = max 10 (54 - primer1.Length)}
                     let task2 =
                         {tag ="CFwd";
-                         temp = down.[primer1.Length..primer1.Length+penC.maxLength];
+                         temp = down.[primer1.Length..primer1.Length+penC.maxLength].arr;
                          align = ANCHOR.LEFT;
                          strand = STRAND.TOP; 
                          offset = 0;
@@ -568,7 +579,7 @@ let private generateHBCore
                         // Oligo 3, upstream
                         let task3 =
                            {tag ="DRev";
-                            temp = upRev.[0..min (upRev.Length-1) (penC.maxLength-1)];
+                            temp = upRev.[0..min (upRev.Length-1) (penC.maxLength-1)].arr;
                             align = ANCHOR.LEFT;
                             strand = STRAND.TOP; 
                             offset = 0;
@@ -649,9 +660,9 @@ let generateRightHB
         (minFreq:float)
         (targetAALen : int option)
         (pp: DesignParams)
-        (up: char array)
-        (prefix:char array)
-        (down:char array) =
+        (up: Dna)
+        (prefix: Dna)
+        (down: Dna) =
     generateHBCore cl minFreq targetAALen pp true up prefix down    
 
 /// Create a heterology block, removing part of the left hand (up) slice sequence and replacing with a rewritten sequence    
@@ -661,9 +672,9 @@ let generateLeftHB
         (minFreq:float) 
         (targetAALen : int option) 
         (pp: DesignParams) 
-        (up:char array) 
-        (prefix :char array) 
-        (down : char array) = 
+        (up: Dna) 
+        (prefix: Dna) 
+        (down: Dna) = 
     // generateRight takes upstream prefix and downstream sequence (to be eaten into)
     // reverse everything so that it works as a right design
     //
@@ -674,7 +685,7 @@ let generateLeftHB
         targetAALen
         pp
         false
-        (revComp down)
-        (revComp prefix)
-        (revComp up)
-    |> revComp
+        (down.RevComp())
+        (prefix.RevComp())
+        (up.RevComp())
+    |> DnaOps.revComp
