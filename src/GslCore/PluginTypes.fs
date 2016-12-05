@@ -107,17 +107,20 @@ type AssemblyTransformationMessageKind = | ATError | ATWarning
     with
     override x.ToString() = match x with | ATError -> "Error" | ATWarning -> "Warning"
 
-/// Domain type for errors encountered during AssemblyOut transformation.
-type AssemblyTransformationMessage =
+/// Domain type for errors encountered during transformation.
+/// The type of assembly is left generic to permit re-use of this type during both
+/// DNA materialization and transformation of DnaAssemblies.
+type AssemblyTransformationMessage<'A> =
     {msg: string;
      kind: AssemblyTransformationMessageKind;
-     assembly: DnaAssembly;
-     stackTrace: System.Diagnostics.StackTrace option}
+     assembly: 'A;
+     stackTrace: System.Diagnostics.StackTrace option;
+     fromException: System.Exception option}
     with
     member x.Format(verbose) =
         let fullMsg = sprintf "%O during assembly out transformation: %s" x.kind x.msg
         if verbose then
-            let assemblyDump = sprintf "%+A" Assembly
+            let assemblyDump = sprintf "%+A" x.assembly
             let st =
                 match x.stackTrace with
                 | Some(s) -> s.ToString()
@@ -131,14 +134,15 @@ let exceptionToAssemblyMessage assembly (exc: System.Exception) =
     {msg = exc.Message;
      kind = ATError;
      assembly = assembly;
-     stackTrace = Some(System.Diagnostics.StackTrace(exc))}
+     stackTrace = Some(System.Diagnostics.StackTrace(exc));
+     fromException = Some exc}
 
 /// Interface specification for output assembly transformations.
 type IAssemblyTransform =
     inherit IConfigurable<IAssemblyTransform>
     /// Perform a transformation of an assembly.
     abstract member TransformAssembly :
-        ATContext -> DnaAssembly -> Result<DnaAssembly, AssemblyTransformationMessage>
+        ATContext -> DnaAssembly -> Result<DnaAssembly, AssemblyTransformationMessage<DnaAssembly>>
 
 // =======================
 // plugin behavior defintion for output file generation

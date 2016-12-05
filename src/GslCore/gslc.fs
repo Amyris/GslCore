@@ -42,13 +42,6 @@ let testPrimer() =
 /// with an exit code and optional message.
 type FlowControl<'T> = | Continue of 'T | Exit of int * string option
 
-/// Infix version of bind for flow control.  If controlResult is Continue, execute the
-/// operation.  Otherwise, fall through.
-let (>?>) controlResult (f: 'a -> FlowControl<'b>) =
-    match controlResult with
-    | Continue(x) -> f x
-    | Exit(returnCode, msg) -> Exit(returnCode, msg)
-
 let basicExceptionHandler verbose f =
     try
         f()
@@ -125,41 +118,32 @@ let configureGslc unconfiguredPlugins argv =
         Exit(1, None)
     // Configure GSLc and plugins from command line arguments
     | args -> 
-        // FIXME: need to trap an exception here or convert command line parsing to ROP,
+        // need to trap an exception here or convert command line parsing to ROP,
         // otherwise exception bubbles all the way up.
-        let configureCaptureException() =
-            try
-                let s = configure true legalCmdLineArgs unconfiguredPlugins args
+        try
+            let s = configure true legalCmdLineArgs unconfiguredPlugins args
 
-                if not s.opts.quiet && not s.opts.refList && s.opts.refDump.IsNone then
-                    printf "// GSL compiler version %s\n" version
+            if not s.opts.quiet && not s.opts.refList && s.opts.refDump.IsNone then
+                printf "// GSL compiler version %s\n" version
 
-                if s.opts.listPlugins then
-                    let pluginDescs = s.plugins |> List.map (fun p -> p.Info) |> String.concat "\n\n"
-                    printfn "Installed plugins:\n%s" pluginDescs
+            if s.opts.listPlugins then
+                let pluginDescs = s.plugins |> List.map (fun p -> p.Info) |> String.concat "\n\n"
+                printfn "Installed plugins:\n%s" pluginDescs
 
-                Continue(s)
-            with e ->
-                Exit(1, Some(sprintf "An error occurred during configuration:\n%s" e.Message))
+            let pluginPragmas =
+                s.plugins
+                |> List.map (fun p -> p.providesPragmas)
+                |> List.concat
 
-        // Handle options requiring no input file
-        configureCaptureException()
-        >?> maybeListRefGenomes
-        >?> maybeDumpLoci
-        >?> checkInputFileList
-        >?> maybeJustDoLexing
+            // combine plugin pragmas and static pragmas into final legal list
+            // FIXME: should eliminate global pragma storage
+            pragmaTypes.finalizePragmas pluginPragmas
 
+            Continue(s)
+        with e ->
+            Exit(1, Some(sprintf "An error occurred during configuration:\n%s" e.Message))
 
 let runCompiler (s: ConfigurationState) =
-
-    let pluginPragmas =
-        s.plugins
-        |> List.map (fun p -> p.providesPragmas)
-        |> List.concat
-
-    // combine plugin pragmas and static pragmas into final legal list
-    // FIXME: should eliminate global pragma storage
-    pragmaTypes.finalizePragmas pluginPragmas
 
     // Start with input from the users supplied file
     let input =
@@ -189,17 +173,13 @@ let handleCompileResult (result, input: GslSourceCode, s) =
         let msgs = [for msg in deduplicateMessages errors -> msg.Longform(s.opts.verbose, input.String)]
         Exit(1, Some(msgs |> String.concat "\n\n"))
 
-let doAssemblyTransform (assemblies, s) = 
-    // The step where we convert assemblies to assemblyOuts isn't ROP'ed yet, so we capture
-    // an exception from that phase here.
-    // The rest of the calls should never raise an exception.
-    let doTransform() =
-        Continue(transformAssemblies s assemblies, s)
-    basicExceptionHandler s.opts.verbose doTransform
+let doDnaMaterialization (assemblies, s) = Continue(materializeDna s assemblies, s)
+
+let doAssemblyTransform (assemblies, s) = Continue(transformAssemblies s assemblies, s)
 
 let handleTransformResult (r, s) =
     match r with
-    | Ok(transformedAssemblies, warnings: AssemblyTransformationMessage list) ->
+    | Ok(transformedAssemblies, warnings: AssemblyTransformationMessage<_> list) ->
         for w in warnings do printfn "%s\n" (w.Format(s.opts.verbose))
         Continue(transformedAssemblies, s)
     | Bad(errors) ->
@@ -214,6 +194,12 @@ let doOutput (assemblies, s) : FlowControl<unit> =
         Exit(0, None)
     basicExceptionHandler s.opts.verbose doOutput
 
+/// Infix version of bind for flow control.  If controlResult is Continue, execute the
+/// operation.  Otherwise, fall through.
+let (>?>) controlResult (f: 'a -> FlowControl<'b>) =
+    match controlResult with
+    | Continue(x) -> f x
+    | Exit(returnCode, msg) -> Exit(returnCode, msg)
 
 /// Main function call to run GSLc from the command line.
 /// Clients of GSLCore may wish to bypass this function and write their own version if they want
@@ -222,8 +208,15 @@ let gslc unconfiguredPlugins argv : FlowControl<_> =
 
     // Configure GSLc and plugins from command line arguments
     configureGslc unconfiguredPlugins argv
+    >?> maybeListRefGenomes
+    >?> maybeDumpLoci
+    >?> checkInputFileList
+    >?> maybeJustDoLexing
+
     >?> runCompiler
     >?> handleCompileResult
+    >?> doDnaMaterialization
+    >?> handleTransformResult
     >?> doAssemblyTransform
     >?> handleTransformResult
     >?> doOutput

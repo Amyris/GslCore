@@ -53,41 +53,48 @@ let rec processGSL (s: ConfigurationState) gslText =
         >>= phase2WithData
         >>= convertAndGatherAssemblies // collect the assemblies in the tree and return them
 
-
-let expandAssembliesForOutput (s:ATContext) (aList:seq<Assembly>) =
+/// Convert all assemblies to DnaAssemblies.
+let materializeDna (s:ConfigurationState) (assem:seq<Assembly>) =
     let opts, library, rgs = s.opts, s.ga.seqLibrary, s.ga.rgs
 
-    if opts.verbose then printf "Processing %d assemblies\n" (Seq.length aList)
+    if opts.verbose then printf "Processing %d assemblies\n" (Seq.length assem)
 
-    let assemblies =
-        aList
-        |> Seq.mapi (fun i a -> expandAssembly opts.verbose rgs library i a)
-        |> List.ofSeq
+    assem
+    |> Seq.mapi (fun i a ->
+        try
+            expandAssembly opts.verbose rgs library i a
+            |> ok
+        with e ->
+            fail(exceptionToAssemblyMessage a e))
+    |> collect
+    >>= (fun assemblies ->
 
-    if opts.verbose then
-        printf "log: dnaParts dump\n"
-        for a in assemblies do
-            printf "log: dnaPart: %s\n" a.name
-            for p in a.dnaParts do
-                printf "log:      %s\n" p.description
-                printf "%s\n" (format60 p.dna.arr)
-
-    // Check for reused pieces and number them accordingly
-    // Make a list of all parts, determine unique set and assign ids
-    let partIDs =
-        seq {for a in assemblies do
+        if opts.verbose then
+            printf "log: dnaParts dump\n"
+            for a in assemblies do
+                printf "log: dnaPart: %s\n" a.name
                 for p in a.dnaParts do
-                    yield p.dna} // Base this on DNA for now, but could involve linkers down the road}
-        |> Set.ofSeq
-        |> Seq.mapi (fun i dna -> (dna,i))
-        |> Map.ofSeq // TODO - could be faster with checksums
-    // Relabel the pieces with IDs  - tedious, we have to reconstruct the tree
-    List.map
-        (fun a ->
-            {a with dnaParts = List.map
-                (fun (p:DNASlice) -> { p with id = Some(partIDs.[p.dna]) })
-                a.dnaParts})
-        assemblies
+                    printf "log:      %s\n" p.description
+                    printf "%s\n" (format60 p.dna.arr)
+
+        // Check for reused pieces and number them accordingly
+        // Make a list of all parts, determine unique set and assign ids
+        let partIDs =
+            seq {for a in assemblies do
+                    for p in a.dnaParts do
+                        yield p.dna} // Base this on DNA for now, but could involve linkers down the road}
+            |> Set.ofSeq
+            |> Seq.mapi (fun i dna -> (dna,i))
+            |> Map.ofSeq // TODO - could be faster with checksums
+        // Relabel the pieces with IDs  - tedious, we have to reconstruct the tree
+        List.map
+            (fun a ->
+                {a with dnaParts = List.map
+                    (fun (p:DNASlice) -> { p with id = Some(partIDs.[p.dna]) })
+                    a.dnaParts})
+            assemblies
+        |> ok
+    )
 
 /// Promote long slices to regular rabits to avoid trying to build
 /// impossibly long things with oligos.
@@ -122,23 +129,15 @@ let preProcessFuse _ (a: DnaAssembly) =
 
     ok {a with dnaParts = (proc a.dnaParts [])}
 
-
 /// Once GSL is expanded as far as possible,
-/// go into more target-specific activities like assigning parts, reusing parts,
-/// generating DNA, etc.
-let transformAssemblies (s: ConfigurationState) (assemblies:Assembly list) =
+/// go into more target-specific activities like assigning parts, reusing parts, etc.
+let transformAssemblies (s: ConfigurationState) (assemblies:DnaAssembly list) =
 
-    /// Repackage some config data for this domain.
-    let atContext: ATContext = {ga = s.ga; opts = s.opts}
-
-    let assemblyOuts =
-        expandAssembliesForOutput atContext assemblies
-        |> List.ofSeq
+    let atContext: ATContext = {opts = s.opts; ga = s.ga}
 
     let builtinAssemblyTransforms =
         [cleanLongSlices;
          preProcessFuse;]
-
 
     let assemblyTransformers =
         builtinAssemblyTransforms@(getAllProviders getAssemblyTransformers s.plugins)
@@ -158,7 +157,7 @@ let transformAssemblies (s: ConfigurationState) (assemblies:Assembly list) =
             (ok a)
 
     /// Attempt to transform all of the assemblies
-    assemblyOuts
+    assemblies
     |> List.map transformAssembly
     |> collect
 
