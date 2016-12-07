@@ -12,6 +12,7 @@ open RefGenome
 open LegacyParseTypes
 open DesignParams
 open Amyris.Bio
+open Amyris.Dna
 open DnaCreation
 open pragmaTypes
 open alleleSwaps
@@ -658,6 +659,18 @@ let private expandHB
             | true,i -> Some(i)
             | _ -> failwithf "Expected integer in #len pragma, not '%s'" v
 
+    let capUsing (a: Dna) (b: Dna) =
+        Seq.zip a b
+        |> Seq.map (fun (a,b) ->
+            if a=b then b
+            else
+                match b with
+                | 'G' -> 'g'
+                | 'C' -> 'c'
+                | 'A' -> 'a'
+                | 'T' -> 't'
+                | _ as x ->x)
+        |> Dna
 
     let rec scan
             (a:Assembly)
@@ -688,7 +701,7 @@ let private expandHB
                     targetAALen
                     a.designParams
                     sliceSeqUp
-                    [||]
+                    (Dna(""))
                     sliceSeq
             // tricky part - need to slightly adjust the slice range of gp,
             // but that's embedded down in the mod list
@@ -703,7 +716,7 @@ let private expandHB
                     left =
                         {startSlice.left with
                             x = startSlice.left.x + (alt.Length*1<OneOffset>)}} // Chop it
-            let newInline = alt|> arr2seq
+
             assert(alt <> sliceSeq.[0..alt.Length-1])
             // Assemble new mod list by getting rid of existing slice mods and
             // putting in new consolidated slice.
@@ -715,7 +728,7 @@ let private expandHB
             scan
                 a
                 ((GENEPART({gp with part = {gp.part with mods = newMods}}),pr3,fwd3)
-                 ::(INLINEDNA(newInline), returnOrFail (pr2.Add("inline")), fwd2)
+                 ::(INLINEDNA(alt), returnOrFail (pr2.Add("inline")), fwd2)
                  ::(GENEPART(gpUp),pr1,fwd1)
                  ::res)
                 tl
@@ -725,7 +738,6 @@ let private expandHB
           ::(HETBLOCK,pr3,_(*fwd3*))
           ::(GENEPART(gp),pr4,fwd4)
           ::tl ->
-            let ic = i.ToCharArray()
             let rg' = getRG a rgs pr4
             let rg'' = getRG a rgs pr1
 
@@ -738,12 +750,12 @@ let private expandHB
             // Generate an alternative prefix for the GENEPART on RHS
             let alt =
                 generateRightHB
-                    codonUsage minHBCodonUsage targetAALen a.designParams sliceSeqUp ic sliceSeq
+                    codonUsage minHBCodonUsage targetAALen a.designParams sliceSeqUp i sliceSeq
 
             assert(alt <> sliceSeq.[0..alt.Length-1])
             if verbose then
-                printf "// %s -> %s\n"
-                    (arr2seq alt) (sliceSeq.[0..alt.Length-1] |> arr2seq)
+                printf "// %O -> %O\n"
+                    alt sliceSeq.[0..alt.Length-1]
 
             // tricky part - need to slightly adjust the slice range of gp,
             // but that's embedded down in the mod list
@@ -762,7 +774,7 @@ let private expandHB
                         {startSlice.left with
                             x = startSlice.left.x + (alt.Length*1<OneOffset>)}} // Chop it
 
-            let newInline = Array.append ic alt |> arr2seq
+            let newInline = DnaOps.append i alt
 
             // Assemble new mod list by getting rid of existing slice mods and putting in new consolidated slice.
             let newMods =
@@ -780,10 +792,9 @@ let private expandHB
 
         | (GENEPART(gp),pr1,fwd1)
           ::(HETBLOCK,pr2,_(*fwd2*))
-          ::(INLINEDNA(i),pr3,fwd3)
+          ::(INLINEDNA(ic),pr3,fwd3)
           ::(GENEPART(gpDown),pr4,fwd4)
           ::tl ->
-            let ic = i.ToCharArray()
 
             // get reference genomes warmed up
             let rg' = getRG a rgs pr1
@@ -815,31 +826,19 @@ let private expandHB
                     right =
                         {startSlice.right with
                             x = startSlice.right.x - (alt.Length*1<OneOffset>)}} // Chop it
-            let newInline = Array.append alt ic |> arr2seq
+            let newInline = DnaOps.append alt ic
             assert(alt <> sliceSeq.[sliceSeq.Length-alt.Length..])
             if verbose then
-                let fr = (arr2seq alt)
+                //let fr = alt
                 let t = sliceSeq.[sliceSeq.Length-alt.Length..sliceSeq.Length-1]
-                let sim = Array.map2 (fun a b -> if a = b then '.' else ' ') alt t
+                let sim = Array.map2 (fun a b -> if a = b then '.' else ' ') alt.arr t.arr
                 let simProp =
                     (seq { for x in sim -> if x = '.' then 1.0 else 0.0} |> Seq.sum)
                   / float(alt.Length) * 100.0
 
-                let capUsing (a:string) (b:string) =
-                    Seq.zip a b
-                    |> Seq.map (fun (a,b) ->
-                        if a=b then b
-                        else
-                            match b with
-                            | 'G' -> 'g'
-                            | 'C' -> 'c'
-                            | 'A' -> 'a'
-                            | 'T' -> 't'
-                            | _ as x ->x)
-                    |> Array.ofSeq |> arr2seq
                 printf
-                    "// From: %s \n// To  : %s\n//     : %s %3.0f%%\n"
-                    fr (arr2seq t |> capUsing fr) (arr2seq sim) simProp
+                    "// From: %O \n// To  : %O\n//     : %s %3.0f%%\n"
+                    alt (t |> capUsing alt) (arr2seq sim) simProp
             // Assemble new mod list by getting rid of existing slice mods and
             // putting in new consolidated slice.
             let newMods =
@@ -857,13 +856,11 @@ let private expandHB
 
         | (PARTID(pid1),pr1,fwd1)
           ::(HETBLOCK,pr2,_(*fwd2*))
-          ::(INLINEDNA(i),pr3,fwd3)
+          ::(INLINEDNA(ic),pr3,fwd3)
           ::(PARTID(pid4),pr4,fwd4)
           ::tl ->
             // External part variation
             // ===============================================
-            let ic = i.ToCharArray()
-            //let rg' = getRG
 
             match fetchFullPartSequence(verbose) (Map.empty) pid1 with
             | EXT_FAIL(msg) -> failwithf "Fail fetching %s %s" pid1.id msg
@@ -893,31 +890,18 @@ let private expandHB
                         {s1 with
                             right =
                                 {s1.right with x = s1.right.x - (alt.Length*1<OneOffset>)}} // Chop it
-                    let newInline = Array.append alt ic |> arr2seq
+                    let newInline = DnaOps.append alt ic
                     assert(alt <> sliceSeq1.dna.[sliceSeq1.dna.Length-alt.Length..])
                     if verbose then
-                        let fr = (arr2seq alt)
                         let t = sliceSeq1.dna.[sliceSeq1.dna.Length-alt.Length..]
-                        let sim = Array.map2 (fun a b -> if a = b then '.' else ' ') alt t
+                        let sim = Array.map2 (fun a b -> if a = b then '.' else ' ') alt.arr t.arr
                         let simProp =
                             (seq { for x in sim -> if x = '.' then 1.0 else 0.0} |> Seq.sum )
                           / float(alt.Length) * 100.0
 
-                        let capUsing (a:string) (b:string) =
-                            Seq.zip a b
-                            |> Seq.map (fun (a,b) ->
-                                if a=b then b
-                                else
-                                    match b with
-                                    | 'G' -> 'g'
-                                    | 'C' -> 'c'
-                                    | 'A' -> 'a'
-                                    | 'T' -> 't'
-                                    | _ as x ->x)
-                            |> Array.ofSeq |> arr2seq
                         printf
-                            "// From: %s \n// To  : %s\n//     : %s %3.0f%%\n"
-                            fr (arr2seq t |> capUsing fr)  (arr2seq sim) simProp
+                            "// From: %O \n// To  : %O\n//     : %s %3.0f%%\n"
+                            alt (t |> capUsing alt) (arr2seq sim) simProp
                     // Assemble new mod list by getting rid of existing slice mods
                     // and putting in new consolidated slice.
                     let newMods =

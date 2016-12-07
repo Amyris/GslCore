@@ -7,6 +7,7 @@ open LegacyParseTypes
 open commonTypes
 open Amyris.Bio.utils
 open Amyris.Bio.biolib
+open Amyris.Dna
 open shared
 open System.Collections.Generic
 open constants
@@ -74,7 +75,7 @@ let loadRyseLinkers (f:string) =
 
     eachLineIn f |> Seq.choose (fun l ->
         match l.Split([|' ' ; '\t' |]) with
-        | [| n ; s |] -> Some({name = n ; dna = s.ToCharArray()})
+        | [| n ; s |] -> Some({name = n ; dna = Dna(s)})
         | _ -> None)
     |> Seq.map (fun rl -> (rl.name,rl)) |> Map.ofSeq
 
@@ -250,7 +251,7 @@ let mapRyseLinkers
         let prepLinker (n:string) =
             let linker = ryseLinkers.[n]
             // DNA for the linker
-            let dna = linker.dna |> fun x -> if phase then x else revComp x
+            let dna = linker.dna |> fun x -> if phase then x else x.RevComp()
             // Build the linker entry
             {id = None;
              extId = None;
@@ -487,7 +488,7 @@ let sbolLinker (linker:RYSELinker) =
      sequence =
         Some(
             {id = {identity = seqUri; name = None; description = None};
-             elements = arr2seq linker.dna});
+             elements = linker.dna.str});
      subcomponents = [];
      gslProg = None}
 
@@ -498,11 +499,9 @@ type PrimerType =
 /// Create the SBOL objects for a primer.
 let sbolPrimer
         (name:string)
-        (tailChars:char array)
-        (bodyChars:char array)
+        (tail: Dna)
+        (body: Dna)
         (kind:PrimerType) =
-
-    let tail, body = arr2seq tailChars, arr2seq bodyChars
 
     // make tail and body items
     let tailComp =
@@ -529,7 +528,7 @@ let sbolPrimer
     let fullComp =
        {id = {identity = uri.createTempUri(); name = Some(name); description = None};
         roles = [primerRole];
-        sequence = Some(sbolExample.seqFromDna (tail + body));
+        sequence = Some(sbolExample.seqFromDna (DnaOps.append tail body));
         subcomponents = [tailSubcomp; bodySubcomp];
         gslProg = None}
 
@@ -543,7 +542,7 @@ let sbolDnaElement
         (name:string)
         (desc:string option)
         (compUri:Uri option)
-        (dna:string)
+        (dna: Dna)
         (ampPrimers:ComponentDefinition*ComponentDefinition)
         (quickchangePrimers:(ComponentDefinition*ComponentDefinition) option) =
 
@@ -574,7 +573,7 @@ let sbolRabit
         (compUri:Uri option)
         breed
         (orientation:Orientation)
-        (dna:string)
+        (dna:Dna)
         (dnaElements:ComponentDefinition list)
         (linker5p, linker3p) =
 

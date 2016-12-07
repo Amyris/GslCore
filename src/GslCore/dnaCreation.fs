@@ -10,6 +10,7 @@ open commonTypes
 open applySlices
 open Amyris.Bio
 open Amyris.ErrorHandling
+open Amyris.Dna
 
 // ================================================================================================
 // Slice manipulation routines for getting from gene notation down to specific genomics coordinates
@@ -167,8 +168,8 @@ let realizeSequence verbose fwd (rg:GenomeDef) (gp:GenePartWithLinker) =
 
     let left', right' = if feat.fwd then left, right else right, left
     rg.Dna(errorDesc, sprintf "%d" feat.chr, left', right')
-        |> (if feat.fwd then id else revComp)
-        |> (if fwd then id else revComp)
+        |> DnaOps.revCompIf (not feat.fwd)
+        |> DnaOps.revCompIf (not fwd)
 
 
 /// Extract slice name from a PPP, if it has one.
@@ -183,7 +184,7 @@ let getUri (ppp:PPP) = ppp.pr.TryGetOne("uri")
 /// Expand a marker part into DNA pieces.
 /// Exception on failure.
 let expandMarkerPart
-    (library:Map<string,char array>)
+    (library: SequenceLibrary)
     dnaSource
     (ppp:PPP) =
 
@@ -219,15 +220,15 @@ let expandMarkerPart
 let expandInlineDna
     dnaSource
     (ppp:PPP)
-    (dna:string) =
+    (dnaFwd: Dna) =
 
-    let dnaArr = dna.ToCharArray() |> (if ppp.fwd then (id) else (revComp))
+    let dna = dnaFwd |> DnaOps.revCompIf (not ppp.fwd)
 
     {id = None;
      extId = None;
      sliceName = getSliceName ppp;
      uri = getUri ppp;
-     dna = dnaArr;
+     dna = dna;
      sourceChr = "inline";
      sourceFr = 0<ZeroOffset>;
      sourceTo = (dna.Length-1)*1<ZeroOffset>;
@@ -235,13 +236,13 @@ let expandInlineDna
      sourceFrApprox = false;
      sourceToApprox = false;
      // NB - for now allow that this might be amplified, but could change later
-     template = Some dnaArr;
+     template = Some dna;
      amplified = false;
      // Don't assign coordinates to pieces until later when we decide how they are getting joined up
      destFr = 0<ZeroOffset>;
      destTo = 0<ZeroOffset>;
      destFwd = ppp.fwd;
-     description = (if ppp.fwd then dna else "!"+dna );
+     description = (if ppp.fwd then dnaFwd.str else "!" + dnaFwd.str);
      sliceType = INLINEST;
      dnaSource = dnaSource;
      pragmas = ppp.pr;
@@ -251,7 +252,7 @@ let expandInlineDna
 let expandGenePart
     verbose
     (rgs:GenomeDefs)
-    (library:Map<string,char array>)
+    (library: SequenceLibrary)
     (a:Assembly)
     dnaSource
     (ppp:PPP)
@@ -305,7 +306,7 @@ let expandGenePart
 
             let finalDNA =
                 dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
-                |> (if ppp.fwd then (id) else (revComp))
+                |> DnaOps.revCompIf (not ppp.fwd)
 
             let name1 =
                 if gp.part.mods.Length = 0 then gp.part.gene
@@ -438,9 +439,9 @@ let expandGenePart
 
         let dna =
             rg'.Dna(errorDesc,sprintf "%d" feat.chr,left',right')
-            |> (if feat.fwd then id else revComp)
+            |> DnaOps.revCompIf (not feat.fwd)
             // One potential final flip if user wants DNA backwards
-            |> (if ppp.fwd then id else revComp)
+            |> DnaOps.revCompIf (not ppp.fwd)
 
         let description1 =
             match gp.part.mods with
@@ -521,7 +522,7 @@ let expandGenePart
 let expandAssembly
     verbose
     (rgs:GenomeDefs)
-    (library:Map<string,char array>)
+    (library: SequenceLibrary)
     index
     (a:Assembly) =
 
@@ -567,7 +568,7 @@ let expandAssembly
                         extId = None;
                         sliceName = "fusion";
                         uri = None; // TODO: uri for fusion parts?
-                        dna = [||];
+                        dna = Dna("");
                         sourceChr = "";
                         sourceFr = 0<ZeroOffset>;
                         sourceTo = 0<ZeroOffset>;

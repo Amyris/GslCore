@@ -8,7 +8,7 @@ open utils
 open constants
 open pragmaTypes
 open Amyris.ErrorHandling
-
+open Amyris.Dna
 (*
 $ ls c\:/Amyris/data/REF/cenpk/cenpk
 cenpk.fsa           cenpk_features.tab
@@ -62,7 +62,7 @@ type GenomeDef(libDir: string, name: string) as this = class
         
         fasta <- (let d = System.Collections.Generic.Dictionary<_,_>()
                   for kv in Amyris.Bio.biolib.readReference fastaPath do
-                        d.Add(kv.Key,(basesUpper kv.Value))
+                        d.Add(kv.Key,(Dna(kv.Value, true, AllowAmbiguousBases)))
                   Some d
                   )
         feats <-  Some(sgd.loadFeatures featsPath)
@@ -82,9 +82,10 @@ type GenomeDef(libDir: string, name: string) as this = class
         match x.Env.TryFind("codonavoid") with
         | None -> []
         | Some(x) ->
-                    x.Split([| ' ' ; '\t' |])
-                    |> List.ofArray
-                    |> List.map (fun s -> s.Replace('U','T'))
+            x.Split([| ' ' ; '\t' |])
+            |> List.ofArray
+            |> List.map (fun s -> s.Replace('U','T'))
+            |> List.map Dna
     
     /// Return array of all genomic features we have loaded
     member x.GetAllFeats() =

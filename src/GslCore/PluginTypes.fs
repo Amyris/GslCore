@@ -11,6 +11,7 @@ open AstTypes
 open RefGenome
 open Amyris.Bio.IO.CodonUsage
 open utils
+open Amyris.Dna
 
 /// Interface specification for plugins that want to inject command line arguments and
 /// be configured from the command line.
@@ -39,7 +40,7 @@ type ICodonProvider =
     ///</summary>
     // FIXME: this should both accept and return a domain type from Amyris.Bio.  May need to
     // define a domain type for AA sequences to match Amyris.Dna
-    abstract member DoCodonOpt : bool -> int option -> GenomeDef -> string -> string
+    abstract member DoCodonOpt : bool -> int option -> GenomeDef -> string -> Dna
 
     ///Provide a codon usage lookup table for the given ref genome.
     abstract member GetCodonLookupTable : GenomeDef -> CodonLookup
@@ -47,7 +48,7 @@ type ICodonProvider =
 
 /// Helpful wrapper type for handing around GSLC's static assets and caches.
 type GlobalAssets =
-    {seqLibrary: Map<string, char []>;
+    {seqLibrary: SequenceLibrary;
      codonProvider: ICodonProvider;
      rgs: Map<string, GenomeDef>;}
 // =========================
@@ -72,8 +73,8 @@ type AlleleSwapDesignParams = {
     m:Mutation
     len:int<ZeroOffset>
     mutOff:int<ZeroOffset>
-    orf:char[]
-    orfPlus:char[]
+    orf: Dna
+    orfPlus: Dna
 }
 
 type AlleleSwapProvider = { jobScorer:AlleleSwapJobAccept ; provider:AlleleSwapDesignParams -> GslSourceCode }
@@ -106,17 +107,20 @@ type AssemblyTransformationMessageKind = | ATError | ATWarning
     with
     override x.ToString() = match x with | ATError -> "Error" | ATWarning -> "Warning"
 
-/// Domain type for errors encountered during AssemblyOut transformation.
-type AssemblyTransformationMessage =
+/// Domain type for errors encountered during transformation.
+/// The type of assembly is left generic to permit re-use of this type during both
+/// DNA materialization and transformation of DnaAssemblies.
+type AssemblyTransformationMessage<'A> =
     {msg: string;
      kind: AssemblyTransformationMessageKind;
-     assembly: DnaAssembly;
-     stackTrace: System.Diagnostics.StackTrace option}
+     assembly: 'A;
+     stackTrace: System.Diagnostics.StackTrace option;
+     fromException: System.Exception option}
     with
     member x.Format(verbose) =
         let fullMsg = sprintf "%O during assembly out transformation: %s" x.kind x.msg
         if verbose then
-            let assemblyDump = sprintf "%+A" Assembly
+            let assemblyDump = sprintf "%+A" x.assembly
             let st =
                 match x.stackTrace with
                 | Some(s) -> s.ToString()
@@ -130,14 +134,15 @@ let exceptionToAssemblyMessage assembly (exc: System.Exception) =
     {msg = exc.Message;
      kind = ATError;
      assembly = assembly;
-     stackTrace = Some(System.Diagnostics.StackTrace(exc))}
+     stackTrace = Some(System.Diagnostics.StackTrace(exc));
+     fromException = Some exc}
 
 /// Interface specification for output assembly transformations.
 type IAssemblyTransform =
     inherit IConfigurable<IAssemblyTransform>
     /// Perform a transformation of an assembly.
     abstract member TransformAssembly :
-        ATContext -> DnaAssembly -> Result<DnaAssembly, AssemblyTransformationMessage>
+        ATContext -> DnaAssembly -> Result<DnaAssembly, AssemblyTransformationMessage<DnaAssembly>>
 
 // =======================
 // plugin behavior defintion for output file generation

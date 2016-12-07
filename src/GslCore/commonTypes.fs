@@ -8,8 +8,9 @@ open DesignParams
 open RefGenome
 open uri
 open LegacyParseTypes
+open Amyris.Dna
 
-type Platform = MegaStitch | NoPlatform
+type SequenceLibrary = Map<string, Dna>
 
 /// Instructions gleaned from command line
 type ParsedOptions =
@@ -83,7 +84,7 @@ let formatST (s:SliceType) =
 type DNASlice =
    {id: int option;
     extId: string option;
-    dna: char array;
+    dna: Dna;
     sourceChr: string;
     sourceFr: int<ZeroOffset>;
     sourceTo: int<ZeroOffset>;
@@ -95,7 +96,7 @@ type DNASlice =
     destFwd: bool;
     /// is this slice created by PCR
     amplified: bool;
-    template: char array option;
+    template: Dna option;
     sliceName: string;
     uri: Uri option;
     description: string ;
@@ -116,17 +117,22 @@ type DnaAssembly =
     designParams: DesignParams;
     docStrings: string list;
     materializedFrom: Assembly}
+    with
+    member x.Sequence() =
+        x.dnaParts
+        |> Seq.map (fun p -> p.dna)
+        |> DnaOps.concat
 
 /// Model a primer which diverges and has body/tail parts.
 /// The body part anneals to the intended amplification target and the tail
 /// hangs out and anneals for stitching purposes
 type Primer =
-    {tail: char array;
-     body: char array;
+    {tail: Dna;
+     body: Dna;
      annotation: DNAInterval list}
     with
     member x.Primer
-        with get() = Array.append x.tail x.body
+        with get() = DnaOps.append x.tail x.body
 
     member x.lenLE(maxOligo) =
         x.tail.Length + x.body.Length<=maxOligo
@@ -143,6 +149,6 @@ type DivergedPrimerPair =
     | DPP of PrimerPair
     | GAP
 
-type RYSELinker = {name:string; dna:char array}
+type RYSELinker = {name:string; dna: Dna}
 
 

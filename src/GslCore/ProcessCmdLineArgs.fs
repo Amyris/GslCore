@@ -7,6 +7,7 @@ open utils
 open Amyris.Bio.utils
 open System.IO
 open RefGenome
+open Amyris.Dna
 
 let getArgAndAliases (a: CmdLineArgSpec) = seq {
     yield (a.name, a)
@@ -133,7 +134,7 @@ let loadGlobalAssets (opts:ParsedOptions) =
     let library =
         if File.Exists lib then
             Amyris.Bio.biolib.readReference lib
-            |> Seq.map (fun kv -> (kv.Key.ToUpper(),kv.Value |> basesUpper ))
+            |> Seq.map (fun kv -> (kv.Key.ToUpper(), Dna(kv.Value) ))
             |> Map.ofSeq
         else Map.empty
 

@@ -1,5 +1,6 @@
 ﻿module sbolExample
 open Amyris.Bio.utils
+open Amyris.Dna
 open FSharp.Data
 open uri
 
@@ -227,9 +228,9 @@ type Sequence = {id:Identity; elements:string}
         SBOLProvider.Sequence2(x.id.identity, x.elements, SBOLProvider.Encoding(defaultEncoding))
 
 /// Create a new Sequence type from dna.
-let seqFromDna (dna:string) =
+let seqFromDna (dna: Dna) =
     {id = {identity = uri.createTempUri(); name = None; description = None};
-     elements = dna}
+     elements = dna.str}
 
 type Location =
     | Range of RangeLocation

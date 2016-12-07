@@ -5,6 +5,7 @@ open Amyris.Bio.utils
 open Amyris.Bio.biolib
 open utils
 open constants
+open Amyris.Dna
 
 /// Clone manager formatted output
 let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers : DivergedPrimerPair list list option) =
@@ -28,8 +29,7 @@ let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers 
                             | None -> a.dnaParts |> List.map (fun _ -> None)
                             | Some(p) -> p |> List.map (Some)
 
-        let totSequence = a.dnaParts |> List.map (fun p -> p.dna)
-                             |> Array.concat |> arr2seq
+        let totSequence = a.Sequence()
 
         let deGT(x:string) = x.Replace(">","&gt;").Replace("<" , "&lt;")
 
@@ -62,7 +62,6 @@ let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers 
                 | Some(DPP(dp)) ->
                     // Diverged primer pair off this part, need to show them
 
-
                     if dp.rev.Primer.Length <> 0 then
                         // Simple example, tail is part of the linker region.
                         // It might not span the entire region
@@ -76,7 +75,7 @@ let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers 
                         //<bbbbbbsssstttttttttttttttt????  (body and tail of primer)   
                         let rec longestPrefix (n:int) =
                             if p.destFr + ((n-1)*1<ZeroOffset>) >= totSequence.Length*1<ZeroOffset> then longestPrefix (n-1) 
-                            else if dp.rev.Primer.[..n-1] |> revComp = totSequence.Substring(p.destFr/1<ZeroOffset>,n).ToCharArray() then n*1<ZeroOffset>
+                            else if dp.rev.Primer.[..n-1].RevComp().arr = totSequence.ToString().Substring(p.destFr/1<ZeroOffset>,n).ToCharArray() then n*1<ZeroOffset>
                                 else longestPrefix (n-1)
                         let prefix = longestPrefix (dp.rev.Primer.Length)
                         sprintf @"
@@ -87,7 +86,7 @@ let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers 
                                 <BINDSITE>%A,1,0,%d,0,%d</BINDSITE>
                                 <DESCRIPTION>PR</DESCRIPTION></PRIMER>
                                 " 
-                                    (arr2seq dp.rev.Primer) 
+                                    (dp.rev.Primer.ToString())
                                     // .......[XXXXXXXXXXXXXXXXXXX].........
                                     //  <bbbbbbtttttttttttttttttttt  (body and tail of primer)
                                     (zero2One (p.destFr+prefix-1<ZeroOffset>  (* (dp.rev.tail.Length-1) * 1<ZeroOffset>  *)  )) // from
@@ -107,7 +106,7 @@ let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers 
                         //               ?ttttttttttsssbbbbbbbbbbb>> (tail/sandwich/body)
                         let rec longestPrefixFwd (n:int) =
                             if p.destTo - ((n-1)*1<ZeroOffset>)< 0<ZeroOffset> then longestPrefixFwd (n-1) 
-                            else if dp.fwd.Primer.[..n-1] = totSequence.Substring((p.destTo/1<ZeroOffset>)-n+1,n).ToCharArray() then n*1<ZeroOffset>
+                            else if dp.fwd.Primer.[..n-1].arr = totSequence.str.Substring((p.destTo/1<ZeroOffset>)-n+1,n).ToCharArray() then n*1<ZeroOffset>
                                 else longestPrefixFwd (n-1)
 
                         // TODOTODO - doesn't handle case of prefixFwd = 0 correctly
@@ -121,7 +120,7 @@ let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers 
                                 <BINDSITE>%A,0,0,%d,0,%d</BINDSITE>
                                 <DESCRIPTION>PF</DESCRIPTION></PRIMER>
                                 " 
-                                    (arr2seq dp.fwd.Primer) 
+                                    (dp.fwd.Primer.ToString()) 
                                     //
                                     // ............[XXXXXXXXXXX]...........
                                     //              ttttttttttttbbbbbbbbbbb>> (tail/body)
@@ -133,5 +132,5 @@ let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers 
        
         sprintf @"
             <SEQUENCE>%s</SEQUENCE>
-            </MOLECULE>" totSequence |> w     
+            </MOLECULE>" totSequence.str |> w     
  

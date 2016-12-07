@@ -2,6 +2,7 @@
 /// Non-bioinformatic tree transformation algorithms also live here.
 module AstProcess
 open Amyris.ErrorHandling
+open Amyris.Dna
 open AstTypes
 open AstErrorHandling
 open AstAlgorithms
@@ -799,7 +800,7 @@ let updateDocstringEnvironment = pretransformOnly updateDocstringEnvironmentInne
 
 /// If a node is a part with a gene, validate the name of that gene.
 /// Uses the pragmas of the enclosing part and the outer assembly context.
-let private checkGeneName (rgs:GenomeDefs) (library:Map<string,char array>) assemblyPragmas node =
+let private checkGeneName (rgs:GenomeDefs) (library: Map<string, Dna>) assemblyPragmas node =
     match node with
     | GenePart(pp, gp) ->
         let geneName = gp.x.gene.[1..].ToUpper()
@@ -814,7 +815,7 @@ let private checkGeneName (rgs:GenomeDefs) (library:Map<string,char array>) asse
     | _ -> good
 
 /// Check all the gene names in the context of a single assembly.
-let private checkGeneNamesInAssembly (rgs:GenomeDefs) (library:Map<string,char array>) node =
+let private checkGeneNamesInAssembly (rgs:GenomeDefs) library node =
     match node with
     | AssemblyPart(pw, aw) ->
         let assemblyPrags = getPragmas pw

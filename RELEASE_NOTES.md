@@ -1,3 +1,10 @@
+#### 0.4.6 - December 2 2016
+* Dna creation happens for each assembly independently and collects all errors.
+* Refactored main compiler function pipeline to be more granular and pull more items to top level.
+
+#### 0.4.5 - December 2 2016
+* Refactor core to use the Amyris.Dna domain type.
+
 #### 0.4.4 - November 28 2016
 * Depuplicate command line args in usage message and include aliases.
 
