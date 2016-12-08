@@ -278,6 +278,7 @@ let private expandL2Expression
                          rgs = rgs
                          refGenome = refGenome' 
                          line = line
+                         pragmas = pragmas
                         }
 
     /// List including lower-level GSL strings
@@ -513,6 +514,7 @@ let private expandMut
                         mutMod
                         endPref
                         a.capabilities
+                        (p.pr.MergeIn(a.pragmas)) // combine the part and assembly pragmas to pass to the swap
                         longStyle
 
                 {p with part = SOURCE_CODE(swapImpl) } // Leave pragmas intact
