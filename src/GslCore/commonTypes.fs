@@ -80,6 +80,29 @@ let formatST (s:SliceType) =
     | INLINEST -> "INLINE"
     | FUSIONST ->"FUSION"
 
+/// Due to slices or other considerations, Orfs may not exactly align with the codon sequence.
+/// Indicate which position in the first codon is represented by the first base in the orf.
+type OrfOffset = | Zero | One | Two
+
+/// Slice annotation for indicating the presence of an ORF in a slice.
+type OrfAnnotation =
+    /// The leftmost base pair of this ORF.
+   {left: int<ZeroOffset>;
+    /// The rightmost base pair of this ORF, inclusive.
+    right: int<ZeroOffset>
+    /// Is the first base of this ORF offset into a codon?
+    /// This field should be interpreted in the context of strand,
+    /// as it applies to the leftmost base in a fwd Orf vs. the rightmost base in a rev Orf.
+    frameOffset: OrfOffset;
+    /// Is this ORF on the fwd or reverse direction relative to this slice?
+    fwd: bool;
+}
+
+/// Extensible type to add useful annotations to slices.
+type SliceAnnotation =
+    | Orf of OrfAnnotation
+
+
 /// Represents one piece of DNA for assembly, capturing its origins and relevant details
 type DNASlice =
    {id: int option;
@@ -88,7 +111,7 @@ type DNASlice =
     sourceChr: string;
     sourceFr: int<ZeroOffset>;
     sourceTo: int<ZeroOffset>;
-    sourceFwd: bool ;
+    sourceFwd: bool;
     sourceFrApprox: bool;
     sourceToApprox: bool;
     destFr: int<ZeroOffset>;
@@ -99,13 +122,14 @@ type DNASlice =
     template: Dna option;
     sliceName: string;
     uri: Uri option;
-    description: string ;
-    sliceType: SliceType ;
+    description: string;
+    sliceType: SliceType;
     pragmas: PragmaCollection;
-    dnaSource: string ;
+    dnaSource: string;
     breed: Breed;
     /// Keep track of the part this slice was materialized from.
-    materializedFrom: PPP option}
+    materializedFrom: PPP option;
+    annotations: SliceAnnotation list}
 
 type DnaAssembly =
    {id: int option;
