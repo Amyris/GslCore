@@ -215,7 +215,8 @@ let expandMarkerPart
      dnaSource = dnaSource;
      pragmas = ppp.pr;
      breed = B_MARKER;
-     materializedFrom = Some(ppp)}
+     materializedFrom = Some(ppp);
+     annotations = []}
 
 let expandInlineDna
     dnaSource
@@ -247,7 +248,8 @@ let expandInlineDna
      dnaSource = dnaSource;
      pragmas = ppp.pr;
      breed = B_INLINE;
-     materializedFrom = Some(ppp)}
+     materializedFrom = Some(ppp);
+     annotations = []}
 
 let expandGenePart
     verbose
@@ -290,14 +292,7 @@ let expandGenePart
                     "sorry, approximate slices of library genes not supported yet in %A\n"
                     (prettyPrintAssembly a)
 
-            let x =
-                match finalSlice.left.relTo with
-                | FivePrime -> finalSlice.left.x
-                | ThreePrime -> (dna.Length+1)*1<OneOffset> + finalSlice.left.x
-            let y =
-                match finalSlice.right.relTo with
-                | FivePrime -> finalSlice.right.x
-                | ThreePrime -> (dna.Length+1)*1<OneOffset> + finalSlice.right.x
+            let x, y = getBoundsFromSlice finalSlice dna.Length
 
             if x < 1<OneOffset> || y <=x || y > (dna.Length*1<OneOffset>) then
                 failwithf
@@ -307,6 +302,12 @@ let expandGenePart
             let finalDNA =
                 dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
                 |> DnaOps.revCompIf (not ppp.fwd)
+
+            let orfAnnotation =
+               {left = 0<ZeroOffset>;
+                right = finalDNA.Length*1<ZeroOffset>;
+                frameOffset = orfOffsetFromAlleleOffset x;
+                fwd = ppp.fwd}
 
             let name1 =
                 if gp.part.mods.Length = 0 then gp.part.gene
@@ -336,7 +337,8 @@ let expandGenePart
              dnaSource = dnaSource;
              pragmas = ppp.pr;
              breed = B_X;
-             materializedFrom = Some(ppp)}
+             materializedFrom = Some(ppp);
+             annotations = [Orf(orfAnnotation)]}
         else // no :( - wasn't in genome or library
             failwithf "undefined gene '%s' %O\n" g gp.part.where
     else

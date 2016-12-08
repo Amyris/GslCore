@@ -15,6 +15,19 @@ open DesignParams
 
 type Slice = {left:RelPos; lApprox:bool; right:RelPos; rApprox:bool}
 
+/// Return a tuple of OneOffset left/right slice bounds from a slice record.
+/// These bounds are both relative to the FivePrime end.
+let getBoundsFromSlice (slice: Slice) seqLen =
+    let left =
+        match slice.left.relTo with
+        | FivePrime -> slice.left.x
+        | ThreePrime -> (seqLen+1)*1<OneOffset> + slice.left.x
+    let right =
+        match slice.right.relTo with
+        | FivePrime -> slice.right.x
+        | ThreePrime -> (seqLen+1)*1<OneOffset> + slice.right.x
+    (left, right)
+
 type Mod = 
     | MUTATION of Mutation
     | SLICE of Slice

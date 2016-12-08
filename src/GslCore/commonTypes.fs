@@ -84,6 +84,18 @@ let formatST (s:SliceType) =
 /// Indicate which position in the first codon is represented by the first base in the orf.
 type OrfOffset = | Zero | One | Two
 
+/// Given a slice offset from the start of a gene's ORF, determine what offset the first allele
+/// in the resulting sequence will have.
+let orfOffsetFromAlleleOffset (offset: int<OneOffset>) =
+    // do the stupid dance where we deal with OneOffset semantics
+    let offset = offset/1<OneOffset>
+    let offset = if offset > 0 then offset - 1 else offset
+    match offset % 3 with
+    | 0 -> Zero
+    | 1 | -2 -> One
+    | 2 | -1 -> Two
+    | _ -> Zero // this case is unreachable
+
 /// Slice annotation for indicating the presence of an ORF in a slice.
 type OrfAnnotation =
     /// The leftmost base pair of this ORF.
@@ -91,12 +103,20 @@ type OrfAnnotation =
     /// The rightmost base pair of this ORF, inclusive.
     right: int<ZeroOffset>
     /// Is the first base of this ORF offset into a codon?
-    /// This field should be interpreted in the context of strand,
+    /// This field should be interpreted in the context of direction,
     /// as it applies to the leftmost base in a fwd Orf vs. the rightmost base in a rev Orf.
     frameOffset: OrfOffset;
     /// Is this ORF on the fwd or reverse direction relative to this slice?
     fwd: bool;
 }
+
+/// Create an ORF annotation from a slice on gene-relative coordiantes.
+let orfAnnotationFromSlice (slice: Slice) (seqLen: int) featFwd partFwd =
+    let left, right = getBoundsFromSlice slice seqLen
+    // if left is less than 0, then the ORF starts at a positive offset
+    let orfLeftStart = 
+    let frameOffset = orfOffsetFromAlleleOffset left
+    {left = le; right = right; frameOffset = frameOffset; fwd = fwd}
 
 /// Extensible type to add useful annotations to slices.
 type SliceAnnotation =

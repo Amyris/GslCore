@@ -274,7 +274,8 @@ let mapRyseLinkers
              dnaSource = "";
              pragmas = EmptyPragmas;
              breed = B_LINKER;
-             materializedFrom = None}// flag_new_gsl 8/12/15 Added "rabitCandidates"
+             materializedFrom = None;
+             annotations = []}
 
         let noLinkersLeftMsg =
             sprintf "mapRyseLinkers: out of linkers.  Started with %A" startLinkers
