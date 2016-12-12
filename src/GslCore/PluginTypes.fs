@@ -75,6 +75,7 @@ type AlleleSwapDesignParams = {
     mutOff:int<ZeroOffset>
     orf: Dna
     orfPlus: Dna
+    pragmas: PragmaCollection
 }
 
 type AlleleSwapProvider = { jobScorer:AlleleSwapJobAccept ; provider:AlleleSwapDesignParams -> GslSourceCode }
@@ -90,6 +91,7 @@ type L2DesignParams = {
         megastitch : bool
         refGenome: string
         line : BuiltL2Expression
+        pragmas: PragmaCollection
 }
 type L2Provider = {
         jobScorer:L2JobAccept

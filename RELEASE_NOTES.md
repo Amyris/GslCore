@@ -1,3 +1,6 @@
+#### 0.4.7 - December 8 2016
+* Pragmas are provided to L2 expansion and allele swap plugins.
+
 #### 0.4.6 - December 2 2016
 * Dna creation happens for each assembly independently and collects all errors.
 * Refactored main compiler function pipeline to be more granular and pull more items to top level.

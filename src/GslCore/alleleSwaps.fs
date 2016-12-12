@@ -336,6 +336,7 @@ let expandAS
         (m:Mutation)
         (endPref:EndPref)
         (capa:Capabilities)
+        (pragmas:PragmaCollection)
         (longStyle:bool) =
 
     if verbose then printf "Processing mutation gene:%s %A\n" g m
@@ -403,6 +404,7 @@ let expandAS
                             mutOff=b
                             orf=orf
                             orfPlus=orfPlus
+                            pragmas=pragmas
                         }
         // Choose provider
         let fn = providers |> 
