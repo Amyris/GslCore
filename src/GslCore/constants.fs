@@ -35,25 +35,22 @@ let legalLinkers =
 type GeneEnd = FivePrime | ThreePrime
 type RelPos = { x : int<OneOffset> ; relTo : GeneEnd }
 
-
-/// Convert a OneOffset relative position
-/// to a zero based coordinate system.  Follows
-/// convention that -1 is the base before the 'A' in ATG,
-/// and +1 is the 'A' for the 5' end.  For the 3' end, 
-/// -1 is the last base of the stop codon, and +1 is the first
-/// base of the terminator
-let one2ZeroOffset (f:RelPos) =
-    let o = f.x
-    match f.relTo with
-        | FivePrime ->
-            if o >=1<OneOffset> then (o-1<OneOffset>) * 1<ZeroOffset/OneOffset>
-                else o * 1<ZeroOffset/OneOffset>
-        | ThreePrime ->
-            if o >=1<OneOffset> then o * 1<ZeroOffset/OneOffset>
-                else (o+1<OneOffset>) * 1<ZeroOffset/OneOffset>
-
-let zero2One (z:int<ZeroOffset>) =((z / 1<ZeroOffset>)  + (if z<0<ZeroOffset> then 0 else 1) ) * 1<OneOffset>
+/// Drop the units from a ZeroOffset int.
 let z2i (z:int<ZeroOffset>) = z/1<ZeroOffset>
+
+/// Convert a ZeroOffset int into a OneOffset int.
+let zero2One (z:int<ZeroOffset>) =
+    let unitless = z2i z
+    if unitless >= 0 then unitless+1 else unitless
+    * 1<OneOffset>
+
+/// Convert a OneOffset int into a ZeroOffset int.
+let one2Zero (z:int<OneOffset>) =
+    match z/1<OneOffset> with
+    | 0 -> 0
+    | x when x > 0 -> (x-1)
+    | x -> x
+    *1<ZeroOffset>
 
 [<Measure>]type PluginScore
 

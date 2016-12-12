@@ -107,15 +107,7 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
                         let finalSlice = applySlices verbose partId.mods startSlice 
 
                         // Find the left and right hand ends of the slice
-                        let x =
-                            match finalSlice.left.relTo with
-                            | FivePrime -> finalSlice.left.x
-                            | ThreePrime -> (dna.Length+1)*1<OneOffset> + finalSlice.left.x
-
-                        let y =
-                            match finalSlice.right.relTo with
-                            | FivePrime -> finalSlice.right.x
-                            | ThreePrime -> (dna.Length+1)*1<OneOffset> + finalSlice.right.x
+                        let x, y = getBoundsFromSlice finalSlice dna.Length
 
                         // This isn't a genomic context, so can't walk outside the bounds of the provided DNA
                         if x < 1<OneOffset> || y <=x || y > (dna.Length*1<OneOffset>) then

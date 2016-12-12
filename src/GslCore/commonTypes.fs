@@ -86,11 +86,8 @@ type OrfOffset = | Zero | One | Two
 
 /// Given a slice offset from the start of a gene's ORF, determine what offset the first allele
 /// in the resulting sequence will have.
-let orfOffsetFromAlleleOffset (offset: int<OneOffset>) =
-    // do the stupid dance where we deal with OneOffset semantics
-    let offset = offset/1<OneOffset>
-    let offset = if offset > 0 then offset - 1 else offset
-    match offset % 3 with
+let orfOffsetFromAlleleOffset (offset: int<ZeroOffset>) =
+    match (offset/1<ZeroOffset>) % 3 with
     | 0 -> Zero
     | 1 | -2 -> One
     | 2 | -1 -> Two
@@ -101,7 +98,7 @@ type OrfAnnotation =
     /// The leftmost base pair of this ORF.
    {left: int<ZeroOffset>;
     /// The rightmost base pair of this ORF, inclusive.
-    right: int<ZeroOffset>
+    right: int<ZeroOffset>;
     /// Is the first base of this ORF offset into a codon?
     /// This field should be interpreted in the context of direction,
     /// as it applies to the leftmost base in a fwd Orf vs. the rightmost base in a rev Orf.
@@ -111,17 +108,40 @@ type OrfAnnotation =
 }
 
 /// Create an ORF annotation from a slice on gene-relative coordiantes.
-let orfAnnotationFromSlice (slice: Slice) (seqLen: int) featFwd partFwd =
-    let left, right = getBoundsFromSlice slice seqLen
+let orfAnnotationFromSlice (slice: Slice) (orfLen: int) fwd =
+    let sliceStart, sliceEnd =
+        getBoundsFromSlice slice orfLen
+        |> (fun (l, r) -> one2Zero l, one2Zero r)
+
+    // compute the actual length of the slice
+    let sliceLen = z2i(sliceEnd - sliceStart) + 1
+
+    // based on the gene-relative slice coordinates, determine the frame offset of this ORF.
+    let frameOffset = orfOffsetFromAlleleOffset sliceStart
+
     // if left is less than 0, then the ORF starts at a positive offset
-    let orfLeftStart = 
-    let frameOffset = orfOffsetFromAlleleOffset left
-    {left = le; right = right; frameOffset = frameOffset; fwd = fwd}
+    // these coordinates are now relative to the materialized DNA slice
+    let orfStart = -1 * sliceStart // slice coordinates are relative to ORF start at 5' end
+    let orfEnd = orfStart + orfLen*1<ZeroOffset> - 1<ZeroOffset>
+
+    // if the part is reversed, the start and end need to be flipped to be relative to
+    // the opposite ends
+    let left, right =
+        if fwd then orfStart, orfEnd
+        else (orfLen*1<ZeroOffset>) - orfStart - 1<ZeroOffset>, (orfLen*1<ZeroOffset>) - orfEnd - 1<ZeroOffset>
+
+    // the slice may be smaller than the ORF in either direction, so make sure left and right
+    // are constrained to the interval defined by the length of the slice
+    let constrain index =
+        index
+        |> max 0<ZeroOffset>
+        |> min (sliceLen*1<ZeroOffset> - 1<ZeroOffset>)
+
+    {left = constrain left; right = constrain right; frameOffset = frameOffset; fwd = fwd}
 
 /// Extensible type to add useful annotations to slices.
 type SliceAnnotation =
     | Orf of OrfAnnotation
-
 
 /// Represents one piece of DNA for assembly, capturing its origins and relevant details
 type DNASlice =

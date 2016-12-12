@@ -30,15 +30,20 @@ let validateMods errorRef (where: AstTypes.SourcePosition) (mods: Mod list) =
 /// Determine range of DNA needed, translating into physical coordinates
 /// Final start of the piece.  Determine which end we are working relative to
 let adjustToPhysical (feat:sgd.Feature) (f:RelPos) =
-    (match f.relTo with
-     | FivePrime ->  if feat.fwd then feat.l*1<ZeroOffset> else feat.r*1<ZeroOffset>
-     | ThreePrime -> if feat.fwd then feat.r*1<ZeroOffset> else feat.l*1<ZeroOffset>
-    ) +
-    // Determine which direction to move in absolute coords depending on gene strand
-    (if feat.fwd then (1) else (-1)) *
-    // Determine offset, allowing for the -1/1 based coordinate system with no zero
-    (one2ZeroOffset f)
+    let featOffset =
+        match f.relTo, feat.fwd with
+        | FivePrime, true | ThreePrime, false -> feat.l
+        | ThreePrime, true | FivePrime, false -> feat.r
 
+    let geneRelativeOffset =
+        match f.relTo, f.x/1<OneOffset> with
+        | FivePrime, o when o > 0 ->    o - 1
+        | FivePrime, o ->               o
+        | ThreePrime, o when o > 0 ->   o
+        | ThreePrime, o ->              o + 1
+        * (if feat.fwd then 1 else -1)
+
+    (featOffset + geneRelativeOffset) * 1<ZeroOffset>
 
 /// Generate logical coordinates for the start and end of the gene part
 /// these are relative to the gene, not the genome for now.  We transform
@@ -303,11 +308,7 @@ let expandGenePart
                 dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
                 |> DnaOps.revCompIf (not ppp.fwd)
 
-            let orfAnnotation =
-               {left = 0<ZeroOffset>;
-                right = finalDNA.Length*1<ZeroOffset>;
-                frameOffset = orfOffsetFromAlleleOffset x;
-                fwd = ppp.fwd}
+            let orfAnnotation = orfAnnotationFromSlice finalSlice finalDNA.Length ppp.fwd
 
             let name1 =
                 if gp.part.mods.Length = 0 then gp.part.gene
@@ -377,18 +378,18 @@ let expandGenePart
         // finalSlice is the consolidated gene relative coordinate of desired piece
         let finalSlice = applySlices verbose gp.part.mods s
 
-        // Calculate some adjusted boundaries in case the left/right edges are approximate
-        let leftAdj =
-            {finalSlice.left with x = finalSlice.left.x-(approxMargin * 1<OneOffset>)}
-        let rightAdj =
-            {finalSlice.right with x = finalSlice.right.x+(approxMargin * 1<OneOffset>)}
-
         // Gene relative coordinates for the gene slice we want
         let finalSliceWithApprox =
-           {lApprox = finalSlice.lApprox;
-            left = (if finalSlice.lApprox then leftAdj else finalSlice.left);
-            rApprox = finalSlice.rApprox;
-            right = if finalSlice.rApprox then rightAdj else finalSlice.right}
+            // Calculate some adjusted boundaries in case the left/right edges are approximate
+            let leftAdj =
+                {finalSlice.left with x = finalSlice.left.x-(approxMargin * 1<OneOffset>)}
+            let rightAdj =
+                {finalSlice.right with x = finalSlice.right.x+(approxMargin * 1<OneOffset>)}
+
+            {lApprox = finalSlice.lApprox;
+             left = (if finalSlice.lApprox then leftAdj else finalSlice.left);
+             rApprox = finalSlice.rApprox;
+             right = if finalSlice.rApprox then rightAdj else finalSlice.right}
 
         if verbose then
             printf "log: finalSlice: %s%s %s%s\n"
@@ -396,7 +397,7 @@ let expandGenePart
                 (printRP finalSlice.left)
                 (if finalSlice.rApprox then "~" else "")
                 (printRP finalSlice.right)
-        if verbose then
+
             printf "log: finalSliceWA: %s%s %s%s\n"
                 (if finalSliceWithApprox.lApprox then "~" else "")
                 (printRP finalSliceWithApprox.left)
@@ -480,6 +481,8 @@ let expandGenePart
                 else B_X
             | x -> x
 
+        let orfAnnotation = orfAnnotationFromSlice finalSlice feat.Length ppp.fwd
+
         // Note regarding orientation: We are currently building a single piece
         // of final DNA left to right. There is no consideration for stitch
         // orientation, so even (in RYSEworld) B stitch parts are laid out left
@@ -516,7 +519,8 @@ let expandGenePart
          sliceType = (if isMarker then MARKER else REGULAR);
          pragmas = ppp.pr;
          breed = breed;
-         materializedFrom = Some(ppp)}
+         materializedFrom = Some(ppp);
+         annotations = [Orf(orfAnnotation)]}
 
 /// Take a parsed assembly definition and translate it
 /// to underlying DNA pieces, checking the structure in the process.
@@ -588,6 +592,7 @@ let expandAssembly
                         pragmas = EmptyPragmas;
                         breed = B_VIRTUAL;
                         materializedFrom = None; // TODO: should we mark this as associated with this ppp?
+                        annotations = [];
                        }
             } |> List.ofSeq |> recalcOffset
     let materializedParts = expandPPPList a.parts
