@@ -297,18 +297,17 @@ let expandGenePart
                     "sorry, approximate slices of library genes not supported yet in %A\n"
                     (prettyPrintAssembly a)
 
-            let x, y = getBoundsFromSlice finalSlice dna.Length
+            let sliceContext = Library(gp.part.gene)
 
-            if x < 1<OneOffset> || y <=x || y > (dna.Length*1<OneOffset>) then
-                failwithf
-                    "illegal slice (%A) outside core gene range for library gene %s\n"
-                    finalSlice gp.part.gene
+            let x, y =
+                getBoundsFromSlice finalSlice dna.Length sliceContext
+                |> returnOrFail
 
             let finalDNA =
                 dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
                 |> DnaOps.revCompIf (not ppp.fwd)
 
-            let orfAnnotation = orfAnnotationFromSlice finalSlice finalDNA.Length ppp.fwd
+            let orfAnnotation = orfAnnotationFromSlice finalSlice finalDNA.Length ppp.fwd sliceContext
 
             let name1 =
                 if gp.part.mods.Length = 0 then gp.part.gene
@@ -481,7 +480,7 @@ let expandGenePart
                 else B_X
             | x -> x
 
-        let orfAnnotation = orfAnnotationFromSlice finalSlice feat.Length ppp.fwd
+        let orfAnnotation = orfAnnotationFromSlice finalSlice feat.Length ppp.fwd Genomic
 
         // Note regarding orientation: We are currently building a single piece
         // of final DNA left to right. There is no consideration for stitch

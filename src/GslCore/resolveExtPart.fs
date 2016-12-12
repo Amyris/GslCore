@@ -8,6 +8,7 @@ open applySlices
 open Amyris.Bio.biolib
 open constants
 open Amyris.Dna
+open Amyris.ErrorHandling
 
 type ExtFetchSeq = { id : string ; dna : Dna ; source : string ;  name : string}
 type ExtFetchResult = | EXT_FETCH_OK of ExtFetchSeq | EXT_FAIL of string
@@ -107,13 +108,9 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
                         let finalSlice = applySlices verbose partId.mods startSlice 
 
                         // Find the left and right hand ends of the slice
-                        let x, y = getBoundsFromSlice finalSlice dna.Length
-
-                        // This isn't a genomic context, so can't walk outside the bounds of the provided DNA
-                        if x < 1<OneOffset> || y <=x || y > (dna.Length*1<OneOffset>) then
-                            failwithf
-                                "ERROR: illegal slice (%A) outside core gene range for library part %s\n"
-                                finalSlice partId.id
+                        let x, y =
+                            getBoundsFromSlice finalSlice dna.Length (Library(partId.id))
+                            |> returnOrFail
                     
                         let finalDNA =
                             dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
@@ -267,22 +264,10 @@ let applySliceToExtSequence
         // Otherwise, they are taking a hutch part and doing something to it, so the hutch is just another
         // DNA source and they are effectively building a new rabit
         // Find the left and right hand ends of the slice
-        let x =
-            match finalSlice.left.relTo with
-            | FivePrime -> finalSlice.left.x
-            | ThreePrime -> (extPart.dna.Length+1)*1<OneOffset> + finalSlice.left.x
+        let x, y =
+            getBoundsFromSlice finalSlice extPart.dna.Length (Library(extPart.id))
+            |> returnOrFail
 
-        let y =
-            match finalSlice.right.relTo with
-            | FivePrime -> finalSlice.right.x
-            | ThreePrime -> (extPart.dna.Length+1)*1<OneOffset> + finalSlice.right.x
-
-        // This isn't a genomic context, so can't walk outside the bounds of the provided DNA
-        if x < 1<OneOffset> || y <=x || y > (extPart.dna.Length*1<OneOffset>) then
-            failwithf
-                "ERROR: illegal slice (%A) outside core gene range for library part %s\n"
-                finalSlice extPart.id
-                                
         let finalDNA =
             extPart.dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
             |> DnaOps.revCompIf (not fwd)

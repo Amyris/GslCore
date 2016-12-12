@@ -9,6 +9,7 @@ open RefGenome
 open uri
 open LegacyParseTypes
 open Amyris.Dna
+open Amyris.ErrorHandling
 
 type SequenceLibrary = Map<string, Dna>
 
@@ -108,9 +109,10 @@ type OrfAnnotation =
 }
 
 /// Create an ORF annotation from a slice on gene-relative coordiantes.
-let orfAnnotationFromSlice (slice: Slice) (orfLen: int) fwd =
+let orfAnnotationFromSlice (slice: Slice) (orfLen: int) fwd context =
     let sliceStart, sliceEnd =
-        getBoundsFromSlice slice orfLen
+        getBoundsFromSlice slice orfLen context
+        |> returnOrFail
         |> (fun (l, r) -> one2Zero l, one2Zero r)
 
     // compute the actual length of the slice

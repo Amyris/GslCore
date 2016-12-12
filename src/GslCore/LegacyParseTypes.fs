@@ -15,10 +15,14 @@ open DesignParams
 
 type Slice = {left:RelPos; lApprox:bool; right:RelPos; rApprox:bool}
 
+type SliceContext =
+    | Genomic
+    | Library of string // string payload for helpful error message
+
 /// Return a tuple of OneOffset left/right slice bounds from a slice record.
 /// These bounds are both relative to the FivePrime end.
 /// Requires the length of the feature being sliced to be interpreted correctly.
-let getBoundsFromSlice (slice: Slice) featureLength =
+let getBoundsFromSlice (slice: Slice) featureLength context =
     let left =
         match slice.left.relTo with
         | FivePrime -> slice.left.x
@@ -27,7 +31,19 @@ let getBoundsFromSlice (slice: Slice) featureLength =
         match slice.right.relTo with
         | FivePrime -> slice.right.x
         | ThreePrime -> (featureLength+1)*1<OneOffset> + slice.right.x
-    (left, right)
+
+    match context with
+    | Genomic ->
+        // no validation necessary
+        ok (left, right)
+    | Library partId ->
+        // the slice bounds are not allowed to fall outside the feature as we don't have
+        // data on flanking regions in this context
+        if left < 1<OneOffset> || right <= left || right > (featureLength*1<OneOffset>) then
+            fail (sprintf
+                "Illegal slice (%A) outside core gene range for library item %s."
+                slice partId)
+        else ok (left, right)
 
 type Mod = 
     | MUTATION of Mutation
