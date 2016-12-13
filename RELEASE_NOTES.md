@@ -1,3 +1,6 @@
+#### 0.4.8 - December 13 2016
+* Package codon opt arguments in a domain record to improve explicitness.
+
 #### 0.4.7 - December 8 2016
 * Pragmas are provided to L2 expansion and allele swap plugins.
 

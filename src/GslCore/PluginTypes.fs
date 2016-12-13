@@ -26,6 +26,12 @@ type IConfigurable<'T> =
 // plugin behavior defintion for codon cache and optimization
 // =======================
 
+type CodonOptTask =
+   {verbose:bool;
+    seedOverride:int option;
+    refGenome:GenomeDef;
+    aminoAcidSequence:string}
+
 type ICodonProvider =
     /// Allow codon opt providers to add command line args and be configurable.
     inherit IConfigurable<ICodonProvider>
@@ -40,7 +46,7 @@ type ICodonProvider =
     ///</summary>
     // FIXME: this should both accept and return a domain type from Amyris.Bio.  May need to
     // define a domain type for AA sequences to match Amyris.Dna
-    abstract member DoCodonOpt : bool -> int option -> GenomeDef -> string -> Dna
+    abstract member DoCodonOpt : CodonOptTask -> Dna
 
     ///Provide a codon usage lookup table for the given ref genome.
     abstract member GetCodonLookupTable : GenomeDef -> CodonLookup
