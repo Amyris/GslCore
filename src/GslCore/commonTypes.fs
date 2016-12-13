@@ -105,8 +105,35 @@ type OrfAnnotation =
     /// as it applies to the leftmost base in a fwd Orf vs. the rightmost base in a rev Orf.
     frameOffset: OrfOffset;
     /// Is this ORF on the fwd or reverse direction relative to this slice?
-    fwd: bool;
-}
+    fwd: bool}
+    with
+    /// Return a sequence of the starting indices of every complete codon described by this annotation.
+    /// If the Orf is fwd, these will be in increasing order; if rev, decreasing order.
+    member x.CompleteCodonIndices() =
+        let left, right = z2i x.left, z2i x.right
+        // the number of bases we need to move inwards from the edge to find the start of the first codon
+        let alleleOffset =
+            match x.frameOffset with
+            | Zero -> 0
+            | One -> 2
+            | Two -> 1
+        // compute the number of complete codons based on the size of the ORF and the offset
+        let nCodons =
+            let nBases = right - left + 1 - alleleOffset
+            nBases / 3
+
+        let codonOffsets = seq {0..3..(nCodons-1)*3}
+        if x.fwd then
+            let firstCodon = left + alleleOffset
+            codonOffsets
+            |> Seq.map (fun offset -> firstCodon + offset)
+        else
+            let firstCodon = right - alleleOffset
+            codonOffsets
+            |> Seq.map (fun offset -> firstCodon - offset)
+
+
+        
 
 /// Create an ORF annotation from a slice on gene-relative coordiantes.
 let orfAnnotationFromSlice (slice: Slice) (orfLen: int) fwd context =
