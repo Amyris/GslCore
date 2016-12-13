@@ -369,12 +369,12 @@ type BasicCodonProvider = {parameters: CodonOptParams option; cache: CodonTableC
         member x.Setup(pc) =
             let configuredParams = parseCodonOptParams pc
             {x with parameters = Some(configuredParams)} :> ICodonProvider
-        member x.DoCodonOpt verbose seedOverride rg protSeq =
+        member x.DoCodonOpt task =
             let parameters = x.Parameters
             let cache = x.CodonTableCache
-            let seed = defaultArg seedOverride parameters.seed
-            let data = cache.Get(rg)
-            doCodonOpt verbose parameters data seed protSeq
+            let seed = defaultArg task.seedOverride parameters.seed
+            let data = cache.Get(task.refGenome)
+            doCodonOpt task.verbose parameters data seed task.aminoAcidSequence
         member x.GetCodonLookupTable(rg) =
             x.CodonTableCache.Get(rg)
             |> fun cod -> Amyris.Bio.IO.CodonUsage.prepCUT 0.0 100 cod.freq

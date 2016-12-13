@@ -598,7 +598,12 @@ let private expandProtein
                                 failwithf
                                     "#seed argument '%s' is not a valid integer"
                                     seed
-                let result = codonProvider.DoCodonOpt verbose seedOverride genomeDef s
+                let codonOptTask =
+                   {verbose = verbose;
+                    seedOverride = seedOverride;
+                    refGenome = genomeDef;
+                    aminoAcidSequence = s}
+                let result = codonProvider.DoCodonOpt codonOptTask
                 {p with part = INLINEDNA(result)}
         | _ -> p
 
