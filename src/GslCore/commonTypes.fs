@@ -132,9 +132,6 @@ type OrfAnnotation =
             codonOffsets
             |> Seq.map (fun offset -> firstCodon - offset)
 
-
-        
-
 /// Create an ORF annotation from a slice on gene-relative coordiantes.
 let orfAnnotationFromSlice (slice: Slice) (orfLen: int) fwd context =
     let sliceStart, sliceEnd =
