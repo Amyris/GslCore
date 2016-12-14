@@ -1,3 +1,6 @@
+#### 0.4.9 - December 13 2016
+* Eliminate shared module.
+
 #### 0.4.8 - December 13 2016
 * Package codon opt arguments in a domain record to improve explicitness.
 

@@ -1,6 +1,5 @@
 ﻿module DnaCreation
 open System
-open shared
 open Amyris.Bio.biolib
 open constants
 open LegacyParseTypes
@@ -11,6 +10,7 @@ open applySlices
 open Amyris.Bio
 open Amyris.ErrorHandling
 open Amyris.Dna
+open ryse
 
 // ================================================================================================
 // Slice manipulation routines for getting from gene notation down to specific genomics coordinates

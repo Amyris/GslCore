@@ -2,7 +2,6 @@
 open LegacyParseTypes
 open commonTypes
 open constants
-open shared
 
 /// Given a gene end and two one based offsets, calculate a new one based offset
 let addOneOffset (ge:GeneEnd) (a:int<OneOffset>) (b:int<OneOffset>) = 
