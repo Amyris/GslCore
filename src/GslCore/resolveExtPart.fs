@@ -1,5 +1,4 @@
 ﻿module resolveExtPart
-open shared
 open commonTypes
 open pragmaTypes
 open LegacyParseTypes

@@ -5,7 +5,6 @@ open System.IO
 
 open Amyris.Bio.utils
 open utils
-open shared
 open commonTypes
 
 /// Text representation of the assemblies to stdout

@@ -1,7 +1,5 @@
 ﻿module PrimerCreation
 /// Support routines for primer design scenarios and primer generation for stitches
-
-open shared // common routines used in several modules
 open commonTypes
 open System
 open System.Text

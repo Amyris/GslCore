@@ -6,7 +6,6 @@ open System
 open commonTypes
 open constants
 open Amyris.Bio.utils
-open shared
 open Newtonsoft.Json
 open System.Collections.Generic
 open PluginTypes

@@ -76,7 +76,6 @@
     <Compile Include="LegacyParseTypes.fs" />
     <Compile Include="commonTypes.fs" />
     <Compile Include="commandConfig.fs" />
-    <Compile Include="shared.fs" />
     <Compile Include="cloneManager.fs" />
     <Compile Include="ape.fs" />
     <Compile Include="primerDump.fs" />

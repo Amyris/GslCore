@@ -8,13 +8,13 @@ open commonTypes
 open Amyris.Bio.utils
 open Amyris.Bio.biolib
 open Amyris.Dna
-open shared
 open System.Collections.Generic
 open constants
 open ThumperProxyTypes
 open uri
 open sbolExample
 open System.Net
+open AstTypes
 
 let fetchProxy (proxyBaseURL:string) insertName breed =
         let rabitLookupRequest =
@@ -78,6 +78,16 @@ let loadRyseLinkers (f:string) =
         | [| n ; s |] -> Some({name = n ; dna = Dna(s)})
         | _ -> None)
     |> Seq.map (fun rl -> (rl.name,rl)) |> Map.ofSeq
+
+let extractLinker (s:string ) =
+    if s.StartsWith("Linker_") then s.[7..]
+    else failwithf "ERROR: unable to parse linker name '%s'" s
+
+let checkLinker (l:Linker) =
+    if not (legalLinkers.Contains(l.l1)) then
+        failwithf "ERROR: linker %s not a legal linker" l.l1
+    if not (legalLinkers.Contains(l.l2)) then
+        failwithf "ERROR: linker %s not a legal linker" l.l2
 
 
 /// Get auxillary cached information about key rabits for thumper rabits

@@ -107,6 +107,18 @@ type DNASlice =
     /// Keep track of the part this slice was materialized from.
     materializedFrom: PPP option}
 
+/// Recalculate the offsets of pieces in a list of pieces after new pieces are added in    
+let recalcOffset (pieces: DNASlice list) =
+    let lengths =
+        pieces |> List.map (fun p -> p.dna.Length*1<ZeroOffset>)
+    let _, offsets' =
+        lengths |> List.fold (fun (o,r) l -> (o+l,o::r)) (0*1<ZeroOffset>,[])
+    let offsets = List.rev offsets'
+
+    List.zip pieces offsets
+    |> List.map (fun (p,o) ->
+        {p with destFr = o; destTo = o+(p.dna.Length-1)*1<ZeroOffset> } )
+
 type DnaAssembly =
    {id: int option;
     dnaParts: DNASlice list;
