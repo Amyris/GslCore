@@ -7,9 +7,9 @@ open commonTypes
 [<TestFixture>]
 type TestOrfAnnotation() = 
 
-    let checkIndices (annotation:OrfAnnotation) correct =
+    let checkIndices (annotation:OrfAnnotation) (correct: int list) =
         Assert.AreEqual(
-            correct,
+            correct |> List.map (fun x -> x*1<ZeroOffset>),
             annotation.CompleteCodonIndices() |> List.ofSeq)
 
     [<Test>]
