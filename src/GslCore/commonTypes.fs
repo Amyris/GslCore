@@ -126,11 +126,13 @@ type OrfAnnotation =
         if x.fwd then
             let firstCodon = left + alleleOffset
             codonOffsets
-            |> Seq.map (fun offset -> firstCodon + offset)
+            |> Seq.map (fun offset ->
+                (firstCodon + offset)*1<ZeroOffset>)
         else
             let firstCodon = right - alleleOffset
             codonOffsets
-            |> Seq.map (fun offset -> firstCodon - offset)
+            |> Seq.map (fun offset -> 
+                (firstCodon - offset)*1<ZeroOffset>)
 
 /// Create an ORF annotation from a slice on gene-relative coordiantes.
 let orfAnnotationFromSlice (slice: Slice) (orfLen: int) fwd context =
