@@ -359,12 +359,9 @@ type BasicCodonProvider = {parameters: CodonOptParams option; cache: CodonTableC
         | None -> failwith "Codon optimizer is not configured; must run x.Configure(...) first."
     interface ICodonProvider with
         member x.ProvidedArgs() = []
-        member x.Configure(arg) =
-            if arg.spec = libCmdArg.spec then
-                /// Use lib dir to initialize cache table.
-                let libDir = arg.values.[0]
-                {x with cache = Some(CodonTableCache(libDir))}
-            else x
+        member x.Configure(_) = x :> ICodonProvider
+        member x.ConfigureFromOptions(opts) =
+            {x with cache = Some(CodonTableCache(opts.libDir))}
             :> ICodonProvider
         member x.Setup(pc) =
             let configuredParams = parseCodonOptParams pc

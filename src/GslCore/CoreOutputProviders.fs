@@ -25,6 +25,7 @@ type ConfigurableOutputProvider<'T> (param: 'T option) =
             if parsedArg.spec = x.ArgSpec then
                 x.UseArg(parsedArg)
             else x :> IOutputFormat
+        member x.ConfigureFromOptions(_) = x :> IOutputFormat
         member x.ProduceOutput(data) =
             match param with
             | Some(p) -> x.DoOutput(p, data)
