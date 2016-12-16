@@ -20,7 +20,9 @@ type IConfigurable<'T> =
     abstract member ProvidedArgs : unit -> CmdLineArgSpec list
     /// Configure this behavior and return a configured version, allowing for immutable behaviors.
     abstract member Configure : ParsedCmdLineArg -> 'T
-
+    /// Configure this behavior using the built-in compiler options.
+    /// This enables sharing of items like the lib directory, verbose flag, etc.
+    abstract member ConfigureFromOptions : ParsedOptions -> 'T
 
 // =======================
 // plugin behavior defintion for codon cache and optimization
@@ -208,6 +210,14 @@ let configureBehavior arg b =
     | AlleleSwapAA _
     | L2KOTitration _ -> b
 
+let configureBehaviorFromOpts opts b =
+    match b.behavior with
+    | OutputFormat(f) -> {b with behavior = OutputFormat(f.ConfigureFromOptions(opts))}
+    | AssemblyTransform(a) -> {b with behavior = AssemblyTransform(a.ConfigureFromOptions(opts))}
+    | CodonProvider(c) -> {b with behavior = CodonProvider(c.ConfigureFromOptions(opts))}
+    | AlleleSwapAA _
+    | L2KOTitration _ -> b
+
 /// Data structure specifying one or more behaviors
 type Plugin =
    {/// short name
@@ -229,7 +239,7 @@ type Plugin =
         |> List.concat
     /// Given parsed command line args, update any behaviors that need them, returning a configured
     /// plugin.
-    member x.ConfigureFromCommandLineArgs(args) =
+    member x.Configure(args, opts) =
         let configuredBehaviors =
             args
             |> List.fold // each iteration of fold uses one arg and updates all behaviors
@@ -237,6 +247,7 @@ type Plugin =
                     behaviors
                     |> List.map (configureBehavior arg))
                 x.behaviors
+            |> List.map (configureBehaviorFromOpts opts)
         {x with behaviors = configuredBehaviors}
     /// Provide a extended description of this plugin and capabilities it provides.
     member x.Info =

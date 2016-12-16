@@ -24,7 +24,7 @@ module fixtures =
                         {x with data = Some(parsedArg.values.[0])}
                     else x
                 revised :> IOutputFormat
-                
+            member x.ConfigureFromOptions(_) = x :> IOutputFormat
             member x.ProduceOutput(_) =
                 match x.data with
                 | Some(data) -> ()

@@ -182,7 +182,7 @@ let configure loadGA argSpecs (plugins: Plugin list) (argList:string list) =
     let updatedPlugins =
         plugins
         |> List.map (fun plugin ->
-            plugin.ConfigureFromCommandLineArgs(parsedArgs))
+            plugin.Configure(parsedArgs, parsedOptions))
 
     let codonProvider =
         match getAllProviders getCodonProviders updatedPlugins with

@@ -1,3 +1,6 @@
+#### 0.4.10 - December 15 2016
+* Allow plugins to configure themselves based on parsed compiler options directly.
+
 #### 0.4.9 - December 13 2016
 * Eliminate shared module.
 
