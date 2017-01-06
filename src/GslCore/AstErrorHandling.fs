@@ -4,6 +4,7 @@ open Amyris.ErrorHandling
 open Microsoft.FSharp.Text.Parsing
 open System.Diagnostics
 open utils
+open constants
 
 // ================
 // error handling support
@@ -46,15 +47,13 @@ type AstMessage =
     stackTrace: StackTrace option}
     with
     /// Pretty-print an AST message including context in source code.
-    member msg.Longform(showStackTrace, sourceCode: string) =
-
-        let lines = sourceCode.Replace("\r\n","\n").Split([| '\n' ; '\r'|])
+    member msg.Longform(showStackTrace, sourceCode: GslSourceCode) =
 
         let msgTypeName = GetUnionCaseName msg.msgType
         // get the best position we can
         let pos =
             match msg.sourcePosition, msg.node.pos with
-            | Some(p), _ | None, Some(p) -> Some(p.s)
+            | Some(p), _ | None, Some(p) -> Some(p)
             | _ -> None
 
         match pos with
@@ -63,17 +62,13 @@ type AstMessage =
         | Some(p) -> // now we're cooking with gas
             // Accumulate lines in an error report.
             seq {
-                yield (sprintf "%s: near line %d col %d\n%s"
+                yield (sprintf "%s: %s\n%s"
                     msgTypeName
-                    (p.Line + 1)
-                    (p.Column + 1)
+                    (p.Format())
                     msg.msg)
                 yield "================================================================="
 
-                for line in max 0 (p.Line-5) .. min (p.Line+5) (lines.Length-1) do
-                    yield sprintf "%s" lines.[line]
-                    if line = p.Line then
-                        yield sprintf "%s^" (pad p.Column)
+                yield! p.SourceContext(sourceCode)
                 if showStackTrace then yield msg.stackTrace.ToString()
             } |> String.concat "\n"
 
@@ -81,21 +76,14 @@ type AstMessage =
     member msg.Summary =
         let msgTypeName = GetUnionCaseName msg.msgType
         // get the best position we can
-        let pos =
-            match msg.sourcePosition, msg.node.pos with
-            | Some(p), _ | None, Some(p) -> Some(p.s)
-            | _ -> None
-
-        match pos with
-        | None -> // can't do much without a position now, can we.
-            sprintf "%s: %s" msgTypeName msg.msg
-        | Some(p) -> // now we're cooking with gas
-            sprintf "%s: near line %d col %d\n%s"
+        match msg.sourcePosition, msg.node.pos with
+        | Some(p), _ | None, Some(p) ->
+            sprintf "%s: %s\n%s"
                 msgTypeName
-                (p.Line + 1)
-                (p.Column + 1)
+                (p.Format())
                 msg.msg
-           
+        | _ -> // can't do much without a position now, can we.
+            sprintf "%s: %s" msgTypeName msg.msg
 
 // =======================
 // helper functions for creating warnings and errors

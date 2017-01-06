@@ -9,6 +9,7 @@ open RefGenome
 open uri
 open LegacyParseTypes
 open Amyris.Dna
+open AstTypes
 
 type SequenceLibrary = Map<string, Dna>
 
@@ -134,6 +135,9 @@ type DnaAssembly =
         x.dnaParts
         |> Seq.map (fun p -> p.dna)
         |> DnaOps.concat
+
+    interface ISourcePosition with
+        member x.OptionalSourcePosition = x.materializedFrom.sourcePosition
 
 /// Model a primer which diverges and has body/tail parts.
 /// The body part anneals to the intended amplification target and the tail

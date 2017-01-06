@@ -45,7 +45,11 @@ type Assembly =
     pragmas: PragmaCollection; 
     designParams: DesignParams;
     capabilities: Capabilities; 
-    docStrings: string list}
+    docStrings: string list;
+    sourcePosition: SourcePosition option}
+    interface ISourcePosition with
+        member x.OptionalSourcePosition = x.sourcePosition
+
 
 // ================================================
 // Level 2 Definitions
@@ -206,7 +210,8 @@ let convertAssembly (context: AssemblyConversionContext) (pw, aplw) =
                 pragmas = assemblyPragmas; 
                 designParams = designParams;
                 capabilities = context.pragmaEnv.capabilities; 
-                docStrings = context.docs.assigned})
+                docStrings = context.docs.assigned;
+                sourcePosition = pw.pos})
 
 // ======================
 // conversion from L2 AST node to legacy L2 line type

@@ -18,6 +18,25 @@ type SourcePosition =
     override x.ToString() =
         sprintf "@%d,%d-%d,%d"
             (x.s.Line+1) (x.s.Column+1) (x.e.Line+1) (x.e.Column+1)
+    /// Return a nicely-formatted message for the start of this source position.
+    member x.Format() =
+        sprintf "near line %d col %d" (x.s.Line+1) (x.s.Column+1)
+    /// Provide a code snippet with an indication of the start of this position.
+    /// Returned as a sequence of strings, one sequence item for each line.
+    /// Optionally override the default number of lines to use for context, defaults to 5.
+    member x.SourceContext((GslSourceCode(source)): GslSourceCode, ?contextLines) = seq {
+        let contextLines = defaultArg contextLines 5
+        let lines = source.Replace("\r\n","\n").Split([| '\n' ; '\r'|])
+        let p = x.s
+        for line in max 0 (p.Line-contextLines) .. min (p.Line+contextLines) (lines.Length-1) do
+            yield sprintf "%s" lines.[line]
+            if line = p.Line then
+                yield sprintf "%s^" (pad p.Column)
+    }
+
+/// Interface type to allow generic retrieval of a source code position.
+type ISourcePosition =
+    abstract member OptionalSourcePosition : SourcePosition option with get
 
 let emptySourcePosition = {s = Position.FirstLine(""); e = Position.FirstLine("")}
 
