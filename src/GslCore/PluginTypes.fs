@@ -132,14 +132,16 @@ type AssemblyTransformationMessage<'A when 'A :> ISourcePosition> =
         seq {
             match (x.assembly :> ISourcePosition).OptionalSourcePosition with
             | Some(p) ->
-                yield sprintf "%O during %s %s: %s" x.kind phase (p.Format()) x.msg
+                yield sprintf "%O during %s %s:" x.kind phase (p.Format())
+                yield x.msg
+                yield "================================================================="
                 match sourceCode with
                 | Some(source) -> yield! p.SourceContext(source)
                 | None -> ()
             | None ->
-                yield sprintf "%O during %s: %s" x.kind phase x.msg
+                yield sprintf "%O during %s:" x.kind phase
+                yield x.msg
 
-        
             if verbose then
                 yield sprintf "\n%+A" x.assembly
                 match x.stackTrace with
