@@ -21,7 +21,7 @@ let validateMods errorRef (where: AstTypes.SourcePosition) (mods: Mod list) =
         | SLICE(s) ->
             if s.left.relTo = s.right.relTo && s.left.x > s.right.x then
                 // TODO: better to report coordinates of slice text rather than gene
-                failwithf "slice left %A greater than right %A %O in %s\n"
+                failwithf "slice left %A greater than right %A %O in %s"
                     s.left.x s.right.x where errorRef
         | _ -> () // No checks for now TODO
 
