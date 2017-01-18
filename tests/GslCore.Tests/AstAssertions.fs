@@ -106,10 +106,10 @@ let failIfBad sourceCode r =
 /// resulting source is compared to the expected source.
 ///</summary>
 let sourceCompareTest op sourceIn expectedSource =
-    sourceIn
-    |> GslSourceCode
+    let source = GslSourceCode sourceIn
+    source
     |> compile op 
-    |> failIfBad (Some(sourceIn))
+    |> failIfBad (Some(source))
     |> returnOrFail
     |> assertDecompilesTo expectedSource
 

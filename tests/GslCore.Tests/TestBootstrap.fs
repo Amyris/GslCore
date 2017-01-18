@@ -31,13 +31,13 @@ type TestBootstrapping() =
 
     /// Test that a bootstrap operation round-trips successfully.
     let testAssembly source =
+        let source = GslSourceCode source
         source
-        |> GslSourceCode
         |> bootstrapPhase1NoCapas None
         |> lift bootstrapToTree
         |> failIfBad (Some(source))
         |> returnOrFail
-        |> assertDecompilesTo source
+        |> assertDecompilesTo source.String
 
 
     let testPhase1 node =
@@ -61,7 +61,7 @@ type TestBootstrapping() =
         let source = "gFOO ; ### ; ~ ; gFOO[1S:30E] {#name foo}"
         let compiledTree = 
             compilePhase1NoCapas source
-            |> failIfBad (Some(source))
+            |> failIfBad (Some(GslSourceCode source))
             |> returnOrFail
         compiledTree
         |> testPhase1
@@ -75,7 +75,7 @@ type TestBootstrapping() =
     member x.TestCaptureExpansionFailure() =
         let source = "gFOO" // doesn't matter what's in here for this test
         compilePhase1NoCapas source
-        |> failIfBad (Some(source))
+        |> failIfBad (Some(GslSourceCode source))
         |> returnOrFail
         |> testCaptureException
         |> assertFail (Error) (Some "Expansion failed with an exception.")

@@ -10,6 +10,7 @@ open uri
 open LegacyParseTypes
 open Amyris.Dna
 open Amyris.ErrorHandling
+open AstTypes
 
 type SequenceLibrary = Map<string, Dna>
 
@@ -131,7 +132,7 @@ type OrfAnnotation =
         else
             let firstCodon = right - alleleOffset
             codonOffsets
-            |> Seq.map (fun offset -> 
+            |> Seq.map (fun offset ->
                 (firstCodon - offset)*1<ZeroOffset>)
 
 /// Create an ORF annotation from a slice on gene-relative coordiantes.
@@ -199,7 +200,7 @@ type DNASlice =
     materializedFrom: PPP option;
     annotations: SliceAnnotation list}
 
-/// Recalculate the offsets of pieces in a list of pieces after new pieces are added in    
+/// Recalculate the offsets of pieces in a list of pieces after new pieces are added in
 let recalcOffset (pieces: DNASlice list) =
     let lengths =
         pieces |> List.map (fun p -> p.dna.Length*1<ZeroOffset>)
@@ -226,6 +227,9 @@ type DnaAssembly =
         x.dnaParts
         |> Seq.map (fun p -> p.dna)
         |> DnaOps.concat
+
+    interface ISourcePosition with
+        member x.OptionalSourcePosition = x.materializedFrom.sourcePosition
 
 /// Model a primer which diverges and has body/tail parts.
 /// The body part anneals to the intended amplification target and the tail

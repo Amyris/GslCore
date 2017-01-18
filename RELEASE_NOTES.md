@@ -1,3 +1,6 @@
+#### 0.4.11 - January 5 2016
+* Add source code positions to DnaAssembly-phase error reports.
+
 #### 0.4.10 - December 15 2016
 * Allow plugins to configure themselves based on parsed compiler options directly.
 

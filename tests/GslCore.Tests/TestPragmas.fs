@@ -71,8 +71,8 @@ type TestPragmasAST() =
         | _ -> good
 
     let pragmaBuildTest source =
+        let source = GslSourceCode source
         source
-        |> GslSourceCode
         |> compilePragmas
         >>= validate checkPragmaIsBuilt
         |> failIfBad (Some(source))

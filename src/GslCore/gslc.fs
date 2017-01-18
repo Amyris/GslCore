@@ -167,27 +167,27 @@ let handleCompileResult (result, input: GslSourceCode, s) =
             Exit(0, Some(decompile tree.wrappedNode))
         // do output generation
         else
-            Continue(assemblies, s)
+            Continue(assemblies, input, s)
     | Bad(errors) ->
         // convert messages into strings for printing
-        let msgs = [for msg in deduplicateMessages errors -> msg.Longform(s.opts.verbose, input.String)]
+        let msgs = [for msg in deduplicateMessages errors -> msg.Longform(s.opts.verbose, input)]
         Exit(1, Some(msgs |> String.concat "\n\n"))
 
-let doDnaMaterialization (assemblies, s) = Continue(materializeDna s assemblies, s)
+let doDnaMaterialization (assemblies, input, s) = Continue(materializeDna s assemblies, input, s)
 
-let doAssemblyTransform (assemblies, s) = Continue(transformAssemblies s assemblies, s)
+let doAssemblyTransform (assemblies, input, s) = Continue(transformAssemblies s assemblies, input, s)
 
-let handleTransformResult (r, s) =
+let handleTransformResult phase (r, input, s) =
     match r with
     | Ok(transformedAssemblies, warnings: AssemblyTransformationMessage<_> list) ->
-        for w in warnings do printfn "%s\n" (w.Format(s.opts.verbose))
-        Continue(transformedAssemblies, s)
+        for w in warnings do printfn "%s\n" (w.Format(phase, input, s.opts.verbose))
+        Continue(transformedAssemblies, input, s)
     | Bad(errors) ->
-        let msgs = [for msg in errors -> msg.Format(s.opts.verbose)]
+        let msgs = [for msg in errors -> msg.Format(phase, input, s.opts.verbose)]
         Exit(1, Some(msgs |> String.concat "\n\n"))
 
 /// Design primers for assemblies, if requested, and write all output formats.
-let doOutput (assemblies, s) : FlowControl<unit> =
+let doOutput (assemblies, input, s) : FlowControl<unit> =
     let doOutput() =
         let primers, modifiedAssemblies = doPrimerDesign s.opts assemblies
         doOutputGeneration s primers modifiedAssemblies
@@ -216,7 +216,7 @@ let gslc unconfiguredPlugins argv : FlowControl<_> =
     >?> runCompiler
     >?> handleCompileResult
     >?> doDnaMaterialization
-    >?> handleTransformResult
+    >?> handleTransformResult "DNA materialization"
     >?> doAssemblyTransform
-    >?> handleTransformResult
+    >?> handleTransformResult "DnaAssembly transformation"
     >?> doOutput

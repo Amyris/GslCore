@@ -120,24 +120,34 @@ type AssemblyTransformationMessageKind = | ATError | ATWarning
 /// Domain type for errors encountered during transformation.
 /// The type of assembly is left generic to permit re-use of this type during both
 /// DNA materialization and transformation of DnaAssemblies.
-type AssemblyTransformationMessage<'A> =
+type AssemblyTransformationMessage<'A when 'A :> ISourcePosition> =
     {msg: string;
      kind: AssemblyTransformationMessageKind;
      assembly: 'A;
      stackTrace: System.Diagnostics.StackTrace option;
      fromException: System.Exception option}
     with
-    member x.Format(verbose) =
-        let fullMsg = sprintf "%O during assembly out transformation: %s" x.kind x.msg
-        if verbose then
-            let assemblyDump = sprintf "%+A" x.assembly
-            let st =
+    member x.Format(phase, ?sourceCode, ?verbose) =
+        let verbose = defaultArg verbose false
+        seq {
+            match (x.assembly :> ISourcePosition).OptionalSourcePosition with
+            | Some(p) ->
+                yield sprintf "%O during %s %s:" x.kind phase (p.Format())
+                yield x.msg
+                yield "================================================================="
+                match sourceCode with
+                | Some(source) -> yield! p.SourceContext(source)
+                | None -> ()
+            | None ->
+                yield sprintf "%O during %s:" x.kind phase
+                yield x.msg
+
+            if verbose then
+                yield sprintf "\n%+A" x.assembly
                 match x.stackTrace with
-                | Some(s) -> s.ToString()
-                | None -> ""
-            [fullMsg; assemblyDump; st]
-            |> String.concat "\n"
-        else fullMsg
+                | Some(s) -> yield s.ToString()
+                | None -> ()
+        } |> String.concat "\n"
 
 /// Convert an exception during assembly transformation into a message.
 let exceptionToAssemblyMessage assembly (exc: System.Exception) =
