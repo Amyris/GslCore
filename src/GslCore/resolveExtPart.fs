@@ -185,7 +185,7 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
                  breed = B_X;
                  materializedFrom = Some(ppp)}// flag_new_gsl 8/12/15 Added "rabitCandidates"
 
-        | _ as x ->
+        | x ->
             failwithf "ERROR: unimplemented external partSpace %s\n" x
 
 
@@ -215,7 +215,7 @@ let fetchFullPartSequence (_ (* verbose*):bool) (library: SequenceLibrary) (part
                     source = "library";
                     id = pid;
                     name = libName})
-        | _ as x ->
+        | x ->
             failwithf "ERROR: unimplemented external partSpace %s\n" x
 
 let getExtPartSlice (verbose:bool) (partId:PartIdLegacy) =

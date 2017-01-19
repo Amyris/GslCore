@@ -147,8 +147,8 @@ let expandSimpleMut (asAACheck:bool) (_:GenomeDef) (g:PartIdLegacy) (m:Mutation)
 
             // Design for mutation
 
-            let lhs = m.loc-1
-            let rhs = m.loc
+            let lhs = m.loc-1 // before the mutated base
+            let rhs = m.loc+1 // after the mutated base
             let id = g.id
             sprintf
                 "@%s[1:%d] {#dnasrc %s}; /%c/ {#inline }; @%s[%d:-1E] {#dnasrc %s} "
@@ -163,7 +163,7 @@ let expandSimpleMut (asAACheck:bool) (_:GenomeDef) (g:PartIdLegacy) (m:Mutation)
             let currentCodon = (dna.[(m.loc-1)*3..(m.loc-1)*3+2]).ToCharArray()
 
             // Ensure we are in the right place in the gene
-            if not (codon2aa currentCodon = m.f) && asAACheck then
+            if (codon2aa currentCodon <> m.f) && asAACheck then
                 failwithf
                     "ERROR: for mutation %c%d%c , gene %s has amino acid %c (%s) in that position not %c"
                     m.f m.loc m.t g.id (codon2aa currentCodon) (arr2seq currentCodon) m.f
@@ -385,7 +385,7 @@ let expandAS
         let currentCodon = orf.[x1..x2]
 
         // Ensure we are in the right place in the gene
-        if not (codon2aa currentCodon.arr = m.f) && asAACheck then
+        if (codon2aa currentCodon.arr <> m.f) && asAACheck then
             printfn "ORF: %O" orf
             failwithf
                 "ERROR: for mutation %c%d%c , gene %s has amino acid %c (%O) in that position not %c"

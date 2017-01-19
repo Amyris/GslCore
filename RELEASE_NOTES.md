@@ -1,3 +1,6 @@
+#### 0.4.12 - January 19 2016
+* Bug in external part point mutation caused bp insertion for * operator
+
 #### 0.4.11 - January 5 2016
 * Add source code positions to DnaAssembly-phase error reports.
 
