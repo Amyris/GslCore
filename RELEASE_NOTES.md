@@ -1,3 +1,7 @@
+#### 0.4.13 - January 25 2016
+* Added slice annotation structure.
+* Parts with ORFs will have annotations of these regions on DnaSlice.
+
 #### 0.4.12 - January 19 2016
 * Bug in external part point mutation caused bp insertion for * operator
 
