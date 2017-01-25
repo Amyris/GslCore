@@ -177,7 +177,7 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
                  materializedFrom = Some(ppp);
                  annotations = []} // FIXME: determine what metadata is available here
 
-        | _ as x ->
+        | x ->
             failwithf "ERROR: unimplemented external partSpace %s\n" x
 
 
@@ -207,7 +207,7 @@ let fetchFullPartSequence (_ (* verbose*):bool) (library: SequenceLibrary) (part
                     source = "library";
                     id = pid;
                     name = libName})
-        | _ as x ->
+        | x ->
             failwithf "ERROR: unimplemented external partSpace %s\n" x
 
 let getExtPartSlice (verbose:bool) (partId:PartIdLegacy) =

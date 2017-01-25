@@ -61,7 +61,7 @@ let tokenize f lexbuf =
     {i = item; pos = getPos lexbuf}
 
 /// Create a unit token with position from lexbuf.
-let tokenizeUnit = tokenize (fun _ -> ())
+let tokenizeUnit = tokenize (ignore)
 
 /// Tokenize a lex item as a string.
 let tokenizeString = tokenize id
