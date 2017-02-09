@@ -605,7 +605,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
 
         /// Wrapper function for oligo design to capture and report errors in primer design
         let pdWrap (debug:bool) (pen:PrimerParams) (task:OligoTask) =
-            match primercore.oligoDesign debug pen task with
+            match primercore.oligoDesignWithCompromise debug pen task with
             | Some(x) ->
                 // Debugging
                 if verbose then
@@ -760,7 +760,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                             offset =0;
                             targetTemp = dp.targetTm;
                             sequencePenalties = None}
-                        primercore.oligoDesign false pen task
+                        primercore.oligoDesignWithCompromise false pen task
                     else
                         let task =
                            {tag = "PF";
@@ -772,11 +772,11 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                             sequencePenalties = None}
                         if pen.maxLength < pen.minLength then
                             failwithf "oMax=%d<oMin=%d  in linkerFwd2" pen.maxLength pen.minLength
-                        primercore.oligoDesign false pen task
+                        primercore.oligoDesignWithCompromise false pen task
             match x with
             | None ->
                 if margin < 3*approxMargin then linkerFwd2Iterative pen (margin+10)
-                else failwithf "failed primer design for design %s" errorName
+                else failwithf "failed primer design for design %s in linkerFwd2" errorName
             | Some(oligo) ->
                 // Oligo design might have chopped off DNA , so cut accordingly
                 primerCheck oligo.oligo (next.dna.[oligo.offset..].arr)
@@ -795,9 +795,15 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
 
         let rec linkerRev2Iterative pen margin =
             match last with
-            | None -> { body = Dna(""); tail=Dna("") ; annotation=[]},0
+            | None -> 
+                if verbose then
+                    printfn "linkerFwd2: entering with margin=%d last=None" margin
+                { body = Dna(""); tail=Dna("") ; annotation=[]},0
             | Some(ds) ->
-                let x =
+                if verbose then
+                    printfn "linkerFwd2: entering with margin=%d last=%s sourceToApprox=%s" 
+                        margin ds.description (if ds.sourceToApprox then "y" else "n")
+                let x,task =
                     if ds.sourceToApprox then
                         let task =
                            {tag = "PR";
@@ -808,9 +814,9 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                             targetTemp = dp.targetTm;
                             sequencePenalties  = None}
                         if opts.verbose then
-                            printf "linkerRev: oligo design\n template=%s\npen=%A\n"
+                            printf "linkerRev: oligo design approx\n template=%s\npen=%A\n"
                                 (arr2seq task.temp) pen
-                        primercore.oligoDesign false pen task
+                        primercore.oligoDesignWithCompromise false pen task,task
                     else
                         let task =
                            {tag = "PR";
@@ -820,11 +826,14 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                             offset = 0;
                             targetTemp = dp.targetTm;
                             sequencePenalties  = None}
-                        primercore.oligoDesign false pen task
+                        if opts.verbose then
+                            printf "linkerRev: oligo design non approx\n template=%s\npen=%A\n"
+                                (arr2seq task.temp) pen
+                        primercore.oligoDesignWithCompromise false pen task,task
                 match x with
                 | None ->
                     if margin < 3*approxMargin then linkerRev2Iterative pen (margin+10)
-                    else failwithf "failed primer design for design %s" errorName
+                    else failwithf "failed primer design in linkerRev2 for design %s\nlast task was =%A" errorName task
                 | Some(oligo) ->
                     primerCheck oligo.oligo (ds.dna.RevComp().[oligo.offset..].arr)
                     {tail = Dna(""); body = Dna(oligo.oligo); annotation = []}, oligo.offset

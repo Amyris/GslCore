@@ -1,14 +1,17 @@
-#### 0.4.13 - January 25 2016
+#### 0.4.14 - February 8 2017
+* using oligoDesignWithCompromise now for many operations
+
+#### 0.4.13 - January 25 2017
 * Added slice annotation structure.
 * Parts with ORFs will have annotations of these regions on DnaSlice.
 
-#### 0.4.12 - January 19 2016
+#### 0.4.12 - January 19 2017
 * Bug in external part point mutation caused bp insertion for * operator
 
-#### 0.4.11 - January 5 2016
+#### 0.4.11 - January 5 2017
 * Add source code positions to DnaAssembly-phase error reports.
 
-#### 0.4.10 - December 15 2016
+#### 0.4.10 - December 15 2017
 * Allow plugins to configure themselves based on parsed compiler options directly.
 
 #### 0.4.9 - December 13 2016
