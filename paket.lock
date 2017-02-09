@@ -1,6 +1,6 @@
 NUGET
   remote: https://www.nuget.org/api/v2
-    Amyris.Bio (2.0.17) - framework: >= net45
+    Amyris.Bio (2.0.18) - framework: >= net45
     FParsec (1.0.2)
     FSharp.Core (4.0.0.1) - redirects: force
     FSharp.Data (2.3.2)

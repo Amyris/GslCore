@@ -1,3 +1,6 @@
+#### 0.4.15 - February 9 2017
+* Update to latest AmyrisBio for bug fixes.
+
 #### 0.4.14 - February 8 2017
 * using oligoDesignWithCompromise now for many operations
 
