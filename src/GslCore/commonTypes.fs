@@ -157,7 +157,7 @@ let orfAnnotationFromSlice (slice: Slice) (orfLen: int) fwd context =
     // the opposite ends
     let left, right =
         if fwd then orfStart, orfEnd
-        else (orfLen*1<ZeroOffset>) - orfStart - 1<ZeroOffset>, (orfLen*1<ZeroOffset>) - orfEnd - 1<ZeroOffset>
+        else (orfLen*1<ZeroOffset>) - orfEnd - 1<ZeroOffset>, (orfLen*1<ZeroOffset>) - orfStart - 1<ZeroOffset>
 
     // the slice may be smaller than the ORF in either direction, so make sure left and right
     // are constrained to the interval defined by the length of the slice

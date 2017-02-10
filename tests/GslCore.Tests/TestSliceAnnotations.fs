@@ -1,6 +1,7 @@
 ﻿namespace GslCore.Tests
 open System
 open NUnit.Framework
+open LegacyParseTypes
 open constants
 open commonTypes
 
@@ -33,3 +34,25 @@ type TestOrfAnnotation() =
 
         let tinyOrf = {backwardsOrf with right = 1<ZeroOffset>}
         checkIndices tinyOrf []
+
+    [<Test>]
+    member x.TestAnnotationFromSlice() =
+        // default range for gene
+        let basicOrfSlice =
+            {left = {x = 1<OneOffset>; relTo = FivePrime};
+             lApprox = false;
+             rApprox = false;
+             right = {x = -1<OneOffset>; relTo = ThreePrime } }
+
+        let featLen = 100
+        let orfAnnotationFwd = orfAnnotationFromSlice basicOrfSlice featLen true Genomic
+        Assert.AreEqual(0<ZeroOffset>, orfAnnotationFwd.left)
+        Assert.AreEqual(99<ZeroOffset>, orfAnnotationFwd.right)
+        checkIndices orfAnnotationFwd [0..3..97]
+        Assert.That(orfAnnotationFwd.fwd)
+
+        let orfAnnotationRev = orfAnnotationFromSlice basicOrfSlice featLen false Genomic
+        Assert.AreEqual(0<ZeroOffset>, orfAnnotationRev.left)
+        Assert.AreEqual(99<ZeroOffset>, orfAnnotationRev.right)
+        checkIndices orfAnnotationRev [99..-3..2]
+        Assert.That(not orfAnnotationRev.fwd)
