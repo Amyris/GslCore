@@ -1,3 +1,6 @@
+#### 0.4.16 - February 9 2017
+* Fix indexing bug in ORF annotation.
+
 #### 0.4.15 - February 9 2017
 * Update to latest AmyrisBio for bug fixes.
 
