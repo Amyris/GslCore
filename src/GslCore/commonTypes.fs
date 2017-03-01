@@ -3,9 +3,7 @@
 open System
 open pragmaTypes
 open constants
-open ThumperProxyTypes
 open DesignParams
-open RefGenome
 open uri
 open LegacyParseTypes
 open Amyris.Dna

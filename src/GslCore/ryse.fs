@@ -1,57 +1,15 @@
 ﻿module ryse
 open System.IO
 open System
-open System.Xml
 open pragmaTypes
-open LegacyParseTypes
 open commonTypes
 open Amyris.Bio.utils
-open Amyris.Bio.biolib
 open Amyris.Dna
 open System.Collections.Generic
 open constants
-open ThumperProxyTypes
 open uri
 open sbolExample
-open System.Net
 open AstTypes
-
-let fetchProxy (proxyBaseURL:string) insertName breed =
-        let rabitLookupRequest =
-            {insertName = insertName; breed=breed}
-            |> Newtonsoft.Json.JsonConvert.SerializeObject
-        try
-            // Http look up of part reuse details
-            let x = HttpWebRequest.Create(new System.Uri(proxyBaseURL+"/rabit/lookup")) :?> HttpWebRequest
-            x.Timeout <- 5000 // 5 seconds
-            x.Method <- "POST"
-            x.AllowWriteStreamBuffering <- false
-            x.ContentType <- "application/json"
-            x.ContentLength <- rabitLookupRequest.ToCharArray().Length |> int64
-            do
-                use rs = x.GetRequestStream()
-                use s = new StreamWriter(rs)
-                s.Write(rabitLookupRequest)
-                s.Flush()
-                s.Close()
-
-            use rs = x.GetResponse()
-            use s = rs.GetResponseStream()
-            use r = new StreamReader(s)
-            let reply = r.ReadToEnd()
-            let b = Newtonsoft.Json.JsonConvert.DeserializeObject<RabitLookupReply>(reply)
-            let partCandidates:RabitCandidate[] = b.rabitArray
-            partCandidates
-
-        with _ as ex ->
-            failwithf
-                "from thumper proxy %s\nMight be rabit id that does not exist.\n%s\n"
-                proxyBaseURL ex.Message
-
-
-
-
-
 
 // ==================================================================
 // RYSE megastitch architecture
@@ -105,7 +63,7 @@ let loadThumperRef (f:string) =
                   orient = if orient.[0] = '0' then FWD else REV;
                   breed = breed;
                   dnaSource = sprintf "R%s" id})
-        | _ as x ->
+        | x ->
             printf "WARNING: bad hutch line %A\n" x
             None)
     |> Seq.map (fun hr -> (hr.id,hr) ) |> Map.ofSeq
@@ -125,7 +83,7 @@ let fetch (url:string) =
                 let s = wc.DownloadString(url)
                 let res = rycodExample.ThumperRycod.Parse(s)
                 res
-            with _ as ex ->
+            with ex ->
                 failwithf
                     "from thumper %s\nMight be rabit id that does not exist.\n%s\n"
                     url ex.Message
@@ -320,7 +278,7 @@ let mapRyseLinkers
                         "in mapRyseLinkers:assign, finishing on %A linker\n"
                         linkerName)
                     (prepLinker linkerName)::res
-                | _ as x ->
+                | x ->
                     failwithf
                         "mapRyseLinkers: unexpected linker complement  '%s' left at end \nphase=%s (%s)\n"
                         (x.ToString()) (if phase then "phase1" else "phase2") errorDesc

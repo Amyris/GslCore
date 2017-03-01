@@ -1,3 +1,6 @@
+#### 0.4.17 - March 1 2017
+* LNT: removing unused thumper proxy code out of core library
+
 #### 0.4.16 - February 9 2017
 * Fix indexing bug in ORF annotation.
 
