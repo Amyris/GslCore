@@ -1,3 +1,7 @@
+#### 0.4.18 - April 10 2017
+* Add ToString representations to core message types.
+* Update FSharpCore to >= 4.1.0.
+
 #### 0.4.17 - March 1 2017
 * LNT: removing unused thumper proxy code out of core library
 

@@ -85,6 +85,8 @@ type AstMessage =
         | _ -> // can't do much without a position now, can we.
             sprintf "%s: %s" msgTypeName msg.msg
 
+    override msg.ToString() = msg.Summary
+
 // =======================
 // helper functions for creating warnings and errors
 // =======================

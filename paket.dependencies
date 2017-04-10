@@ -1,6 +1,6 @@
 source https://nuget.org/api/v2
 
-nuget FSharp.Core redirects: force
+nuget FSharp.Core >= 4.1.0 redirects: force
 nuget Amyris.Bio >= 2.0.18 framework: >= net45
 nuget FSharp.Data
 nuget Newtonsoft.Json
