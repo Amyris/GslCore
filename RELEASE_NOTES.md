@@ -1,3 +1,7 @@
+#### 0.4.19 - April 21 2017
+* Extend thumper primer limit to 80
+* VS2017 build fix
+
 #### 0.4.18 - April 10 2017
 * Add ToString representations to core message types.
 * Update FSharpCore to >= 4.1.0.
