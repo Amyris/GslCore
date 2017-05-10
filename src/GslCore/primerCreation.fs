@@ -907,15 +907,21 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
         match l with
         | [] ->
             let sliceOut' = incPrev prev sliceOut |> List.rev
+            if verbose then
+                printfn "procAssembly: done with slices"
             List.rev primersOut,sliceOut'
         | hd::next::tl when hd.sliceType = FUSIONST && next.sliceType=INLINEST ->
             // Fusing a slice to a following inline sequence is redundant as that's the
             // strategy we employ by default, but it will mess things up to try to put a seamless stitch here into a possibly
             // small DNA sequence, so just ignore FUSION directive
+            if verbose then
+                printfn "procAssembly: skipping redudant FUSIONST/INLINEST"
             procAssembly dp errorName prev sliceOut primersOut (next::tl)
         | hd::next::tl when hd.sliceType = FUSIONST ->
             // Slice hd is a fusion slice, which is virtual, it exists only to mark
             // the intention to fuse prev and next together
+            if verbose then
+                printfn "procAssembly: FUSIONST - generating primers"
             if prev = [] then failwith "INTERNAL ERROR: unexpected prev = [] in procAssembly\n"
             let primerF,offsetF,primerR,offsetR = seamless dp (List.head prev) next
 
@@ -939,7 +945,11 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 not (hd.pragmas.ContainsKey("rabitend") || hd.pragmas.ContainsKey("rabitstart"))) &&
                 prev <> []
             ->
+            if verbose then
+                printfn "procAssembly: LINKER or inline not rabitstart/end"
             if hd.sliceType = INLINEST && hd.dna.Length < 12 then
+                if verbose then
+                    printfn "procAssembly: ... shortcase"
                 // SHORTINLINE Case
                 //
                 // Special case for short inline sequences.  We can sort of do a seamless design
@@ -1037,6 +1047,8 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     (DPP({fwd = primerF'; rev = primerR'; name = errorName})::primersOut)
                     ((cutLeft next offsetF)::tl) // Remove bases from the next slice if we moved the primer
             else
+                if verbose then
+                    printfn "procAssembly: ... longcase"
                 // LONGINLINE Case
                 // Regular inline case or linker case - just design fwd and reverse then prepend
                 // leading sequence (inline or linker)
@@ -1290,6 +1302,8 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     ((match sandwichF with | None -> [] | Some(t) -> [t])@[(cutLeft d offsetF)]@e)
         // technically shouldn't end on a non linker (unless non ryse design) but..
         | [last] when (last.sliceType = LINKER || last.sliceType = INLINEST) ->
+            if verbose then
+                printfn "procAssembly: ... last LINKER or INLINEST"
             // We are about to design a primer back into the previous sequence if it exists.
             // There is a catch if the previous sequence was a short inline sequence.
             // We should treat that as a sandwich sequence, built it into the primer but not
@@ -1372,9 +1386,13 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
             (DPP({fwd = {body=Dna(""); tail =Dna(""); annotation = []}; rev = primerR; name = errorName})::primersOut |> List.rev,
              sliceOut') // Last linker
         | hd::tl when hd.sliceType = INLINEST ->
+            if verbose then
+                printfn "procAssembly: ... INLINEST"
             let prevNew = hd::prev
             procAssembly dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
         | hd::tl ->
+            if verbose then
+                printfn "procAssembly: ... catchall case"
             procAssembly dp errorName (hd::prev) (incPrev prev sliceOut)  (GAP::primersOut) tl
 
     // --- end procAssembly ------------------------------------------------------------------------
