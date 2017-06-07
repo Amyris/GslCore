@@ -885,7 +885,7 @@ let private nameLegal =
 
 let private whitespace c = match c with | ' ' -> true | '\t' -> true | _ -> false
 
-let private cleanHashName (s:string) =
+let cleanHashName (s:string) =
     s |> Seq.choose (fun c ->
         if nameLegal.Contains(c) then Some(c)
         else if whitespace c then None

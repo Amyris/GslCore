@@ -7,6 +7,8 @@
 open pragmaTypes
 open LegacyParseTypes
 open AstTypes
+open AstAlgorithms
+open AstProcess
 open commonTypes
 open Amyris.Bio
 open constants
@@ -51,12 +53,12 @@ let generateOutputsExplicitLocus (locus:L2Id) (args: L2DesignParams) =
                     yield sprintf "u%s" locusWithoutPrefix
                     // First half of the parts before the marker
                     for expItem in partsA do
-                        yield expItem.promoter.String
+                        yield decompile expItem.promoter
                         yield sprintf "%s" (expItem.target.String)
                     if args.megastitch then yield "###" // Marker
                     // Second half of the parts after the marker
                     for expItem in partsB do
-                        yield (sprintf "!%s;!%s" expItem.target.String expItem.promoter.String)
+                        yield (sprintf "!%s;!(%s)" expItem.target.String (decompile expItem.promoter))
                     // Emit downstream flanking region
                     yield sprintf "d%s" locusWithoutPrefix
                 } |> List.ofSeq
@@ -90,19 +92,20 @@ let generateOutputsTitrations (args: L2DesignParams) =
     /// the flank length
     let flank = args.rgs.[args.refGenome].getFlank()
     let out = seq{
-                    // Yield upstream flnaking region. 
-                    yield sprintf "#name u%s_%s_d%s" locusGene locusExp.promoter.String locusGene
+                    // Yield upstream flanking region. 
+                    //yield sprintf "#name u%s_%s_d%s" locusGene locusExp.promoter.String locusGene
+                    yield sprintf "name u%s_%s_d%s" locusGene (decompile locusExp.promoter |> cleanHashName ) locusGene
                     yield (  sprintf "u%s" locusGene) // regular locus flanking seq
                     // First half of the parts before the marker
                     for expItem in partsA do
-                        yield expItem.promoter.String
+                        yield decompile expItem.promoter
                         yield expItem.target.String
                     if args.megastitch then yield "###" 
                     // Second half of the parts after the marker
                     for expItem in partsB do
-                        yield (sprintf "!%s;!%s" expItem.target.String expItem.promoter.String)
+                        yield (sprintf "!%s;!(%s)" expItem.target.String (decompile expItem.promoter))
                     // Finally the titrating promoter
-                    yield locusExp.promoter.String
+                    yield decompile locusExp.promoter
                     // Emit downstream flanking region
                     yield sprintf "%s[1:~%A]" locusExp.target.String flank
                 }  |> List.ofSeq
