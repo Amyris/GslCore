@@ -133,7 +133,6 @@ type nonTerminalId =
     | NONTERM_PartList
     | NONTERM_AssemblyPart
     | NONTERM_L2IdWrap
-    | NONTERM_L2PromoterWrap
     | NONTERM_L2Id
     | NONTERM_L2Promoter
     | NONTERM_L2Locus

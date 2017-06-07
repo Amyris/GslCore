@@ -283,11 +283,7 @@ L2IdWrap:
     | ID     	{ tokenAsNode $1 }
     | STRING 	{ tokenAsNode $1 }
 
-// promoter name?
-L2PromoterWrap:
-    | ID     	{ tokenAsNode $1 }
-    | STRING 	{ tokenAsNode $1 }
-	//| AssemblyPart { $1 }
+
 
 // A level2 id can have an optional prefix and the ID parts can be specified
 // as strings if that makes things easier for the user.   E.g. "gfoo bar"."!!! :) my really cool part"
@@ -300,10 +296,11 @@ L2Id:
 
 // We allow using regular level 1 parts/assemblies as the promoter as well as basic L2 descriptors.
 L2Promoter:
-	| L2PromoterWrap	                   { createL2Id None $1 }
-	| L2PromoterWrap DOT L2PromoterWrap    { createL2Id (Some($1)) $3 }
-	//| ID DOT ID            { createL2Id (Some(tokenAsNode $1)) (tokenAsNode $3) }
-	| AssemblyPart	       { $1 }
+  | STRING				 { createL2Id None (tokenAsNode $1) }
+  | STRING DOT STRING    { createL2Id (Some(tokenAsNode $1)) (tokenAsNode $3) }
+  | ID DOT ID            { createL2Id (Some(tokenAsNode $1)) (tokenAsNode $3) }
+  | AssemblyPart		 { $1 }
+
 
 // foo^
 L2Locus:
