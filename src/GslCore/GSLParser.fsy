@@ -292,13 +292,20 @@ L2Id:
     | L2IdWrap  				{ createL2Id None $1 }
     | L2IdWrap DOT L2IdWrap 	{ createL2Id (Some($1)) $3 }
 
+// We allow using regular level 1 parts/assemblies as the promoter as well as basic L2 descriptors.
+L2Promoter:
+	| STRING	           { createL2Id None $1 }
+	| STRING DOT STRING    { createL2Id (Some($1)) $3 }
+	| ID DOT ID            { createL2Id (Some(tokenAsNode $1)) (tokenAsNode $3) }
+	| AssemblyPart	       { $1 }
+
 // foo^
 L2Locus:
     | L2Id CARAT   { $1 }
 
 // pFoo>Bar
 L2ExpElement:
-    | L2Id GREATERTHAN L2Id		{ createL2Element $1 $3 } 
+    | L2Promoter GREATERTHAN L2Id		{ createL2Element $1 $3 } 
 
 // List of semicolon separated expression elements
 L2ExpElementList:

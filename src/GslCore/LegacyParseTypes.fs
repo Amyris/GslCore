@@ -86,7 +86,7 @@ type Assembly =
 // ================================================
 
 /// Element of a level 2 line  e.g.  pABC1>gDEF2
-type BuiltL2Element = {promoter:L2Id; target:L2Id}
+type BuiltL2Element = {promoter:AstNode; target:L2Id}
 
 /// L2 Top level container for the expression line  z^ ; a>b ; c > d etc
 type BuiltL2Expression = {l2Locus:L2Id option; parts:BuiltL2Element List}
@@ -252,8 +252,9 @@ let private buildL2Element node =
     match node with
     | L2Element(nw) ->
         match nw.x.promoter, nw.x.target with
-        | L2Id(pw), L2Id(tw) ->
-            ok {promoter=pw.x; target=tw.x}
+        | L2Id(_), L2Id(tw) | Part(_), L2Id(tw) ->
+            ok {promoter=nw.x.promoter; target=tw.x}
+        
         | x, y ->
             let contextStr = sprintf "L2 element construction; found [%s>%s]" x.TypeName y.TypeName
             internalTypeMismatch (Some(contextStr)) "L2Id" node
