@@ -192,3 +192,44 @@ do
     pBAR
 end"""
         sourceCompareTest (promote id) source source
+
+    // Attempts at starting some L2 parsing tests
+    [<Test>]
+    member x.TestL2ImplicitPromoterSwap() =
+        let source = "pTDH3>gADH1"
+        sourceCompareTest (promote id) source source
+
+    [<Test>]
+    member x.TestL2ExplicitPromoterSwap() =
+        let source = "gHO^ ; pTDH3>gADH1"
+        sourceCompareTest (promote id) source source
+
+    [<Test>]
+    member x.TestL2ExplicitMultiplePromoterSwap() =
+        let source = "gHO^ ; pTDH3>gADH1 ; pSLN1>gADH6"
+        sourceCompareTest (promote id) source source
+
+    [<Test>]
+    member x.TestL2Knockout() =
+        let source = "gHO^"
+        sourceCompareTest (promote id) source source
+
+    [<Test>]
+    member x.TestL2ImplicitPromoterSwapRabit() =
+        let source = "@R41811>gADH1"
+        sourceCompareTest (promote id) source source
+
+    [<Test>]
+    member x.TestL2ImplicitPromoterSwapAssembly() =
+        let source = "(!gERG10 ; !pFBA1 ; pSLN1)>gADH1"
+        sourceCompareTest (promote id) source source
+
+    [<Test>]
+    member x.TestL2ImplicitPromoterSwapVariable() =
+        let source = """
+let prom = /GTGGTGACTATAGCTATGCTAGTGCTCGCTAAATAGCCTGA/ {#name testProm}
+&prom>gADH1
+"""
+        sourceCompareTest (promote id) source source
+
+    
