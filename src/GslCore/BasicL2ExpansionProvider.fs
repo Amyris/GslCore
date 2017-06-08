@@ -123,7 +123,7 @@ let generateOutputsTitrations (args: L2DesignParams) =
                     
                     // yield a new linker line because the default pattern will cause an A linker 
                     // to land on a marker (error: no A-9 markers)
-                    yield "#linkers 0,2,A,3,9|0,A,3,9"
+                    yield "#linkers 0,2,A,3,9|0,A,2,9"
                     yield replacementName
                     // Yield upstream flanking region. 
                     yield (  sprintf "u%s" locusGene) // regular locus flanking seq
@@ -144,6 +144,7 @@ let generateOutputsTitrations (args: L2DesignParams) =
     | linkers::name::rest -> [linkers; name; String.Join(";" , rest)]
     | _ -> failwithf "ERROR: L2 parsing failed"
     |> String.concat "\n"
+    |> sprintf "do\n%s\nend"
     |> GslSourceCode
 
 let basicL2ExpansionPlugin =
