@@ -120,7 +120,10 @@ let generateOutputsTitrations (args: L2DesignParams) =
 
                         // if no name is provided, use this as the default donor name
                         | None -> sprintf "#name u%s_%s_d%s" locusGene (decompile locusExp.promoter |> cleanHashName ) locusGene
-
+                    
+                    // yield a new linker line because the default pattern will cause an A linker 
+                    // to land on a marker (error: no A-9 markers)
+                    yield "#linkers 0,2,A,3,9|0,A,3,9"
                     yield replacementName
                     // Yield upstream flanking region. 
                     yield (  sprintf "u%s" locusGene) // regular locus flanking seq
@@ -135,10 +138,10 @@ let generateOutputsTitrations (args: L2DesignParams) =
                     // Finally the titrating promoter
                     yield decompile locusExp.promoter
                     // Emit downstream flanking region
-                    yield sprintf "%s[1:~%A]" locusExp.target.String flank
+                    yield sprintf "%s[1:~%A] {#breed DS_CDS}" locusExp.target.String flank
                 }  |> List.ofSeq
     match out with
-    | name::rest -> [name; String.Join(";" , rest)]
+    | linkers::name::rest -> [linkers; name; String.Join(";" , rest)]
     | _ -> failwithf "ERROR: L2 parsing failed"
     |> String.concat "\n"
     |> GslSourceCode
