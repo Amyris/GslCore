@@ -8,6 +8,7 @@ nuget FsLexYacc < 7
 nuget FsLexYacc.Runtime < 7
 nuget FParsec
 nuget MathNet.Numerics
+nuget FSharp.Collections.ParallelSeq
 
 group Build
   source https://nuget.org/api/v2

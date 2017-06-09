@@ -13,6 +13,7 @@ open utils
 open constants
 open pragmaTypes
 open DesignParams
+open FSharp.Collections.ParallelSeq
 
 
 // ===================================
@@ -443,9 +444,14 @@ let foldmap
 
             assert (statesForNodes.Length = nodeArray.Length)
 
-            Array.zip statesForNodes nodeArray 
-            |> Array.Parallel.map (fun (inputState, n) ->
+            let nCores = System.Environment.ProcessorCount
+            let useNCores = nCores - 1 // leave one for the OS
+
+            Array.zip statesForNodes nodeArray
+            |> PSeq.map (fun (inputState, n) ->
                 _foldmap inputState n |> snd)
+            |> PSeq.withDegreeOfParallelism useNCores
+            |> PSeq.toArray
             |> collect
             >>= (fun newLines -> ok (Block({bw with x = newLines})))
 
