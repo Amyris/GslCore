@@ -10,7 +10,7 @@ let approxMargin = 50
 let primerMaxDefault = 60
 let primerMinDefault = 20
 let maxNameLen = 600 // see also thumper restriction in thumper.fs
-let maxThumperOligo = 60
+let maxThumperOligo = 80
 let flanklenDefault = 500
 
 /// Classic allele swap codon replacement min frequency
