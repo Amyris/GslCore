@@ -6,3 +6,4 @@ FsLexYacc
 FsLexYacc.Runtime
 MathNet.Numerics
 Newtonsoft.Json
+FSharp.Collections.ParallelSeq

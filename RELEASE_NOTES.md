@@ -1,3 +1,6 @@
+#### 0.4.20 - June 9 2017
+* Use a controlled degree of parallelism in block processing.
+
 #### 0.4.19 - April 21 2017
 * Extend thumper primer limit to 80
 * VS2017 build fix
