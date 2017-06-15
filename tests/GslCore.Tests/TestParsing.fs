@@ -219,15 +219,15 @@ end"""
         let source = "@R41811>gADH1"
         sourceCompareTest (promote id) source source
 
-    [<Test>]
-    member x.TestL2ImplicitPromoterSwapAssembly() =
-        let source = "(!gERG10 ; !pFBA1 ; pSLN1)>gADH1"
-        sourceCompareTest (promote id) source source
+//    [<Test>]
+//    member x.TestL2ImplicitPromoterSwapAssembly() =
+//        let source = "(!gERG10 ; !pFBA1 ; pSLN1)>gADH1"
+//        sourceCompareTest (promote id) source source
 
     [<Test>]
     member x.TestL2ImplicitPromoterSwapVariable() =
         let source = """
-let prom = /GTGGTGACTATAGCTATGCTAGTGCTCGCTAAATAGCCTGA/ {#name testProm}
+let prom = /GTGGTGACTATAGCTATGCTAGTGCTCGCTAAATAGCCTGA/
 &prom>gADH1
 """
         sourceCompareTest (promote id) source source

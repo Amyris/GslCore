@@ -166,7 +166,7 @@ let assertFailMany failTypes textSnippets r =
         Assert.Fail(sprintf "Validation test didn't fail.  Result was %A" x)
         failwith "" // need this line to allow compiler to return msg value above
 
-/// Asset that a result is a failure with a single message, with matching type and message text.
+/// Assert that a result is a failure with a single message, with matching type and message text.
 /// Return the failure message for further processing. Otherwise, fail.
 let assertFail failType textSnippet r =
     let msgs = assertFailMany [failType] [textSnippet] r

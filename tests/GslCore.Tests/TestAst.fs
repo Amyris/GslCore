@@ -33,6 +33,15 @@ type TestLinting() =
             [Some("#push and #pop have been removed"); Some("#push and #pop have been removed")]
         |> ignore
 
+    [<Test>]
+    member x.TestDetectAssemblyInL2Promoter() =
+        let errorText = "Unsupported use of an Assembly in an L2 promoter element. Please use only native or rabit parts."
+        "(!gERG10 ; !pFBA1 ; pSLN1)>gADH1"
+        |> GslSourceCode
+        |> compile linters
+        |> assertFail L2ExpansionError (Some errorText)
+        |> ignore
+
 [<TestFixture>]
 type TestValidation() = 
 
