@@ -16,15 +16,16 @@ type TestL2Expansion() =
 
     let phase1WithL2Validation = 
         phase1 Set.empty
-        >=> validateNoAssemblyInL2Promoter
+        >=> (validate validateNoAssemblyInL2Promoter)
     
     [<Test>]
     member x.TestDetectAssemblyInL2Promoter() =
         let errorText = "Unsupported use of an Assembly."
-        let source = GslSourceCode("(!gERG10 ; !pFBA1 ; pSLN1)>gADH1")
+        let source = GslSourceCode("!gERG10 ; !pFBA1 ; pSLN1>gADH1")
 
         compile phase1WithL2Validation source 
         |> assertFail L2ExpansionError (Some errorText)
+        |> ignore
 
 
 //        let tree = lexparse source |> returnOrFail
