@@ -312,6 +312,15 @@ let private expandL2Expression
 
         fn designParams // returns string list
 
+let failOnAssemblyInL2Promoter (node: AstTreeHead) = 
+    match node.wrappedNode with
+    |L2Element(e) ->
+        // if you see an L2 element, check if the promoter looks like an Assembly
+        match e.x.promoter with
+        | AssemblyPart(_) -> error L2ExpansionError "Unsupported use of an Assembly." node.wrappedNode
+        | RecursivePart(_) -> error (InternalError L2ExpansionError) "Unexpected recursive part definition in L2 promoter position." node.wrappedNode
+        | _ -> good
+    | _ -> good
 
 /// Expand all level 2 expressions.
 let expandLevel2

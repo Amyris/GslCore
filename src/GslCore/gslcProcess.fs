@@ -48,6 +48,7 @@ let rec processGSL (s: ConfigurationState) gslText =
         >>= convertAndGatherAssemblies
     else
         phase1Result
+        //>>= failOnAssemblyInL2Promoter 
         >>= expandLevel2 legalCapas l2Providers ga.rgs
         >>= prepPhase2 ga.rgs ga.seqLibrary
         >>= phase2WithData

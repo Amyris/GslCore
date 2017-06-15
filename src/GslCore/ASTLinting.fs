@@ -33,21 +33,10 @@ let private failOnPushAndPop node =
             good
     | _ -> good
 
-let private failOnAssemblyInL2Promoter node = 
-    match node with
-    |L2Element(e) ->
-        // if you see an L2 element, check if the promoter looks like an Assembly
-        match e.x.promoter with
-        | Assembly(_) -> error L2ExpansionError "Unsupported use of an Assembly in an L2 promoter element. Please use only native or rabit parts." node
-        | _ -> good
-    | _ -> good
-
-    
 
 let private allLinters =
     warnOnPartThatIsLikelyVariable
     &&& failOnPushAndPop
-    &&& failOnAssemblyInL2Promoter
 
 /// Perform all linting passes on an AST.
 let linters = validate allLinters
