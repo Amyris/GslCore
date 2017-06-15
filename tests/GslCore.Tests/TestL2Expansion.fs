@@ -13,13 +13,17 @@ open constants
 
 [<TestFixture>]
 type TestL2Expansion() = 
+
+    let phase1WithL2Validation = 
+        phase1 Set.empty
+        >=> validateNoAssemlybInL2Promoter
     
     [<Test>]
     member x.TestDetectAssemblyInL2Promoter() =
         let errorText = "Unsupported use of an Assembly."
         let source = GslSourceCode("(!gERG10 ; !pFBA1 ; pSLN1)>gADH1")
 
-        sourceCompareTest failOnAssemblyInL2Promoter source source
+        sourceCompareTest phase1WithL2Validation source source
 
 
 //        let tree = lexparse source |> returnOrFail

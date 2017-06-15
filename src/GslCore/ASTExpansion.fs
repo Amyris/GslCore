@@ -312,7 +312,7 @@ let private expandL2Expression
 
         fn designParams // returns string list
 
-let failOnAssemblyInL2Promoter (node: AstTreeHead) = 
+let validateNoAssemlybInL2Promoter (node: AstTreeHead) = 
     match node.wrappedNode with
     |L2Element(e) ->
         // if you see an L2 element, check if the promoter looks like an Assembly
