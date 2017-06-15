@@ -18,9 +18,13 @@ type TestL2Expansion() =
     member x.TestDetectAssemblyInL2Promoter() =
         let errorText = "Unsupported use of an Assembly."
         let source = GslSourceCode("(!gERG10 ; !pFBA1 ; pSLN1)>gADH1")
-        let tree = lexparse source |> returnOrFail
-        compile failOnAssemblyInL2Promoter source
-        |> ignore
+
+        sourceCompareTest failOnAssemblyInL2Promoter source source
+
+
+//        let tree = lexparse source |> returnOrFail
+//        compile failOnAssemblyInL2Promoter source
+//        |> ignore
 //        assertFail
 //            L2ExpansionError (Some errorText)
 //            failOnAssemblyInL2Promoter tree
