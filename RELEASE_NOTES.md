@@ -1,3 +1,6 @@
+#### 0.4.21 - June 16 2017
+* Allow single-part assemblies to act as promoters in level 2 titrations.
+
 #### 0.4.20 - June 9 2017
 * Use a controlled degree of parallelism in block processing.
 
