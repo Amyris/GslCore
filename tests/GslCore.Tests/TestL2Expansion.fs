@@ -61,6 +61,16 @@ gHO^ ; pGAL1>mERG10""" |> GslSourceCode
         |> returnOrFail 
         |> ignore
 
+    [<Test>]
+    member x.TestNativeL2PromoterSwapLinkers() =
+        let source = """
+pTDH3>gADH1
+#linkers 0,2,A,3,9|0,B,4,9
+pTDH3>gADH1"""     |> GslSourceCode
+        compile phase1WithL2Validation source 
+        |> returnOrFail 
+        |> ignore
+
 
     [<Test>]
     member x.TestRabitL2PromoterSwap() =
