@@ -313,13 +313,12 @@ let private expandL2Expression
         fn designParams // returns string list
 
 let validateNoAssemblyInL2Promoter (node: AstNode) = 
-    let test = node.TypeName
-    printfn "%s" test
     match node with
     |L2Element(e) ->
         // if you see an L2 element, check if the promoter looks like an Assembly
         match e.x.promoter with
-        | AssemblyPart(_) -> error L2ExpansionError "Unsupported use of an Assembly." node
+        | AssemblyPart(a) -> 
+            error L2ExpansionError "Unsupported use of an Assembly." node
         | RecursivePart(_) -> error (InternalError L2ExpansionError) "Unexpected recursive part definition in L2 promoter position." node
         | _ -> good
     | _ -> good

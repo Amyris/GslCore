@@ -299,7 +299,7 @@ L2Promoter:
   | STRING				 { createL2Id None (tokenAsNode $1) }
   | STRING DOT STRING    { createL2Id (Some(tokenAsNode $1)) (tokenAsNode $3) }
   | ID DOT ID            { createL2Id (Some(tokenAsNode $1)) (tokenAsNode $3) }
-  | AssemblyPart		 { $1 }
+  | CompletePart		 { $1 }
 
 
 // foo^
