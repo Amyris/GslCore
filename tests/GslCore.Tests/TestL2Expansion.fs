@@ -9,7 +9,9 @@ open AstAlgorithms
 open AstExpansion
 open AstProcess
 open AstErrorHandling
+open BasicL2ExpansionProvider
 open constants
+open PluginTypes
 
 [<TestFixture>]
 type TestL2Expansion() = 
@@ -19,8 +21,11 @@ type TestL2Expansion() =
         >=> (validate validateNoAssemblyInL2Promoter)
 
 //    let phase1AndL2 =
-//        >=> phase1 [] // empty list as we shouldn't need any capas for this test
-//        >=> expandLevel2 [] l2Providers rgs // you'll need to gather your L2 provider from the module where its defined, as well as the appropriate reference genomes
+//        phase1 Set.empty // empty list as we shouldn't need any capas for this test
+//        >=> expandLevel2 
+//            Set.empty 
+//            (getL2KOTitrationProviders basicL2ExpansionPlugin) 
+//            rgs // RefGenomes need to become an interface to test this here!
     
     [<Test>]
     member x.TestDetectAssemblyInL2Promoter() =
