@@ -39,10 +39,9 @@ gHO^ ; &myAssembly>gACS1""" |> GslSourceCode
 
     [<Test>]
     member x.TestInlineL2PromoterSwap() =
-        let errorText = "found '>', expected one of ['EOF']."
         let source = GslSourceCode("!gERG10 ; !pFBA1 ; pSLN1>gADH1")
         compile phase1WithL2Validation source 
-        |> assertFail ParserError (Some errorText)
+        |> assertFail ParserError None
         |> ignore
 
 
@@ -73,9 +72,12 @@ gHO^ ; @R52888>mERG10""" |> GslSourceCode
     [<Test>]
     member x.TestCustomSeqL2PromoterSwap() =
         let source = """
-let myPromoter = /$GTACVMPLQVGSASKYWALKERMYYQACLPH/
-&myPromoter>gSLN1
-gHO^ ; &myPromoter>mERG10""" |> GslSourceCode
+let myPromoterAA = /$GTACVMPLQVGSASKYWALKERMYYQACLPH/
+let myPromoterDNA = /GATCGATATTACGATGTAGTCGTAGTAGCTGTATATATATGCTGATGCTTCTAATAGCTAGC/
+&myPromoterAA>gSLN1
+gHO^ ; &myPromoterDNA>mERG10
+/GATCGTATGCTTGGATCGTGATGTGCTGATCGACTGTAC/>gADH1
+gDIT1^; /$PLQVGSASKYWALKERMYYQACLPH/>gACS1""" |> GslSourceCode
         compile phase1WithL2Validation source 
         |> returnOrFail 
         |> ignore
