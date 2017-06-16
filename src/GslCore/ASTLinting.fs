@@ -33,6 +33,7 @@ let private failOnPushAndPop node =
             good
     | _ -> good
 
+
 let private allLinters =
     warnOnPartThatIsLikelyVariable
     &&& failOnPushAndPop

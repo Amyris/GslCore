@@ -134,6 +134,7 @@ type nonTerminalId =
     | NONTERM_AssemblyPart
     | NONTERM_L2IdWrap
     | NONTERM_L2Id
+    | NONTERM_L2Promoter
     | NONTERM_L2Locus
     | NONTERM_L2ExpElement
     | NONTERM_L2ExpElementList

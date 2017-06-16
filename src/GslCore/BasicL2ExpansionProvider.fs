@@ -7,6 +7,8 @@
 open pragmaTypes
 open LegacyParseTypes
 open AstTypes
+open AstAlgorithms
+open AstProcess
 open commonTypes
 open Amyris.Bio
 open constants
@@ -46,17 +48,32 @@ let generateOutputsExplicitLocus (locus:L2Id) (args: L2DesignParams) =
         failwithf "ERROR: knockout target gene %s must start with g tag (e.g. gADH1)." locusWithPrefix
     let out = seq {
                     let partsA,partsB = balance args.line.parts
+
+                    // Emit replacement DNA name for knockout
+                    let replacementName =
+                        match args.pragmas.TryFind(namePragmaDef) with
+                        // if the user provided a pragma name, create the donor DNA name with .donor
+                        // (we're not just using the name itself because it has to be distinguished
+                        // from the gRNAs which will also be named a variant of the user provided name
+                        | Some(p) -> 
+                            let providedName = p.args.[0] // get the first argument to the name pragma
+                            sprintf "#name %s" providedName
+
+                        // if no name is provided, use this as the default donor name
+                        | None -> sprintf "#name u%s__d%s" locusWithoutPrefix locusWithoutPrefix
+
+                    yield replacementName
+                    
                     // Emit upstream flanking region
-                    yield sprintf "#name u%s__d%s" locusWithoutPrefix locusWithoutPrefix
                     yield sprintf "u%s" locusWithoutPrefix
                     // First half of the parts before the marker
                     for expItem in partsA do
-                        yield expItem.promoter.String
+                        yield decompile expItem.promoter
                         yield sprintf "%s" (expItem.target.String)
                     if args.megastitch then yield "###" // Marker
                     // Second half of the parts after the marker
                     for expItem in partsB do
-                        yield (sprintf "!%s;!%s" expItem.target.String expItem.promoter.String)
+                        yield (sprintf "!%s;!(%s)" expItem.target.String (decompile expItem.promoter))
                     // Emit downstream flanking region
                     yield sprintf "d%s" locusWithoutPrefix
                 } |> List.ofSeq
@@ -90,26 +107,47 @@ let generateOutputsTitrations (args: L2DesignParams) =
     /// the flank length
     let flank = args.rgs.[args.refGenome].getFlank()
     let out = seq{
-                    // Yield upstream flnaking region. 
-                    yield sprintf "#name u%s_%s_d%s" locusGene locusExp.promoter.String locusGene
+                    
+                    // Emit replacement DNA name for promoter swap
+                    let replacementName =
+                        match args.pragmas.TryFind(namePragmaDef) with
+                        // if the user provided a pragma name, create the donor DNA name with .donor
+                        // (we're not just using the name itself because it has to be distinguished
+                        // from the gRNAs which will also be named a variant of the user provided name
+                        | Some(p) -> 
+                            let providedName = p.args.[0] // get the first argument to the name pragma
+                            sprintf "#name %s" providedName
+
+                        // if no name is provided, use this as the default donor name
+                        | None -> sprintf "#name u%s_%s_d%s" locusGene (decompile locusExp.promoter |> cleanHashName ) locusGene
+                    
+                    // yield a new linker line because the default pattern will cause an A linker 
+                    // to land on a marker (error: no A-9 markers)
+                    match args.pragmas.TryFind("linkers") with
+                    | Some(_) -> yield ""
+                    | None -> yield "#linkers 0,2,A,3,9|0,A,2,9"
+
+                    yield replacementName
+                    // Yield upstream flanking region. 
                     yield (  sprintf "u%s" locusGene) // regular locus flanking seq
                     // First half of the parts before the marker
                     for expItem in partsA do
-                        yield expItem.promoter.String
+                        yield decompile expItem.promoter
                         yield expItem.target.String
                     if args.megastitch then yield "###" 
                     // Second half of the parts after the marker
                     for expItem in partsB do
-                        yield (sprintf "!%s;!%s" expItem.target.String expItem.promoter.String)
+                        yield (sprintf "!%s;!(%s)" expItem.target.String (decompile expItem.promoter))
                     // Finally the titrating promoter
-                    yield locusExp.promoter.String
+                    yield decompile locusExp.promoter
                     // Emit downstream flanking region
-                    yield sprintf "%s[1:~%A]" locusExp.target.String flank
+                    yield sprintf "%s[1:~%A] {#breed DS_CDS}" locusExp.target.String flank
                 }  |> List.ofSeq
     match out with
-    | name::rest -> [name; String.Join(";" , rest)]
+    | linkers::name::rest -> [linkers; name; String.Join(";" , rest)]
     | _ -> failwithf "ERROR: L2 parsing failed"
     |> String.concat "\n"
+    |> sprintf "do\n%s\nend"
     |> GslSourceCode
 
 let basicL2ExpansionPlugin =
