@@ -141,7 +141,7 @@ type SeamlessAssembler = {
                 ok assembly
 
 /// Produce an instance of the seamless assembly plugin with the provided extra argument processor.
-let seamlessPlugin extraArgProcessor =
+let createSeamlessPlugin extraArgProcessor =
    {name = "seamless_assembly";
     description = Some "Perform seamless assembly by liberally fusing slices."
     behaviors =
@@ -150,3 +150,6 @@ let seamlessPlugin extraArgProcessor =
         behavior = AssemblyTransform({run = false; processExtraArgs = extraArgProcessor})}]
     providesPragmas = [];
     providesCapas = []}
+
+/// By default do not take any other command line args into account.
+let seamlessPlugin = createSeamlessPlugin (fun _ x -> x)
