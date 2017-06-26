@@ -1,3 +1,6 @@
+#### 0.4.22 - June 25 2017
+*  Support for seamless primer generation for non linkered designs
+
 #### 0.4.21 - June 16 2017
 * Allow single-part assemblies to act as promoters in level 2 titrations.
 

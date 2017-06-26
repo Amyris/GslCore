@@ -83,6 +83,7 @@
     <Compile Include="TestAst.fs" />
     <Compile Include="TestBootstrap.fs" />
     <Compile Include="TestSliceAnnotations.fs" />
+    <Compile Include="TestSeamlessPrimers.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
