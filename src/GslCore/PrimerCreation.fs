@@ -915,13 +915,13 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
             // strategy we employ by default, but it will mess things up to try to put a seamless stitch here into a possibly
             // small DNA sequence, so just ignore FUSION directive
             if verbose then
-                printfn "procAssembly: skipping redudant FUSIONST/INLINEST"
+                printfn "procAssembly: skipping redudant FUSIONST/INLINEST (skip)"
             procAssembly dp errorName prev sliceOut primersOut (next::tl)
         | hd::next::tl when hd.sliceType = FUSIONST ->
             // Slice hd is a fusion slice, which is virtual, it exists only to mark
             // the intention to fuse prev and next together
             if verbose then
-                printfn "procAssembly: FUSIONST - generating primers"
+                printfn "procAssembly: FUSIONST - generating primers (DPP)"
             if prev = [] then failwith "INTERNAL ERROR: unexpected prev = [] in procAssembly\n"
             let primerF,offsetF,primerR,offsetR = seamless dp (List.head prev) next
 
@@ -949,7 +949,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 printfn "procAssembly: LINKER or inline not rabitstart/end"
             if hd.sliceType = INLINEST && hd.dna.Length < 12 then
                 if verbose then
-                    printfn "procAssembly: ... shortcase"
+                    printfn "procAssembly: ... shortcase (DPP)"
                 // SHORTINLINE Case
                 //
                 // Special case for short inline sequences.  We can sort of do a seamless design
@@ -1048,7 +1048,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     ((cutLeft next offsetF)::tl) // Remove bases from the next slice if we moved the primer
             else
                 if verbose then
-                    printfn "procAssembly: ... longcase"
+                    printfn "procAssembly: ... longcase (DPP)"
                 // LONGINLINE Case
                 // Regular inline case or linker case - just design fwd and reverse then prepend
                 // leading sequence (inline or linker)
@@ -1387,12 +1387,12 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
              sliceOut') // Last linker
         | hd::tl when hd.sliceType = INLINEST ->
             if verbose then
-                printfn "procAssembly: ... INLINEST"
+                printfn "procAssembly: ... (GAP) INLINEST"
             let prevNew = hd::prev
             procAssembly dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
         | hd::tl ->
             if verbose then
-                printfn "procAssembly: ... catchall case"
+                printfn "procAssembly: ... (GAP) catchall case"
             procAssembly dp errorName (hd::prev) (incPrev prev sliceOut)  (GAP::primersOut) tl
 
     // --- end procAssembly ------------------------------------------------------------------------

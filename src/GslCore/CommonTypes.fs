@@ -229,6 +229,33 @@ type DnaAssembly =
     interface ISourcePosition with
         member x.OptionalSourcePosition = x.materializedFrom.sourcePosition
 
+/// DNASlice default for a fusion slidetype
+let fusionSliceConstant = {
+    id = None;
+    extId = None;
+    sliceName = "fusion";
+    uri = None; // TODO: uri for fusion parts?
+    dna = Dna("");
+    sourceChr = "";
+    sourceFr = 0<ZeroOffset>;
+    sourceTo = 0<ZeroOffset>;
+    sourceFwd = true;
+    template = None;
+    amplified = false;
+    sourceFrApprox = false;
+    sourceToApprox =false;
+    destFr = 0<ZeroOffset>;
+    destTo = 0<ZeroOffset>;
+    destFwd= true;
+    description ="::";
+    dnaSource = "";
+    sliceType = FUSIONST;
+    pragmas = EmptyPragmas;
+    breed = B_VIRTUAL;
+    materializedFrom = None; // TODO: should we mark this as associated with this ppp?
+    annotations = [];
+}
+
 /// Model a primer which diverges and has body/tail parts.
 /// The body part anneals to the intended amplification target and the tail
 /// hangs out and anneals for stitching purposes

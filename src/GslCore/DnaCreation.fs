@@ -568,31 +568,7 @@ let expandAssembly
                 // Might also want to yield a fusion slice
                 //
                 if ppp.pr.ContainsKey("fuse") then
-                    yield
-                       {id = None;
-                        extId = None;
-                        sliceName = "fusion";
-                        uri = None; // TODO: uri for fusion parts?
-                        dna = Dna("");
-                        sourceChr = "";
-                        sourceFr = 0<ZeroOffset>;
-                        sourceTo = 0<ZeroOffset>;
-                        sourceFwd = true;
-                        template = None;
-                        amplified = false;
-                        sourceFrApprox = false;
-                        sourceToApprox =false;
-                        destFr = 0<ZeroOffset>;
-                        destTo = 0<ZeroOffset>;
-                        destFwd= true;
-                        description ="::";
-                        dnaSource = "";
-                        sliceType = FUSIONST;
-                        pragmas = EmptyPragmas;
-                        breed = B_VIRTUAL;
-                        materializedFrom = None; // TODO: should we mark this as associated with this ppp?
-                        annotations = [];
-                       }
+                    yield fusionSliceConstant
             } |> List.ofSeq |> recalcOffset
     let materializedParts = expandPPPList a.parts
 

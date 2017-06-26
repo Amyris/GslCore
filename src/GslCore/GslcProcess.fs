@@ -116,14 +116,16 @@ let cleanLongSlices _ (a:DnaAssembly) =
     ok {a with dnaParts = cleanedParts}
 
 
-// we run into trouble during primer generation if a virtual part (fuse) gets between two parts that
-// would otherwise get fused anyway (a dna slice and a linker for example).   Strip out the fuse diective
-// in this case, otherwise primer doesn't get built against the real target
+/// we run into trouble during primer generation if a virtual part (fuse) gets between two parts that
+/// would otherwise get fused anyway (a dna slice and a linker for example).   Strip out the fuse diective
+/// in this case, otherwise primer doesn't get built against the real target
 let preProcessFuse _ (a: DnaAssembly) =
     let rec proc (l:DNASlice list) res =
         match l with
             | [] -> List.rev res
-            | hd::middle::tl when hd.sliceType = SliceType.FUSIONST && middle.sliceType=SliceType.INLINEST ->
+            | hd::middle::tl when
+                    hd.sliceType = SliceType.FUSIONST
+                    && middle.sliceType = SliceType.INLINEST ->
                 proc tl (middle::res)
             | hd::tl ->
                 proc tl (hd::res)
