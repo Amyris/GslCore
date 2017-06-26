@@ -126,7 +126,7 @@ type SeamlessAssembler = {
                     match arg.values with
                     | ["true"] -> true
                     | ["false"] -> false
-                    | [x] -> failwithf "Invalid argument for seamless: '%O'. Options are 'true' or 'false'." x
+                    | [x] -> failwithf "Invalid argument for seamless: '%s'. Options are 'true' or 'false'." x
                     | _ -> failwithf "Seamless plugin received the wrong number of command line arguments."
                 {x with run = run}
             else x
