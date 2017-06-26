@@ -106,7 +106,7 @@ let placeFuseForSeamless (at:ATContext) (a:DnaAssembly) =
 
 let seamlessArg =
    {name = "seamless";
-    param = [];
+    param = ["(true or false)"];
     alias = [];
     desc = "Perform seamless assembly."}
 
@@ -122,7 +122,13 @@ type SeamlessAssembler = {
         member x.ProvidedArgs() = [seamlessArg]
         member x.Configure(arg) =
             if arg.spec = seamlessArg then
-                {x with run = true}
+                let run =
+                    match arg.values with
+                    | ["true"] -> true
+                    | ["false"] -> false
+                    | [x] -> failwithf "Invalid argument for seamless: '%O'. Options are 'true' or 'false'." x
+                    | _ -> failwithf "Seamless plugin received the wrong number of command line arguments."
+                {x with run = run}
             else x
             |> x.processExtraArgs arg
             :> IAssemblyTransform
@@ -141,15 +147,15 @@ type SeamlessAssembler = {
                 ok assembly
 
 /// Produce an instance of the seamless assembly plugin with the provided extra argument processor.
-let createSeamlessPlugin extraArgProcessor =
+let createSeamlessPlugin defaultRun extraArgProcessor =
    {name = "seamless_assembly";
     description = Some "Perform seamless assembly by liberally fusing slices."
     behaviors =
       [{name = None;
         description = None;
-        behavior = AssemblyTransform({run = false; processExtraArgs = extraArgProcessor})}]
+        behavior = AssemblyTransform({run = defaultRun; processExtraArgs = extraArgProcessor})}]
     providesPragmas = [];
     providesCapas = []}
 
-/// By default do not take any other command line args into account.
-let seamlessPlugin = createSeamlessPlugin (fun _ x -> x)
+/// By default do not take any other command line args into account, and always run in seamless mode.
+let seamlessPlugin = createSeamlessPlugin true (fun _ x -> x)
