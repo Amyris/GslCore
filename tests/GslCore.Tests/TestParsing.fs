@@ -10,8 +10,16 @@ open AstProcess
 open AstErrorHandling
 open constants
 
+
 [<TestFixture>]
 type TestParsing() = 
+    /// Ensure source parses and expands to identical source
+    let testAssemblyParseOnly  source =
+        let source = GslSourceCode source
+        source 
+        |> LexAndParse.lexAndParse false |> failIfBad (Some(source))
+        |> returnOrFail
+        |> assertDecompilesTo source.String
 
     [<Test>]
     member x.TestParseEmpty() =
@@ -232,4 +240,28 @@ let prom = /GTGGTGACTATAGCTATGCTAGTGCTCGCTAAATAGCCTGA/
 """
         sourceCompareTest (promote id) source source
 
-    
+
+    // -------------- list handling --------------------------------------------------
+    [<Test>]
+    member __.TestListParseSimpleList1() =
+        testAssemblyParseOnly  "let myList = [pTDH3,pGAL1,pGAL10,pFBA1]
+"
+    [<Test>]
+    member __.TestListParseSimpleList2() =
+        testAssemblyParseOnly "let myList = [1,2,3,4]
+"
+    [<Test>]
+    member __.TestListParseSimpleMixedList() =
+        testAssemblyParseOnly "let myList = [pTDH3,2,3,4]
+"
+
+    [<Test>]
+    member __.TestListParseEmpty() =
+        testAssemblyParseOnly "let myList = []
+"
+    [<Test>]
+    member __.TestParseSimpleImplicitRecursive() =
+        testAssemblyParseOnly """
+let promoters = [pTDH3,pGAL1,pGAL10,pFBA1]
+let construct = [uHO,&promoters,mERG10,dHO]
+"""

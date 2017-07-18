@@ -110,6 +110,7 @@ type nonTerminalId =
     | NONTERM_Pragma
     | NONTERM_Pragmas
     | NONTERM_InlinePragmas
+    | NONTERM_ValueList
     | NONTERM_TypedVariableDeclaration
     | NONTERM_FunctionDefArgs
     | NONTERM_FunctionDeclaration

@@ -11,6 +11,7 @@ open Microsoft.FSharp.Text.Lexing
 open RefGenome
 open utils
 open constants
+open System
 open pragmaTypes
 open DesignParams
 open FSharp.Collections.ParallelSeq
@@ -78,6 +79,12 @@ let decompile tree =
         | VariableBinding({x=vb; pos=_}) ->
             appendf "let %s = " vb.name
             _print vb.value state
+        | ValueList({x=vl; pos=_}) ->
+            let n = vl.Length
+            append "["
+            vl |> List.iteri (fun i x -> _print x state ; if i < n-1 then append ",")
+            append "]"
+
         | BinaryOperation({x=binop; pos=_}) ->
             // Explicitly group every binary in parens to keep things unambiguous.
             append "("
@@ -267,6 +274,7 @@ let children node =
     | Leaf _ -> Seq.empty
     // variable binding
     | VariableBinding(vb) -> Seq.singleton vb.x.value
+    | ValueList(vl) -> vl.x |> Seq.ofList
     // typed value
     | TypedValue({x = (_, n); pos = _}) -> Seq.singleton n
     // Simple operations on values
@@ -463,6 +471,9 @@ let foldmap
             | VariableBinding(b) ->
                 foldDropState b.x.value
                 >>= (fun newInner -> ok (VariableBinding({b with x = {b.x with value = newInner}})))
+            | ValueList(l) ->
+                collect (List.map foldDropState l.x)
+                >>= (fun newValueList -> ok (ValueList({l with x = newValueList})))
             | TypedValue(tv) -> 
                 let t, v = tv.x
                 foldDropState v

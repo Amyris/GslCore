@@ -78,6 +78,7 @@ let private replaceSourcePosition pos node =
     | TypedVariable(nw) -> TypedVariable({nw with pos = pos})
     | TypedValue(nw) -> TypedValue({nw with pos = pos})
     | VariableBinding(nw) -> VariableBinding({nw with pos = pos})
+    | ValueList(nw) -> ValueList({nw with pos = pos})
     | BinaryOperation(nw) -> BinaryOperation({nw with pos = pos})
     | Negation(nw) -> Negation({nw with pos = pos})
     | ParseRelPos(nw) -> ParseRelPos({nw with pos = pos})
@@ -317,7 +318,7 @@ let validateNoAssemblyInL2Promoter (node: AstNode) =
     |L2Element(e) ->
         // if you see an L2 element, check if the promoter looks like an Assembly
         match e.x.promoter with
-        | AssemblyPart(a) -> 
+        | AssemblyPart(_) -> 
             error L2ExpansionError "Unsupported use of an Assembly." node
         | RecursivePart(_) -> error (InternalError L2ExpansionError) "Unexpected recursive part definition in L2 promoter position." node
         | _ -> good

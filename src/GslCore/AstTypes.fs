@@ -104,7 +104,7 @@ type Node<'T when 'T: equality> = {x: 'T; pos: SourcePosition option}
 /// Wrap a value in a NodeWrapper without source position.
 let nodeWrap x = {x = x; pos = None}
 
-/// Wrap a valye in a NodeWrapper with a position taken from a Positioned token.
+/// Wrap a value in a NodeWrapper with a position taken from a Positioned token.
 let nodeWrapWithTokenPosition (token: Positioned<_>) x = {x = x; pos = Some token.pos}
 
 /// Convert a Positioned token into a node by applying a function to the token's payload.
@@ -136,7 +136,7 @@ type BinaryOperator = | Add | Subtract | Multiply | Divide
 
 /// Supported types for variables.
 /// We need NotYetTyped to allow constructs like let foo = &bar, as we cannot elide a type for &bar at this point.
-type GslVarType = | NotYetTyped | IntType | FloatType | StringType | PartType
+type GslVarType = | NotYetTyped | IntType | FloatType | StringType | PartType | ListType
     with
     /// Print the actual name of the type.
     override x.ToString() =
@@ -146,6 +146,7 @@ type GslVarType = | NotYetTyped | IntType | FloatType | StringType | PartType
         | FloatType -> "Float"
         | StringType -> "String"
         | PartType -> "Part"
+        | ListType -> "List"
 
 // ------ The AST itself. Node definitions follow. ------
 
@@ -169,6 +170,7 @@ and AstNode =
     | TypedVariable of Node<string*GslVarType>
     // variable binding
     | VariableBinding of Node<VariableBinding>
+    | ValueList of Node<AstNode list> 
     // typed value
     | TypedValue of Node<GslVarType*AstNode>
     // Simple operations on values
@@ -225,6 +227,7 @@ and AstNode =
         | TypedVariable(nw) -> nw.pos
         | TypedValue(nw) -> nw.pos
         | VariableBinding(nw) -> nw.pos
+        | ValueList(nw) -> nw.pos
         | BinaryOperation(nw) -> nw.pos
         | Negation(nw) -> nw.pos
         | ParseRelPos(nw) -> nw.pos
@@ -490,6 +493,14 @@ let negate node = Negation(nodeWrapWithNodePosition node node)
 let createVariableBinding name varType value =
     VariableBinding(nodeWrapWithTokenPosition name {name=name.i; varType=varType; value=value})
    
+//let createEmptyValueList() = ValueList(Node<AstNode list> = [])
+let createEmptyValueList ()= 
+        let pos = emptySourcePosition
+        ValueList( {x = []; pos = Some pos} )
+
+let createValueList (list:AstNode list) = 
+        ValueList( {x = list; pos = posFromList list} )
+
 /// Create an AST node for a typed value passed to a function argument.
 let createTypedValue t v = TypedValue(nodeWrapWithNodePosition v (t, v))
 

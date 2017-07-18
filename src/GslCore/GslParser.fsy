@@ -114,6 +114,11 @@ InlinePragmas:
 // variable declarations
 // ==================
 
+ValueList:
+    | OPENSQBRACKET CLOSESQBRACKET { createEmptyValueList() }
+    | OPENSQBRACKET CommaSeparatedTypedValues CLOSESQBRACKET { createValueList $2 }
+
+
 // A complete let expression, deriving type from the context.
 TypedVariableDeclaration:
 	| LET ID EQUALS VARIABLE NEWLINE		  { createVariableBinding $2 NotYetTyped (tokenToVariable $4 NotYetTyped) }
@@ -122,6 +127,7 @@ TypedVariableDeclaration:
     | LET ID EQUALS FloatLiteral NEWLINE      { createVariableBinding $2 FloatType $4 }
     | LET ID EQUALS CompletePart NEWLINE      { createVariableBinding $2 PartType $4 }
     | LET ID EQUALS AssemblyPart NEWLINE      { createVariableBinding $2 PartType $4 }
+    | LET ID EQUALS ValueList NEWLINE         { createVariableBinding $2 ListType $4 }
 
 // ==================
 // function declarations
