@@ -13,25 +13,17 @@ open constants
 
 [<TestFixture>]
 type TestParsing() = 
-    /// Ensure source parses and expands to identical source
-    let testAssemblyParseOnly  source =
-        let source = GslSourceCode source
-        source 
-        |> LexAndParse.lexAndParse false |> failIfBad (Some(source))
-        |> returnOrFail
-        |> assertDecompilesTo source.String
-
     [<Test>]
-    member x.TestParseEmpty() =
+    member __.TestParseEmpty() =
         assertRoundtrip "" []
 
     [<Test>]
-    member x.TestParseLet() =
+    member __.TestParseLet() =
         assertRoundtrip "let foo = 1\n" [fooEqual1]
 
     /// tests of integer expressions
     [<Test>]
-    member x.TestIntegerExps() =
+    member __.TestIntegerExps() =
         testExpectedReprinting
             "let foo = 1 + 1\n"
             "let foo = (1 + 1)\n" // reprinting binary expressions always unambiguously parenthesizes
@@ -49,35 +41,35 @@ type TestParsing() =
             "let foo = ((1 / 1) * 1)\n"
 
     [<Test>]
-    member x.TestIntegerExpsWithVariables() =
+    member __.TestIntegerExpsWithVariables() =
         testExpectedReprinting
             "let foo = 1\nlet bar = &foo + 2\n"
             "let foo = 1\nlet bar = (&foo + 2)\n"
 
     [<Test>]
-    member x.TestParseSimplePart() =
+    member __.TestParseSimplePart() =
         assertRoundtrip "gFOO" [assemble [fooGenePart]]
 
     [<Test>]
-    member x.TestParsePartWithMod() =
+    member __.TestParsePartWithMod() =
         assertRoundtrip "gFOO[~20:~200]" [assemble [fooGeneWithSlice]]
 
     [<Test>]
-    member x.TestParsePartWithPragma() =
+    member __.TestParsePartWithPragma() =
         assertRoundtrip "gFOO {#name foo}" [assemble [fooGeneWithPragma]]
 
     [<Test>]
-    member x.TestParsePragma() =
+    member __.TestParsePragma() =
         assertRoundtrip "#name foo" [namePragmaFoo]
 
     [<Test>]
-    member x.TestSeveralParts() =
+    member __.TestSeveralParts() =
         assertRoundtrip
             "gFOO ; gFOO[~20:~200] ; gFOO {#name foo}"
             [assemble [fooGenePart; fooGeneWithSlice; fooGeneWithPragma]]
 
     [<Test>]
-    member x.TestNoTrailingSemicolons() =
+    member __.TestNoTrailingSemicolons() =
         let source = "gFOO ;"
         source
         |> GslSourceCode
@@ -86,11 +78,11 @@ type TestParsing() =
         |> ignore
 
     [<Test>]
-    member x.TestVariableUse() =
+    member __.TestVariableUse() =
         assertRoundtrip "&foo" [assemble [partVariable "foo"]]
 
     [<Test>]
-    member x.TestVariableRepertoire() =
+    member __.TestVariableRepertoire() =
         // if we just said 1.0 it wouldn't string round-trip as %f gives a lot of digits and ToString just prints 1
         let text = """
 let int = 1
@@ -108,7 +100,7 @@ let assembly = gFOO ; gFOO[~20:~200]
         assertRoundtrip text correctBindings
 
     [<Test>]
-    member x.TestFunctionDeclaration() =
+    member __.TestFunctionDeclaration() =
         let text = """
 let foo(bar) =
     &bar
@@ -121,13 +113,13 @@ end
 
 
     [<Test>]
-    member x.TestFunctionCall() =
+    member __.TestFunctionCall() =
         let arg = typedValue IntType (wrapInt 1)
         let fCall = FunctionCall(nodeWrap {name="foo"; args=[arg]})
         assertRoundtrip "foo(1)" [fCall]
 
     [<Test>]
-    member x.TestFunctionCallManyArgs() =
+    member __.TestFunctionCallManyArgs() =
         let source = "foo(1, 1.000000, \"hello\", gFOO, (gFOO))"
         let args = [
             typedValue IntType (wrapInt 1);
@@ -141,7 +133,7 @@ end
         assertRoundtrip source [fCall]
 
     [<Test>]
-    member x.TestAllBaseParts() =
+    member __.TestAllBaseParts() =
         let partSource = [
             "@fooPart";
             "###";
@@ -169,13 +161,13 @@ end
         assertRoundtrip text [assemble parts]
 
     [<Test>]
-    member x.TestSubassembly() =
+    member __.TestSubassembly() =
         let source = "(@fooPart ; gFOO) ; &fooVar"
         let subAssem = assemble [basePartWrap (PartId(nodeWrap "fooPart")); fooGenePart]
         assertRoundtrip source [assemble [subAssem; partVariable "fooVar"]]
 
     [<Test>]
-    member x.TestSubblocks() =
+    member __.TestSubblocks() =
         let source = """
 let foo = gFOO
 do
@@ -191,7 +183,7 @@ end
         sourceCompareTest (promote id) source source
 
     [<Test>]
-    member x.TestDocstrings() =
+    member __.TestDocstrings() =
         let source = """
 /// I'm a docstring for the following assembly.
 gFOO
@@ -203,27 +195,27 @@ end"""
 
     // Attempts at starting some L2 parsing tests
     [<Test>]
-    member x.TestL2ImplicitPromoterSwap() =
+    member __.TestL2ImplicitPromoterSwap() =
         let source = "pTDH3>gADH1"
         sourceCompareTest (promote id) source source
 
     [<Test>]
-    member x.TestL2ExplicitPromoterSwap() =
+    member __.TestL2ExplicitPromoterSwap() =
         let source = "gHO^ ; pTDH3>gADH1"
         sourceCompareTest (promote id) source source
 
     [<Test>]
-    member x.TestL2ExplicitMultiplePromoterSwap() =
+    member __.TestL2ExplicitMultiplePromoterSwap() =
         let source = "gHO^ ; pTDH3>gADH1 ; pSLN1>gADH6"
         sourceCompareTest (promote id) source source
 
     [<Test>]
-    member x.TestL2Knockout() =
+    member __.TestL2Knockout() =
         let source = "gHO^"
         sourceCompareTest (promote id) source source
 
     [<Test>]
-    member x.TestL2ImplicitPromoterSwapRabit() =
+    member __.TestL2ImplicitPromoterSwapRabit() =
         let source = "@R41811>gADH1"
         sourceCompareTest (promote id) source source
 
@@ -233,7 +225,7 @@ end"""
 //        sourceCompareTest (promote id) source source
 
     [<Test>]
-    member x.TestL2ImplicitPromoterSwapVariable() =
+    member __.TestL2ImplicitPromoterSwapVariable() =
         let source = """
 let prom = /GTGGTGACTATAGCTATGCTAGTGCTCGCTAAATAGCCTGA/
 &prom>gADH1
@@ -244,24 +236,33 @@ let prom = /GTGGTGACTATAGCTATGCTAGTGCTCGCTAAATAGCCTGA/
     // -------------- list handling --------------------------------------------------
     [<Test>]
     member __.TestListParseSimpleList1() =
-        testAssemblyParseOnly  "let myList = [pTDH3,pGAL1,pGAL10,pFBA1]
-"
+        testExpectedReprinting
+            "let myList = [pTDH3,pGAL1,pGAL10,pFBA1]\n"
+            "let myList = [pTDH3,pGAL1,pGAL10,pFBA1]\n"
     [<Test>]
     member __.TestListParseSimpleList2() =
-        testAssemblyParseOnly "let myList = [1,2,3,4]
-"
+        testExpectedReprinting  
+            "let myList = [1,2,3,4]\n"
+            "let myList = [1,2,3,4]\n"
     [<Test>]
     member __.TestListParseSimpleMixedList() =
-        testAssemblyParseOnly "let myList = [pTDH3,2,3,4]
-"
+        testExpectedReprinting  
+            "let myList = [pTDH3,2,3,4]\n"
+            "let myList = [pTDH3,2,3,4]\n"
 
     [<Test>]
     member __.TestListParseEmpty() =
-        testAssemblyParseOnly "let myList = []
-"
+        testExpectedReprinting  
+            "let myList = []\n"
+            "let myList = []\n"
     [<Test>]
     member __.TestParseSimpleImplicitRecursive() =
-        testAssemblyParseOnly """
+        testExpectedReprinting  
+            """
+let promoters = [pTDH3,pGAL1,pGAL10,pFBA1]
+let construct = [uHO,&promoters,mERG10,dHO]
+"""
+            """
 let promoters = [pTDH3,pGAL1,pGAL10,pFBA1]
 let construct = [uHO,&promoters,mERG10,dHO]
 """

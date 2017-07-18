@@ -493,7 +493,7 @@ let negate node = Negation(nodeWrapWithNodePosition node node)
 let createVariableBinding name varType value =
     VariableBinding(nodeWrapWithTokenPosition name {name=name.i; varType=varType; value=value})
    
-//let createEmptyValueList() = ValueList(Node<AstNode list> = [])
+/// Empty list creation case.  FIX: hard to determine position from parser since no node available.
 let createEmptyValueList ()= 
         let pos = emptySourcePosition
         ValueList( {x = []; pos = Some pos} )
