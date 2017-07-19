@@ -151,6 +151,7 @@ TypedValue:
     | IntExp        { createTypedValue IntType $1 } // integer expressions
     | StringLiteral { createTypedValue StringType $1 }
     | FloatLiteral  { createTypedValue FloatType $1 } // no support yet for floating point math
+    | ValueList     { createTypedValue ListType $1 }
     | CompletePart  { createTypedValue PartType $1 }
     | AssemblyPart  { createTypedValue PartType $1 }
 

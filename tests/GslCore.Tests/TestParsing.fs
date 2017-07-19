@@ -256,6 +256,11 @@ let prom = /GTGGTGACTATAGCTATGCTAGTGCTCGCTAAATAGCCTGA/
             "let myList = []\n"
             "let myList = []\n"
     [<Test>]
+    member __.TestParseSimpleExplicitRecursive() =
+        testExpectedReprinting  
+            "let construct = [uHO,[pTDH3,pGAL1,pGAL10,pFBA1],mERG10,dHO]\n"
+            "let construct = [uHO,[pTDH3,pGAL1,pGAL10,pFBA1],mERG10,dHO]\n"
+    [<Test>]
     member __.TestParseSimpleImplicitRecursive() =
         testExpectedReprinting  
             """
