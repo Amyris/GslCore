@@ -125,6 +125,31 @@ end"""
         variableTest source expectedResolution
 
     [<Test>]
+    member x.TestVariableResolutionOneLevelLists1() =
+        let source = """
+let foo = pTDH3
+let myList = [&foo,pGAL1,pGAL10,pFBA1]
+"""
+        let expectedResolution = """
+let foo = pTDH3
+let myList = [pTDH3,pGAL1,pGAL10,pFBA1]
+"""
+        variableTest source expectedResolution
+
+    [<Test>]
+    member x.TestVariableResolutionOneLevelLists2() =
+        let source = """
+let promoters = [pTDH3,pGAL1,pGAL10,pFBA1]
+let construct = [uHO,&promoters,mERG10,dHO]
+"""
+        let expectedResolution =
+            """
+let promoters = [pTDH3,pGAL1,pGAL10,pFBA1]
+let construct = [uHO,[pTDH3,pGAL1,pGAL10,pFBA1],mERG10,dHO]
+"""
+        variableTest source expectedResolution
+
+    [<Test>]
     member x.TestBlockScopedVariables() =
         let source = """
 let foo(bar) =
