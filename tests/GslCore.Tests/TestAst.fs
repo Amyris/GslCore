@@ -48,7 +48,7 @@ type TestValidation() =
         assertValidationFail
             UnhomogeneousList
             (Some (sprintf "Found a list with mixed types of values %s." types))
-             checkForHetLists tree
+             assertHomogeneousLists tree
         |> ignore
 
     [<Test>]

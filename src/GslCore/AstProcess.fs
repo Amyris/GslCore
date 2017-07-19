@@ -136,7 +136,7 @@ let private checkRecursiveCall (s: string list) node =
 let checkRecursiveCalls = foldmap Serial TopDown updateRecursiveCheckState [] checkRecursiveCall
 
 /// Enforce list homogeneity [till we find a reason not to]
-let checkForHetLists node =
+let assertHomogeneousLists node =
     let nodeToId = function 
         | TypedValue({x=IntType,_}) -> "int"
         | TypedValue({x=FloatType,_}) -> "float"

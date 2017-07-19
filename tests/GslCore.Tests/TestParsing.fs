@@ -236,38 +236,27 @@ let prom = /GTGGTGACTATAGCTATGCTAGTGCTCGCTAAATAGCCTGA/
     // -------------- list handling --------------------------------------------------
     [<Test>]
     member __.TestListParseSimpleList1() =
-        testExpectedReprinting
-            "let myList = [pTDH3,pGAL1,pGAL10,pFBA1]\n"
-            "let myList = [pTDH3,pGAL1,pGAL10,pFBA1]\n"
+        testExpectedReprintingSame "let myList = [pTDH3,pGAL1,pGAL10,pFBA1]\n"
     [<Test>]
     member __.TestListParseSimpleList2() =
-        testExpectedReprinting  
-            "let myList = [1,2,3,4]\n"
-            "let myList = [1,2,3,4]\n"
+        testExpectedReprintingSame "let myList = [1,2,3,4]\n"
     [<Test>]
     member __.TestListParseSimpleMixedList() =
-        testExpectedReprinting  
-            "let myList = [pTDH3,2,3,4]\n"
-            "let myList = [pTDH3,2,3,4]\n"
+        testExpectedReprintingSame "let myList = [pTDH3,2,3,4]\n"
 
     [<Test>]
     member __.TestListParseEmpty() =
-        testExpectedReprinting  
-            "let myList = []\n"
-            "let myList = []\n"
+        testExpectedReprintingSame "let myList = []\n"
     [<Test>]
-    member __.TestParseSimpleExplicitRecursive() =
-        testExpectedReprinting  
-            "let construct = [uHO,[pTDH3,pGAL1,pGAL10,pFBA1],mERG10,dHO]\n"
-            "let construct = [uHO,[pTDH3,pGAL1,pGAL10,pFBA1],mERG10,dHO]\n"
+    member __.TestListParseSimpleExplicitRecursive() =
+        testExpectedReprintingSame "let construct = [uHO,[pTDH3,pGAL1,pGAL10,pFBA1],mERG10,dHO]\n"
     [<Test>]
-    member __.TestParseSimpleImplicitRecursive() =
-        testExpectedReprinting  
+    member __.TestListParseSimpleImplicitRecursive() =
+        testExpectedReprintingSame
             """
 let promoters = [pTDH3,pGAL1,pGAL10,pFBA1]
 let construct = [uHO,&promoters,mERG10,dHO]
 """
-            """
-let promoters = [pTDH3,pGAL1,pGAL10,pFBA1]
-let construct = [uHO,&promoters,mERG10,dHO]
-"""
+    [<Test>]
+    member __.TestListParseSimpleFunctionCall() =
+        testExpectedReprintingSame """foo([pTDH3,pGAL1])"""

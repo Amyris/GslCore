@@ -121,6 +121,12 @@ let testExpectedReprinting sourceIn expectedOut =
     sourceCompareTest (promote id) sourceIn expectedOut
 
 
+///<summary>
+///Given GSL source code, parse it, reprint the AST, and expect
+///input source code
+///</summary>
+let testExpectedReprintingSame source = testExpectedReprinting source source
+
 let checkMessages
         (expectedTypes: AstMessageType list)
         (textSnippets: string option list)
