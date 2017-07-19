@@ -6,12 +6,11 @@ open Amyris.Dna
 open AstTypes
 open AstErrorHandling
 open AstAlgorithms
-open Microsoft.FSharp.Text.Lexing
 open RefGenome
 open utils
 open constants
 open pragmaTypes
-open DesignParams
+open System
 
 // ==========================
 // Helper functions to ease working with pragmas and parts.
@@ -96,7 +95,7 @@ let private validBasePartPP pp =
 
 let validBasePart = validatePart validBasePartPP
 
-// validtion functions on ParseParts
+// validation functions on ParseParts
 let private checkModsPP pp =
     if not pp.mods.IsEmpty then
         match pp.basePart with
@@ -136,6 +135,28 @@ let private checkRecursiveCall (s: string list) node =
 /// Fail if a GSL program contains recursively-defined functions.
 let checkRecursiveCalls = foldmap Serial TopDown updateRecursiveCheckState [] checkRecursiveCall
 
+/// Enforce list homogeneity [till we find a reason not to]
+let checkForHetLists node =
+    let nodeToId = function 
+        | TypedValue({x=IntType,_}) -> "int"
+        | TypedValue({x=FloatType,_}) -> "float"
+        | TypedValue({x=StringType,_}) -> "string"
+        | TypedValue({x=PartType,_}) -> "parts"
+        | TypedValue(_)-> "typed values" // probably not legal state but out of bounds for this test
+        | ValueList(_)-> "lists" // probably not legal state but out of bounds for this test
+        | _ -> "unknown" // unknown element
+
+    match node with
+    | ValueList(vl) ->
+        let listTypes = vl.x |> List.map (nodeToId) |> List.distinct
+        if listTypes.Length > 1 then
+            errorf
+                UnhomogeneousList
+                "Found a list with mixed types of values %s." (String.Join(",",listTypes))
+             node
+        else    
+            good
+    | _ -> good
 
 // ===================
 // variable resolution

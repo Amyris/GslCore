@@ -39,6 +39,7 @@ let phase1 legalCapas =
     >=> inlineFunctionCalls
     >=> stripFunctions
     >=> resolveVariablesStrict
+    >=> (validate checkForHetLists)
     >=> stripVariables
     >=> reduceMathExpressions
     >=> buildPragmas legalCapas

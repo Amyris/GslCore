@@ -22,6 +22,7 @@ type AstMessageType =
     | UnresolvedVariable
     | UnresolvedFunction
     | RecursiveFunctionCall
+    | UnhomogeneousList
     | TypeError
     | PragmaError // errors related to pragma construction or manipulation
     | InternalError of AstMessageType // errors that imply WE screwed up somewhere, not the user

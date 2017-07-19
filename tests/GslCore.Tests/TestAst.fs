@@ -16,7 +16,7 @@ open constants
 type TestLinting() = 
 
     [<Test>]
-    member x.TestDetectOldVariableSyntax() =
+    member __.TestDetectOldVariableSyntax() =
         "@foo"
         |> GslSourceCode
         |> compile linters
@@ -24,7 +24,7 @@ type TestLinting() =
         |> ignore
 
     [<Test>]
-    member x.TestDetectPushPop() =
+    member __.TestDetectPushPop() =
         "#push\n#pop"
         |> GslSourceCode
         |> compile linters
@@ -42,8 +42,17 @@ type TestValidation() =
         (validate op tree)
         |> assertFail msgType msgSnippet
 
+    let expectHetListDetection code types =
+        let source = GslSourceCode(code)
+        let tree = lexparse source |> returnOrFail
+        assertValidationFail
+            UnhomogeneousList
+            (Some (sprintf "Found a list with mixed types of values %s." types))
+             checkForHetLists tree
+        |> ignore
+
     [<Test>]
-    member x.TestDetectParseError() =
+    member __.TestDetectParseError() =
         let errorText = "test failure"
         let err = createParseError errorText None
         let tree = treeify [err]
@@ -51,7 +60,7 @@ type TestValidation() =
         Assert.AreEqual(err, failure.node)
 
     [<Test>]
-    member x.NoModsAllowed() =
+    member __.NoModsAllowed() =
         let source = GslSourceCode("###[2:20]")
         let tree = lexparse source |> returnOrFail
         assertValidationFail
@@ -61,7 +70,7 @@ type TestValidation() =
         |> ignore
 
     [<Test>]
-    member x.NoModsOnAssemblies() =
+    member __.NoModsOnAssemblies() =
         let source = GslSourceCode("(pFOO; gFOO)[2:20]")
         let tree = lexparse source |> returnOrFail
         assertValidationFail
@@ -69,6 +78,22 @@ type TestValidation() =
             (Some "Can only apply part mods to Gene or PartId, not Assembly")
             checkMods tree
         |> ignore
+
+    [<Test>]
+    member __.NoHetLists1() =
+        expectHetListDetection "let x = [1,2,3,gFOO,5]\n" "int,parts"
+
+    [<Test>]
+    member __.NoHetLists2() =
+        expectHetListDetection "let x = [1.1,2.1,3.1,4]\n" "float,int"
+
+    [<Test>]
+    member __.NoHetLists3() =
+        expectHetListDetection "let x = [pBAR1 , \"hello\" , pFOO6]\n" "parts,string"
+
+    [<Test>]
+    member __.NoHetLists4() =
+        expectHetListDetection "let x = [/ATGTGACTG/ , /$MVLRSPV/ , 6 ]\n" "parts,int"
 
 [<TestFixture>]
 type TestTransformation() =
@@ -102,14 +127,14 @@ type TestTransformation() =
 
 
     [<SetUp>]
-    member x.SetUp() = initGlobals()
+    member __.SetUp() = initGlobals()
 
     [<Test>]
-    member x.TestVariableResolutionBasic() = 
+    member __.TestVariableResolutionBasic() = 
         variableTest "let foo = gFOO\n&foo" "let foo = gFOO\ngFOO"
 
     [<Test>]
-    member x.TestVariableResolutionOneLevel() =
+    member __.TestVariableResolutionOneLevel() =
         let source = """
 let foo = gFOO
 let bar(p) =
@@ -125,7 +150,7 @@ end"""
         variableTest source expectedResolution
 
     [<Test>]
-    member x.TestVariableResolutionOneLevelLists1() =
+    member __.TestVariableResolutionOneLevelLists1() =
         let source = """
 let foo = pTDH3
 let myList = [&foo,pGAL1,pGAL10,pFBA1]
@@ -137,7 +162,7 @@ let myList = [pTDH3,pGAL1,pGAL10,pFBA1]
         variableTest source expectedResolution
 
     [<Test>]
-    member x.TestVariableResolutionOneLevelLists2() =
+    member __.TestVariableResolutionOneLevelLists2() =
         let source = """
 let promoters = [pTDH3,pGAL1,pGAL10,pFBA1]
 let construct = [uHO,&promoters,mERG10,dHO]
@@ -150,7 +175,7 @@ let construct = [uHO,[pTDH3,pGAL1,pGAL10,pFBA1],mERG10,dHO]
         variableTest source expectedResolution
 
     [<Test>]
-    member x.TestVariableResolutionListsIntoFunctions1() =
+    member __.TestVariableResolutionListsIntoFunctions1() =
         let source = """
 let foo = [gFOO,gBAR]
 let bar(p) =
@@ -166,7 +191,7 @@ end"""
         variableTest source expectedResolution
 
     [<Test>]
-    member x.TestVariableResolutionListsIntoFunctions2() =
+    member __.TestVariableResolutionListsIntoFunctions2() =
         let source = """
 let bar(p) =
     &p
@@ -181,7 +206,7 @@ end"""
         functionInliningTest source expectedResolution
 
     [<Test>]
-    member x.TestBlockScopedVariables() =
+    member __.TestBlockScopedVariables() =
         let source = """
 let foo(bar) =
     let baz = 1
@@ -196,7 +221,7 @@ end
         |> ignore
 
     [<Test>]
-    member x.TestIntExprResolution() =
+    member __.TestIntExprResolution() =
         let source = "let foo = 1\nlet bar = &foo + 2\n"
         let expected = "let foo = 1\nlet bar = (1 + 2)\n"
         variableTest source expected
@@ -228,13 +253,13 @@ end
         variableTest source expected
 
     [<Test>]
-    member x.TestMathReduction() =
+    member __.TestMathReduction() =
         let source = "let foo = 1 + 1\n"
         let expected = "let foo = 2"
         mathReductionTest source expected
 
     [<Test>]
-    member x.TestAlwaysFailingRegressionTest() =
+    member __.TestAlwaysFailingRegressionTest() =
         let source = """
 let x = -12
 let y = 1+1
@@ -250,7 +275,7 @@ gHO[2:~42]"""
         mathReductionTest source expected
 
     [<Test>]
-    member x.TestFunctionInlining() =
+    member __.TestFunctionInlining() =
         let source = """
 let foo(bar) =
     let baz = 1 + &bar
@@ -278,7 +303,7 @@ end
         functionInliningTest source expected
 
     [<Test>]
-    member x.TestFunctionCallNested() =
+    member __.TestFunctionCallNested() =
         let source = """
 let foo(bar, baz) =
     &bar ; &baz
@@ -301,7 +326,7 @@ end
         fullVariableResolutionTest source expected
 
     [<Test>]
-    member x.TestFunctionCallAliasing() =
+    member __.TestFunctionCallAliasing() =
         let source = """
 let f1(x, y, z) =
     &x ; &y ; &z
@@ -327,7 +352,7 @@ end
 
     [<Test>]
     /// Test that variable aliases (let foo = &bar) resolve correctly.
-    member x.TestVariableAliasResolution() =
+    member __.TestVariableAliasResolution() =
         let source = """
 let foo = gFOO
 let bar = 1
@@ -354,7 +379,7 @@ end
         fullVariableResolutionTest source expected
 
     [<Test>]
-    member x.TestRecursiveFunctionCall() =
+    member __.TestRecursiveFunctionCall() =
         let source = """
 let foo(x) =
     let bar(y) =
@@ -370,7 +395,7 @@ foo(1)"""
 
     [<Test>]
     /// Test that we correctly catch type errors.
-    member x.TestTypeChecking() =
+    member __.TestTypeChecking() =
         let source = """
 let fooPart = gFOO
 let fooInt = 1
@@ -389,7 +414,7 @@ testFunc(&fooPart, &fooInt)
         |> ignore
 
     [<Test>]
-    member x.TestFunctionCallArgCount() =
+    member __.TestFunctionCallArgCount() =
         let source = """
 let foo(a, b) =
     &a ; &b
@@ -406,28 +431,28 @@ foo(gFOO, pFOO, dFOO)
         |> ignore
 
     [<Test>]
-    member x.TestFlattenAssemblies() =
+    member __.TestFlattenAssemblies() =
         let source = "gFOO ; (pBAR ; (gBAR ; dBAR) {#name inner}) {#seed 123} ; gBAZ"
         let expected = "gFOO ; pBAR {#seed 123} ; gBAR {#name inner #seed 123} ; dBAR {#name inner #seed 123} ; gBAZ"
 
         flattenAssemblyTest source expected
 
     [<Test>]
-    member x.TestFlattenReverseAssemblies() =
+    member __.TestFlattenReverseAssemblies() =
         let source = "gFOO ; !(pBAR {#fuse} ; !gBAR ; gBAZ) ; gQUX"
         let expected = "gFOO ; !gBAZ ; gBAR {#fuse} ; !pBAR ; gQUX"
 
         flattenAssemblyTest source expected
 
     [<Test>]
-    member x.TestFlattenReverseWithInvertPragmas() =
+    member __.TestFlattenReverseWithInvertPragmas() =
         let source = "gFOO ; !(pBAR {#rabitstart} ; !gBAR {#rabitend} ; gBAZ) ; gQUX"
         let expected = "gFOO ; !gBAZ ; gBAR {#rabitstart} ; !pBAR {#rabitend} ; gQUX"
 
         flattenAssemblyTest source expected
 
     [<Test>]
-    member x.TestFlattenSinglePartVariable() =
+    member __.TestFlattenSinglePartVariable() =
         let source = "let foo = @R123\n!&foo"
         let expected = "let foo = @R123\n!@R123"
 
