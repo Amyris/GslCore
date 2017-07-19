@@ -150,6 +150,37 @@ let construct = [uHO,[pTDH3,pGAL1,pGAL10,pFBA1],mERG10,dHO]
         variableTest source expectedResolution
 
     [<Test>]
+    member x.TestVariableResolutionListsIntoFunctions1() =
+        let source = """
+let foo = [gFOO,gBAR]
+let bar(p) =
+    &p
+    let x = &foo
+end"""
+        let expectedResolution = """
+let foo = [gFOO,gBAR]
+let bar(p) =
+    &p
+    let x = [gFOO,gBAR]
+end"""
+        variableTest source expectedResolution
+
+    [<Test>]
+    member x.TestVariableResolutionListsIntoFunctions2() =
+        let source = """
+let bar(p) =
+    &p
+end
+bar([gDOG,gCAT])
+"""
+        let expectedResolution = """
+do
+    let p = [gDOG,gCAT]
+    &p
+end"""
+        functionInliningTest source expectedResolution
+
+    [<Test>]
     member x.TestBlockScopedVariables() =
         let source = """
 let foo(bar) =
