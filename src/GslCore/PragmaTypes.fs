@@ -7,14 +7,18 @@ open utils
 type Capabilities = Set<string>
 
 type PragmaArgShape =
+    /// require zero args
     | Zero
+    /// Require one arg
     | One
+    /// Require exactly N args
     | Exactly of int
+    /// Require at least N args
     | AtLeast of int
-    // Range is inclusive on both sides, so Range(1,5) accepts one to five parameters.
+    /// Range is inclusive on both sides, so Range(1,5) accepts one to five parameters.
     | Range of int * int
-    // For the uncommon case where a pragma might accept on a set of exact
-    // numbers of arguments, possibly to dictate behavior.
+    /// For the uncommon case where a pragma might accept on a set of exact
+    /// numbers of arguments, possibly to dictate behavior.
     | ExactlySet of int list
 
 type PragmaValidationResult = Result<unit,string>
