@@ -217,7 +217,10 @@ let mapRyseLinkers
     /// Assign RYSE linkers to junctions that need them
     let rec assign startLinkers (phase:bool) (l:DNASlice list) (linkers: string list) res =
         let prepLinker (n:string) =
-            let linker = ryseLinkers.[n]
+            let linker = match ryseLinkers.TryFind n with
+                            | Some x -> x
+                            | None ->
+                                    failwithf "ERROR: unexpected error not found looking up linker '%s'" n
             // DNA for the linker
             let dna = linker.dna |> fun x -> if phase then x else x.RevComp()
             // Build the linker entry
