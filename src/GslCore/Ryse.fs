@@ -31,11 +31,12 @@ let loadRyseLinkers (f:string) =
     if not (File.Exists f) then
         failwithf "could not locate reference file '%s'\n" f
 
-    eachLineIn f |> Seq.choose (fun l ->
-        match l.Split([|' ' ; '\t' |]) with
-        | [| n ; s |] -> Some({name = n ; dna = Dna(s)})
-        | _ -> None)
-    |> Seq.map (fun rl -> (rl.name,rl)) |> Map.ofSeq
+    eachLineIn f
+    |> Seq.map (fun l ->
+        match l.Split([|','|]) with
+        | [| n ; s |] -> (n, {name = n; dna = Dna(s)})
+        | _ -> failwithf "Bad linker specification: '%s'" l)
+    |> Map.ofSeq
 
 let extractLinker (s:string ) =
     if s.StartsWith("Linker_") then s.[7..]
