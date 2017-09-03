@@ -1,3 +1,6 @@
+#### 0.4.23 - September 3 2017
+* Linker specification file is comma-delimited.
+
 #### 0.4.22 - June 25 2017
 *  Support for seamless primer generation for non linkered designs
 
