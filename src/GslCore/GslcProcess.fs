@@ -109,9 +109,13 @@ let cleanLongSlices _ (a:DnaAssembly) =
                 {s with
                     sliceType = REGULAR;
                     dnaSource =
-                        match a.pragmas.TryGetOne("refgenome") with
-                        | None -> "synthetic"
-                        | Some(x) -> x;}
+                        match s.pragmas.TryGetOne("dnasrc") with
+                        | Some(x) -> x
+                        | None ->
+                            match a.pragmas.TryGetOne("refgenome") with
+                            | None -> "synthetic"
+                            | Some(x) -> x
+                }
             else s)
     ok {a with dnaParts = cleanedParts}
 

@@ -1,3 +1,6 @@
+#### 0.4.24 - September 8 2017
+* Check for dnasrc pragma when promoting long slices to regular parts.
+
 #### 0.4.23 - September 3 2017
 * Linker specification file is comma-delimited.
 
