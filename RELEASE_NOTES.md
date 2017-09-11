@@ -1,3 +1,6 @@
+#### 0.4.25 - September 8 2017
+* Check for dnasrc pragma when promoting long slices to regular parts.
+
 #### 0.4.24 - September 5 2017
 * Relax parsing in linker specification file.
 
