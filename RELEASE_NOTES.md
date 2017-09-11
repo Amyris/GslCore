@@ -1,3 +1,6 @@
+#### 0.4.24 - September 5 2017
+* Relax parsing in linker specification file.
+
 #### 0.4.23 - September 3 2017
 * Linker specification file is comma-delimited.
 

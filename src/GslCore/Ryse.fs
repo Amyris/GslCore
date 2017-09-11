@@ -32,9 +32,10 @@ let loadRyseLinkers (f:string) =
         failwithf "could not locate reference file '%s'\n" f
 
     eachLineIn f
-    |> Seq.map (fun l ->
+    |> Seq.choose (fun l ->
         match l.Split([|','|]) with
-        | [| n ; s |] -> (n, {name = n; dna = Dna(s)})
+        | [|""|] -> None
+        | [| n ; s |] -> Some (n, {name = n; dna = Dna(s)})
         | _ -> failwithf "Bad linker specification: '%s'" l)
     |> Map.ofSeq
 
