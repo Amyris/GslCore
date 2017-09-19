@@ -1,3 +1,6 @@
+#### 0.4.26 - September 19 2017
+* Deduplicate pragmas using reference equality.
+
 #### 0.4.25 - September 8 2017
 * Check for dnasrc pragma when promoting long slices to regular parts.
 

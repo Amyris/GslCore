@@ -256,8 +256,11 @@ let validatePragmaInversion (declaredPrags: Map<string,PragmaDef>) p =
 /// Initialize the global collection of valid pragmas, merging in definitions from plugins
 /// to the built-in pragmas.  Performs some validation as well.
 /// Raises an exception if something fails validation.
-let rec finalizePragmas pluginPragmas =
-    let pragmaDefs = pluginPragmas@pragmaDefsStatic
+let finalizePragmas pluginPragmas =
+    let pragmaDefs =
+        pluginPragmas@pragmaDefsStatic
+        |> List.distinctBy LanguagePrimitives.PhysicalHash
+
     let pragsByName =
         pragmaDefs
         |> List.map (fun p -> p.name, p)

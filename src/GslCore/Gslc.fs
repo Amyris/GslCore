@@ -135,6 +135,7 @@ let configureGslc unconfiguredPlugins argv =
                 |> List.map (fun p -> p.providesPragmas)
                 |> List.concat
 
+
             // combine plugin pragmas and static pragmas into final legal list
             // FIXME: should eliminate global pragma storage
             pragmaTypes.finalizePragmas pluginPragmas
