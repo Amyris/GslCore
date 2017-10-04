@@ -20,7 +20,6 @@ let strToTempC (s:string): float<C> =
     (float s ) * 1.0<C>
 
 let defaultRefGenome = "cenpk"
-let defaultUser = "platt"                                                
 
 let aaLegal = "ACDEFGHIKLMNPQRSTVWY*" |> Set.ofSeq
 

@@ -1,3 +1,6 @@
+#### 0.4.27 - October 4 2017
+* Eliminate unused default user.
+
 #### 0.4.26 - September 19 2017
 * Deduplicate pragmas using reference equality.
 
