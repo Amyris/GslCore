@@ -1,3 +1,6 @@
+#### 0.4.28 - October 5 2017
+* Eliminate unused breed codes.
+
 #### 0.4.27 - October 4 2017
 * Eliminate unused default user.
 
