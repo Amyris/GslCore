@@ -54,8 +54,6 @@ let formatBreed (b:Breed) =
     | B_UPSTREAM -> "B_UPSTREAM"
     | B_DOWNSTREAM -> "B_DOWNSTREAM"
     | B_GST -> "B_GST"
-    | G_M -> "G_M"
-    | G_STOP -> "G_STOP"
     | B_GS -> "B_GS"
     | B_INLINE -> "B_INLINE"
     | B_X -> "B_X"

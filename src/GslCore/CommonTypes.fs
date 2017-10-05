@@ -39,8 +39,6 @@ type Breed =
     | B_UPSTREAM
     | B_DOWNSTREAM
     | B_GST
-    | G_M
-    | G_STOP
     | B_GS
     | B_INLINE
     | B_X
