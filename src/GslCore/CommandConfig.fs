@@ -80,7 +80,7 @@ let builtinCmdLineArgs =
 
         {spec=
             {name = "version"; param = []; alias = [];
-             desc = "print verison information"}
+             desc = "print version information"}
          proc = fun _ opts ->
             printfn "GSL compiler version %s" version
             opts};

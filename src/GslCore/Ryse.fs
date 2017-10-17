@@ -379,14 +379,16 @@ let mapRyseLinkers
                     printVerbose
                         "countRyseLinkersNeeded in phase II start with 1 for final leading 0 linker (note 9 linker not included in count)"
                     let linkersReq = countRyseLinkersNeeded printVerbose 1 tl
-                    printVerbose (sprintf
-                        "\n\n#############################################\npart 2 of megastitch - %d linkers required, using %A\n"
-                        linkersReq (Seq.take linkersReq allLinkers2 |> List.ofSeq) )
 
+                    // check this first
                     if linkersReq > allLinkers2.Length then
                         failwithf
                             "mapRyseLinkers - need %d linkers to finish, only %d available %A\n"
                             linkersReq allLinkers2.Length errorDesc
+
+                    printVerbose (sprintf
+                        "\n\n#############################################\npart 2 of megastitch - %d linkers required, using %A\n"
+                        linkersReq (Seq.take linkersReq allLinkers2 |> List.ofSeq) )
 
                     // Flipping part around, but only for marker case.
                     // Should this also happen for the regular parts?  Must be dealt with elsewhere ;(
