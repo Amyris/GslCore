@@ -23,7 +23,7 @@ let dumpSnapgene (outDir:string) (tag:string) (assemblies : DnaAssembly list) (p
 
         let path = sprintf "%s.%d.dna" tag 
                     (match a.id with 
-                        | None -> failwith "unassigned assembly id in %s" a.name
+                        | None -> failwithf "unassigned assembly id in %s" a.name
                         | Some(i) -> i 
                     )
                     |> opj outDir
@@ -33,7 +33,8 @@ let dumpSnapgene (outDir:string) (tag:string) (assemblies : DnaAssembly list) (p
         use outF = new StreamWriter(path)
         let w (s:string) = outF.Write(s)
         
-        let locusName = sprintf "%s_snapgene_output" tag
+        // "Exported" // snapgene fails to color anything if it's named anything else locusName 
+        let locusName = sprintf "Exported GSL %s" tag
         let totLength = a.dnaParts |> List.map (fun p -> p.dna.Length) |> Seq.sum
         let now = DateTime.Now
         (* // constraints on header format per SnapGene direct correspandance
@@ -56,14 +57,15 @@ COMMENT
 REFERENCE   1  (bases 1 to %d)
   AUTHORS   .
   TITLE     Direct Submission
-  JOURNAL   Exported %s %2d, %d from SnapGene Viewer 4.0.5
+  JOURNAL   Exported %s %2d, %d from GSL SnapGene generator
+            http://pubs.acs.org/doi/abs/10.1021/acssynbio.5b00194
             http://www.snapgene.com
 FEATURES             Location/Qualifiers
      source          1..%d
                      /organism=\"synthetic DNA construct\"
                      /mol_type=\"other DNA\"
                      /note=\"color: #ffffff\"
-"           "Exported" // snapgene fails to color anything if it's named anything else locusName 
+"           locusName 
             totLength  // header line locus length
             now.Day (mon.[now.Month-1]) now.Year  // header line date
             totLength  // length for REFERENCE line
