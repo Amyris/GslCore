@@ -46,7 +46,7 @@ FEATURES             Location/Qualifiers
 
         sprintf "ORIGIN\n" |> w
         
-        a.Sequence().arr
+        a.Sequence()
         |> formatGB
         |> w
 
