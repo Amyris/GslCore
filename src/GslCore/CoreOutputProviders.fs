@@ -1,9 +1,9 @@
 ﻿module CoreOutputProviders
-open Amyris.Bio
 open PluginTypes
 open commandConfig
 open cloneManager
 open ape
+open snapgene
 open dumpFlat
 open commonTypes
 open System.IO
@@ -93,6 +93,23 @@ let apeOutputPlugin =
         (ApeOutputProvider(None))
 
 
+type SnapGeneOutputProvider (outParams) =
+    inherit ConfigurableOutputProvider<(string*string)>(outParams)
+    with
+    override x.ArgSpec =
+        {name = "snapgene"; param = ["outDir"; "prefix"]; alias = [];
+         desc = "write Snapgene output to prefix_##.dna to outDir\n(http://www.snapgene.com/products/snapgene_viewer/)"}
+    override x.UseArg(arg) =
+        SnapGeneOutputProvider(Some(arg.values.[0], arg.values.[1]))
+        :> IOutputFormat
+    override x.DoOutput((path,tag), data) = dumpSnapgene path tag data.assemblies data.primers
+
+let snapGeneOutputPlugin =
+    outputPlugin
+        "Snapgene"
+        (Some "Snapgene output format provider.")
+        (SnapGeneOutputProvider(None))
+
  /// Create output file with user or algorithm documentation of the designs
 let private dumpDocStrings (path:string) (assemblies:DnaAssembly list) =
     use outF = new StreamWriter(path)
@@ -145,6 +162,7 @@ let basicOutputPlugins = [
     flatFileOutputPlugin;
     cloneManagerOutputPlugin;
     apeOutputPlugin;
+    snapGeneOutputPlugin;
     docstringOutputPlugin;
     primerOutputPlugin;
 ]

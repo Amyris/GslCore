@@ -1,30 +1,17 @@
 ﻿module ape
 
 open System.IO
-open System.Text
 open System
 open commonTypes
 open constants
 open Amyris.Bio.utils
 open utils
 open Amyris.Dna
+open Genbank
         
-/// Format a dna sequence in genbank human readable form
-let formatGB (dna : char array) =
-    let rows = seq {0..60..dna.Length} |> Seq.map (fun i -> i,dna.[i..(min (i+59) (dna.Length-1))]) |> Array.ofSeq
-    let rowsSplit (i:int,row:char array) =
-        seq {0..10..row.Length-1} |> Seq.map (fun i -> new String(row.[i..(min (i+9) (row.Length-1))]))
-            |> fun x -> i,(String.Join (" ",Array.ofSeq x))
-    let tb = new StringBuilder()
-    for i,row in (rows |> Array.map (rowsSplit)) do
-        tb.AppendLine(sprintf "%9d %s" (i+1) row) |> ignore
-    tb.Append("//\n") |> ignore
-    tb.ToString()
-    
 /// Emit APE (genbank) format
 ///  outDir : string   tag: string  prefix for files  assemblies : List of AssemblyOut
 let dumpAPE (outDir:string) (tag:string) (assemblies : DnaAssembly list) =
-    let mon = [| "JAN" ; "FEB" ; "MAR" ; "APR" ; "MAY" ; "JUN" ; "JUL" ; "AUG" ; "SEP" ; "OCT"; "NOV" ; "DEC" |]
     for a in assemblies do
         let path = sprintf "%s.%d.ape" tag (match a.id with None -> failwith "ERROR: unassigned assembly id" | Some(i) -> i )
                         |> opj outDir
@@ -59,7 +46,7 @@ FEATURES             Location/Qualifiers
 
         sprintf "ORIGIN\n" |> w
         
-        a.Sequence().arr
+        a.Sequence()
         |> formatGB
         |> w
 

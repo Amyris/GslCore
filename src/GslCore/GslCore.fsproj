@@ -76,6 +76,8 @@
     <Compile Include="CommonTypes.fs" />
     <Compile Include="CommandConfig.fs" />
     <Compile Include="CloneManager.fs" />
+    <Compile Include="Genbank.fs" />
+    <Compile Include="Snapgene.fs" />
     <Compile Include="Ape.fs" />
     <Compile Include="PrimerDump.fs" />
     <Compile Include="DumpFlat.fs" />
