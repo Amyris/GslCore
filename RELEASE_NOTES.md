@@ -1,3 +1,6 @@
+#### 0.4.29 - October 19 2017
+* Add snapgene output provider.
+
 #### 0.4.28 - October 5 2017
 * Eliminate unused breed codes.
 
