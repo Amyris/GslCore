@@ -621,7 +621,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 {dp.pp with
                        maxLength = length;
                        // be less tough on temp if  we asking for high temp 68C
-                       tmPenalty = if dp.seamlessTm> 60.0<C> then 3.0 else 1.0}
+                       tmPenalty = if dp.targetTm> 60.0<C> then 3.0 else 1.0}
 
             // Handle approximate ends, and make sure we are looking at the right end being flexible..
             // bugfix 20111111 - wasn't using correct approximate end flag
