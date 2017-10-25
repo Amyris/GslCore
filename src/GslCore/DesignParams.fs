@@ -18,7 +18,6 @@ let revisePP (p: PrimerParams) (arguments: string list) =
 
 type DesignParams =
    {targetTm: float<C>;
-    seamlessTm: float<C>; 
     seamlessOverlapTm: float<C>;
     pp: PrimerParams;
     overlapParams: PrimerParams; 
@@ -28,7 +27,6 @@ type DesignParams =
 let initialDesignParams =
    {pp = defaultParams;
     targetTm = ryseLinkerTargetDefault;
-    seamlessTm = seamlessTargetDefault;
     seamlessOverlapTm = seamlessTargetDefault;
     overlapParams = defaultParams;
     overlapMinLen = overlapMinLenDefault}
@@ -43,7 +41,6 @@ let updateDPFromPragma (p: Pragma) designParams =
         >>= (fun overlapParams -> ok {designParams with overlapParams = overlapParams})
     | "targettm", v::_ -> ok {designParams with targetTm = strToTempC v}
     | "minoverlaplen", v::_ -> ok {designParams with overlapMinLen = int v}
-    | "seamlesstm", v::_ -> ok {designParams with seamlessTm = strToTempC v}
     | "seamlessoverlaptm", v::_ -> ok {designParams with seamlessOverlapTm = strToTempC v}
     | "atpenalty", v::_ ->
         ok {designParams with pp = {designParams.pp with ATPenalty = float v * 1.0<C>}}
