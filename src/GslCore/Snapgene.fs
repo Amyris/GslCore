@@ -125,10 +125,11 @@ FEATURES             Location/Qualifiers
             let right = left + primer.Primer.Length-1
             sprintf "     primer_bind     %s 
              /note=\"%s_%s\"
-             /note=\"color: #a020f0; direction: %s\"\n" 
+             /note=\"color: #a020f0; sequence: %s; direction: %s\"\n" 
                 (makeRange left right |> if isFwd then (id) else complement)  
                 name
                 (if isFwd then "fwd" else "rev")
+                primer.Primer.str
                 (if isFwd then "RIGHT" else "LEFT")
             |> w
 
