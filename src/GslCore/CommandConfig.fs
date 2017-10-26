@@ -88,9 +88,8 @@ let builtinCmdLineArgs =
         {spec=
             {name = "helpPragmas"; param = []; alias = [];
              desc = "print available pragmas"}
-         proc = fun _ opts ->
-            pragmaUsage()
-            opts};
+         proc = fun _ opts -> {opts with doHelpPragmas = true}
+        };
 
         {spec=
             {name = "quiet"; param = []; alias = [];
@@ -179,4 +178,5 @@ let defaultOpts:ParsedOptions =
     refList = false
     refDump = None
     listPlugins = false
+    doHelpPragmas = false
     }
