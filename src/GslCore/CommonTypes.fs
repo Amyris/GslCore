@@ -26,6 +26,7 @@ type ParsedOptions =
     refList : bool;
     refDump : string option;
     listPlugins: bool;
+    doHelpPragmas : bool
     }
 
 type DNAIntervalType = ANNEAL | RYSELINKER | AMP | SANDWICH

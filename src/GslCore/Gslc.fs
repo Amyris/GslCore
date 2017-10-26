@@ -140,6 +140,10 @@ let configureGslc unconfiguredPlugins argv =
             // FIXME: should eliminate global pragma storage
             pragmaTypes.finalizePragmas pluginPragmas
 
+            // fulfill this request only after we've processed all the plugins and determined full list of pragmas
+            if s.opts.doHelpPragmas then
+                pragmaTypes.pragmaUsage()
+
             Continue(s)
         with e ->
             Exit(1, Some(sprintf "An error occurred during configuration:\n%s" e.Message))
