@@ -55,7 +55,7 @@ let fullExceptionMessage (e:Exception) =
             printException (e.InnerException) count
         else
             if (count = 1) then bprintf sb "%s%s" e.Message nl
-            else bprintf sb "%s%s%d)%s%s" nl nl count e.Message nl
+            else bprintf sb "%d: %s%s" (count-1) e.Message nl
 
             if (e.InnerException <> null) then
                 printException e.InnerException (count+1)
