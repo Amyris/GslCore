@@ -1,19 +1,10 @@
 ﻿module BasicMarkerProvider
-open System
-open Amyris.Bio.biolib
 open constants
 open LegacyParseTypes
-open RefGenome
-open pragmaTypes
 open commonTypes
-open applySlices
-open Amyris.Bio
-open Amyris.ErrorHandling
 open Amyris.Dna
-open ryse
 open PluginTypes
 open DnaCreation
-open PluginTypes
 
 /// Default marker provider if nothing else better
 let jobScorerBasicMarkerProvider _ = Some 0.0<PluginScore>
