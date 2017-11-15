@@ -250,8 +250,8 @@ let configureBehaviorFromOpts opts b =
     | OutputFormat(f) -> {b with behavior = OutputFormat(f.ConfigureFromOptions(opts))}
     | AssemblyTransform(a) -> {b with behavior = AssemblyTransform(a.ConfigureFromOptions(opts))}
     | CodonProvider(c) -> {b with behavior = CodonProvider(c.ConfigureFromOptions(opts))}
+    | MarkerProvider(c) -> {b with behavior = MarkerProvider(c.ConfigureFromOptions(opts))}
     | AlleleSwapAA _
-    | MarkerProvider _
     | L2KOTitration _ -> b
 
 /// Data structure specifying one or more behaviors

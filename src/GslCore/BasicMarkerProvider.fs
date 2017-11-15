@@ -80,21 +80,19 @@ type BasicURA3MarkerProvider = {
             member x.Setup(_) = x :> IMarkerProvider
             member x.CreateDna (task:MarkerMaterializationTask) = 
                 expandMarkerPartIntoURA3 task.dnaSource x.ura3.Value task.ppp
-            member x.IsLegal m = m = "ura3" || m = "default"
+            member x.IsLegal m = m.ToLower() = "ura3" || m.ToLower() = "default"
             member x.ListMarkers() = ["ura3"]
             member x.ScoreJob = jobScorerBasicMarkerProvider
         
 /// Original default URA3 behavior for materialized ### parts
 let basicMarkerProviderURA3 =
-   let x = {ura3=None}:BasicURA3MarkerProvider
-
    {name = "classic ura3 dropin marker provider";
     description = Some "Include default ura3 sequence in materialized ### sequences.";
     behaviors =
        [{name = None;
          description = None;
          behavior =
-            MarkerProvider(x :> IMarkerProvider)
+            MarkerProvider({ura3=None})
         }
        ];
     providesPragmas = [];
