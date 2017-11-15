@@ -1,5 +1,9 @@
 ﻿module gslc
 open System.IO
+open System
+open System.Text
+open System.Reflection
+open Microsoft.FSharp.Core.Printf
 
 open commonTypes
 open commandConfig
@@ -42,6 +46,22 @@ let testPrimer() =
 /// with an exit code and optional message.
 type FlowControl<'T> = | Continue of 'T | Exit of int * string option
 
+/// Return the top-level exception message, as well as any messages from nested inner exceptions.
+let fullExceptionMessage (e:Exception) =
+    let sb = StringBuilder()
+    let nl = Environment.NewLine
+    let rec printException (e:Exception) count =
+        if (e :? TargetException && e.InnerException <> null) then
+            printException (e.InnerException) count
+        else
+            if (count = 1) then bprintf sb "%s%s" e.Message nl
+            else bprintf sb "%d: %s%s" (count-1) e.Message nl
+
+            if (e.InnerException <> null) then
+                printException e.InnerException (count+1)
+    printException e 1
+    sb.ToString()
+
 let basicExceptionHandler verbose f =
     try
         f()
@@ -54,7 +74,7 @@ let basicExceptionHandler verbose f =
 
         let msg =
             if verbose then prettyPrintException e
-            else prependERROR e.Message
+            else prependERROR (fullExceptionMessage e)
         Exit(1, Some(msg))
 
 let maybeListRefGenomes (s: ConfigurationState) =
