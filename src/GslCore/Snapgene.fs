@@ -124,6 +124,7 @@ FEATURES             Location/Qualifiers
             // will break if there are multiple binding sites but that might be a good thing to alert user
             let left = a.Sequence().IndicesOf(searchDna) |> Seq.head 
             let right = left + primer.Primer.Length-1
+            // naming primers using part it binds to
             let containsPrimer (part:DNASlice) = 
                 part.dna.Contains searchBody
             let bindingPart = List.tryFind containsPrimer a.dnaParts
@@ -137,15 +138,6 @@ FEATURES             Location/Qualifiers
                     else (ambId value.id)
                 | None -> ""
             
-            // let mutable bodyName = ""
-            // for part in a.dnaParts do 
-            //     if part.dna.Contains searchBody 
-            //         if p.sliceName <> "" then 
-            //             bodyName <-p.sliceName 
-            //         else if p.description <> "" then 
-            //             bodyName <-p.description 
-            //         else bodyName <- (ambId p.id)
-            //     else ()
             sprintf "     primer_bind     %s 
              /note=\"%s_%s\"
              /note=\"color: #a020f0; sequence: %s; direction: %s\"\n" 
