@@ -1,3 +1,6 @@
+#### 0.4.30 - November 8 2017
+* Print nested exception messages during assembly transformation.
+
 #### 0.4.29 - October 19 2017
 * Add snapgene output provider.
 
