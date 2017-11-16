@@ -52,7 +52,7 @@ let adjustToPhysical (feat:sgd.Feature) (f:RelPos) =
 let translateGenePrefix (gd : GenomeDef) (gPart : StandardSlice) =
     match gPart with
     | PROMOTER ->
-        {left = {x = -500<OneOffset>; relTo = FivePrime};
+        {left = {x = -gd.getPromLen() ;  relTo = FivePrime};
          lApprox = true;
          rApprox = false;
          right = { x = -1<OneOffset>; relTo = FivePrime } }
@@ -65,7 +65,7 @@ let translateGenePrefix (gd : GenomeDef) (gPart : StandardSlice) =
         {left = {x = 1<OneOffset>; relTo = ThreePrime};
          lApprox = false;
          rApprox = true;
-         right = { x = 500<OneOffset>; relTo = ThreePrime } }
+         right = { x = gd.getTermLen(); relTo = ThreePrime } }
     | DOWNSTREAM ->
         {left = {x = 1<OneOffset>; relTo = ThreePrime};
          lApprox = false;
@@ -90,7 +90,7 @@ let translateGenePrefix (gd : GenomeDef) (gPart : StandardSlice) =
         {left = {x = 1<OneOffset>; relTo = FivePrime};
          lApprox = false;
          rApprox = true;
-         right = { x = 200<OneOffset> ; relTo = ThreePrime } }
+         right = { x = gd.getMRNATermLen() ; relTo = ThreePrime } }
 
 
 /// Translate gene part label.  Raises an exception for errors.

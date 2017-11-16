@@ -12,6 +12,14 @@ let primerMinDefault = 20
 let maxNameLen = 600 // see also thumper restriction in thumper.fs
 let maxThumperOligo = 80
 let flanklenDefault = 500
+/// Terminator length default value (can be overriden in genome def)
+let termLenDefault = 500
+
+/// Terminator length default value when part of an 'm' mRNA part (can be overriden in genome def)
+let mRNATermLenDefault = 200
+
+/// Promoter length default value (can be overriden in genome def)
+let promLenDefault = 500
 
 /// Classic allele swap codon replacement min frequency
 let minHBCodonUsage = 0.05                                  

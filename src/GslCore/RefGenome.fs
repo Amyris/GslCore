@@ -54,6 +54,12 @@ type GenomeDef(libDir: string, name: string) as this = class
     member x.Env = 
         ensureConfigLoaded()
         env        
+
+    member x.EnvLenLookup name defaultValue =
+        if x.Env.ContainsKey(name) then
+            (x.Env.[name] |> int ) * 1<OneOffset>
+        else 1<OneOffset> * defaultValue
+
     member x.Load() =
         ensureConfigLoaded()
         let featsPath = opj refDir (sprintf "%s_features.tab" name)
@@ -136,10 +142,16 @@ ERROR: location:
             | Some(fi) -> fi.ContainsKey(f)   
     interface System.IDisposable with
         member x.Dispose() = match suffixTree with | None -> () | Some(std) -> (std :> System.IDisposable).Dispose()
-    member x.getFlank() =
-        if x.Env.ContainsKey("flanklen") then
-            (x.Env.["flanklen"] |> int ) * 1<OneOffset>
-        else 1<OneOffset> * flanklenDefault
+
+    /// default or custom length for flanking regions
+    member x.getFlank() = x.EnvLenLookup "flanklen" flanklenDefault
+    /// default or custom length for stand alone terminator pieces
+    member x.getTermLen() = x.EnvLenLookup "termlen" termLenDefault
+    /// default or custom length for terminator part of an mRNA type part
+    member x.getMRNATermLen() = x.EnvLenLookup "mrnatermlen" mRNATermLenDefault
+    /// default or custom length for promoter
+    member x.getPromLen() = x.EnvLenLookup "promlen" promLenDefault
+
                  
 end
 

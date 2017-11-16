@@ -25,40 +25,31 @@ open constants
 open PluginTypes
 open LexAndParse
 
-let phase1WithL2Validation = 
-        phase1 Set.empty
-        >=> (validate validateNoAssemblyInL2Promoter)
-
-let phase2WithData (ga:GlobalAssets) =
-        phase2 false (Some(10)) false false Set.empty [] ga.rgs ga.codonProvider
-
-let compiler (ga:GlobalAssets) gslText =
-    lexAndParse false gslText
-    >>= phase1 Set.empty // legal capas
-    >>= prepPhase2 ga.rgs ga.seqLibrary
-    >>= phase2WithData ga
-    >>= convertAndGatherAssemblies 
-
-let compiler2 =
-    configureGslc [] [||]
-    >?> checkInputFileList
-    >?> runCompiler
-    >?> handleCompileResult
-    >?> doDnaMaterialization
-
-let compilePhase1NoCapas = GslSourceCode >> (compile (phase1 Set.empty))
+let testLibDir = @"../../../../TestGslcLib"
 
 [<TestFixture>]
 type TestPromTermLen() = 
-    let legalCmdLineArgs = { builtins = Map.empty ; builtinsWithProc = Map.empty ; fromPlugins = Map.empty}
-    let s = ProcessCmdLineArgs.configure true legalCmdLineArgs [] []
-    [<Test>]
-    member x.TestDetectAssemblyInL2Promoter() =
-        let errorText = "Unsupported use of an Assembly."
-        let x = """#promoterlen 750\
-                        tADH1""" 
-                    |> compilePhase1NoCapas
-                    |> phase2 true (Some 10) false false Set.empty []  s.ga.rgs (s.ga.codonProvider)
+    let checkOneGenome name promLen termLen =
+        let gd = new RefGenome.GenomeDef(testLibDir,name)
 
-        printfn "%A" x
-        ()
+        let part = DnaCreation.translateGenePrefix gd TERMINATOR
+        Assert.AreEqual( termLen, part.right.x-part.left.x+1<OneOffset>) // +1 since ends are inclusive
+
+        let part = DnaCreation.translateGenePrefix gd PROMOTER
+        Assert.AreEqual( promLen, part.right.x-part.left.x+1<OneOffset>) // +1 since ends are inclusive
+        
+    [<Test>]
+    member x.TestPragmasExist() =
+        let checkPragmaExists name =
+            Assert.DoesNotThrow (fun () -> returnOrFail (buildPragma name ["250"]) |> ignore) |> ignore
+
+        checkPragmaExists "promlen"
+        checkPragmaExists "termlen"
+
+    [<Test>]
+    member x.CheckDefaultTerminatorLen() =
+        checkOneGenome "TestGenome" constants.promLenDefault termLenDefault
+
+    [<Test>]
+    member x.CheckCustomTerminatorLen() =
+        checkOneGenome "TestGenome2" 750 250
