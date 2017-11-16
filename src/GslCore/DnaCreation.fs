@@ -11,6 +11,7 @@ open Amyris.Bio
 open Amyris.ErrorHandling
 open Amyris.Dna
 open ryse
+open PluginTypes
 
 // ================================================================================================
 // Slice manipulation routines for getting from gene notation down to specific genomics coordinates
@@ -185,43 +186,6 @@ let getSliceName (ppp:PPP) =
 
 /// Extract URI from a PPP, if it has one.
 let getUri (ppp:PPP) = ppp.pr.TryGetOne("uri")
-
-/// Expand a marker part into DNA pieces.
-/// Exception on failure.
-let expandMarkerPart
-    (library: SequenceLibrary)
-    dnaSource
-    (ppp:PPP) =
-
-    if not (library.ContainsKey("URA3")) then
-        failwithf "lib.fa does not contain URA3 marker part\n"
-
-    let dna = library.["URA3"]
-    {id = None;
-     extId = None;
-     sliceName = getSliceName ppp;
-     uri = getUri ppp; // TODO: should this marker have a static URI we always assign here?
-     dna = dna;
-     sourceChr = "library";
-     sourceFr = 0<ZeroOffset>;
-     sourceTo = (dna.Length-1)*1<ZeroOffset>;
-     sourceFwd = true;
-     sourceFrApprox = false;
-     sourceToApprox = false;
-     // Don't assign coordinates to pieces until later when we
-     // decide how they are getting joined up
-     template = Some dna;
-     amplified = false;
-     destFr = 0<ZeroOffset>;
-     destTo = 0<ZeroOffset>;
-     destFwd = ppp.fwd;
-     description = "URA3 marker";
-     sliceType = MARKER;
-     dnaSource = dnaSource;
-     pragmas = ppp.pr;
-     breed = B_MARKER;
-     materializedFrom = Some(ppp);
-     annotations = []}
 
 let expandInlineDna
     dnaSource
@@ -526,6 +490,7 @@ let expandGenePart
 /// Raises an exception on error.
 let expandAssembly
     verbose
+    (markerProviders:IMarkerProvider list)
     (rgs:GenomeDefs)
     (library: SequenceLibrary)
     index
@@ -535,8 +500,6 @@ let expandAssembly
         seq {
             // NOTE: have access to part.pragmas to the extent they influence generation
             for ppp in pppList do
-                //let sliceName = getSliceName ppp
-
                 let dnaSource =
                     match ppp.pr.TryGetOne("dnasrc") with
                     | Some(d) -> d
@@ -552,7 +515,28 @@ let expandAssembly
 
                 match ppp.part with
                 | MARKERPART ->
-                    yield expandMarkerPart library dnaSource ppp
+                    // Choose provider
+                    let providers =
+                        markerProviders |> 
+                            List.choose (fun provider -> 
+                                                    match provider.ScoreJob a.capabilities with
+                                                        | None -> None
+                                                        | Some(score) -> Some (score,provider)
+                                        ) 
+                    if providers = [] then failwithf "MARKERPART substitution, no marker provider available"
+                    let _,markerProvider = providers |> List.maxBy (fst)
+
+                    let markerSet =
+                        match a.pragmas.TryGetOne("markerset") with
+                            | Some(x) ->
+                                let x' = x.ToLower()
+                                if not (markerProvider.IsLegal x') then
+                                    failwithf "ERROR: unknown marker set %s, expected one of %s\n"
+                                        x' (String.Join(",",markerProvider.ListMarkers()))
+                                else x'
+                            | None -> "default"
+                    let task = { dnaSource = dnaSource ; ppp = ppp ; markerSet = markerSet}
+                    yield markerProvider.CreateDna(task) // expandMarkerPart library dnaSource ppp
                 | PARTID(partId) ->
                     yield resolveExtPart.fetchSequence verbose library ppp partId
                 | INLINEDNA(dna) ->
@@ -569,7 +553,8 @@ let expandAssembly
                 //
                 if ppp.pr.ContainsKey("fuse") then
                     yield fusionSliceConstant
-            } |> List.ofSeq |> recalcOffset
+        } |> List.ofSeq |> recalcOffset
+
     let materializedParts = expandPPPList a.parts
 
     {id = Some(index)
