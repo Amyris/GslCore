@@ -148,7 +148,7 @@ ERROR: location:
     /// default or custom length for stand alone terminator pieces
     member x.getTermLen() = x.EnvLenLookup "termlen" termLenDefault
     /// default or custom length for terminator part of an mRNA type part
-    member x.getMRNATermLen() = x.EnvLenLookup "mrnatermlen" mRNATermLenDefault
+    member x.getTermLenMRNA() = x.EnvLenLookup "termlenmrna" termLenMRNADefault
     /// default or custom length for promoter
     member x.getPromLen() = x.EnvLenLookup "promlen" promLenDefault
 

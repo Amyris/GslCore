@@ -16,7 +16,7 @@ let flanklenDefault = 500
 let termLenDefault = 500
 
 /// Terminator length default value when part of an 'm' mRNA part (can be overriden in genome def)
-let mRNATermLenDefault = 200
+let termLenMRNADefault = 200
 
 /// Promoter length default value (can be overriden in genome def)
 let promLenDefault = 500

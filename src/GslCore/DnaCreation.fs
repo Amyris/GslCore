@@ -49,13 +49,18 @@ let adjustToPhysical (feat:sgd.Feature) (f:RelPos) =
 /// these are relative to the gene, not the genome for now.  We transform
 /// to genomic coordinates below.
 /// Transform all non gXXX forms of gene into gXX forms.
-let translateGenePrefix (gd : GenomeDef) (gPart : StandardSlice) =
+let translateGenePrefix (pragmas:PragmaCollection) (gd : GenomeDef) (gPart : StandardSlice) =
     match gPart with
-    | PROMOTER ->
-        {left = {x = -gd.getPromLen() ;  relTo = FivePrime};
+    | PROMOTER ->   
+        { left = { x = match pragmas.TryFind "promlen"  with
+                        | None -> -gd.getPromLen() 
+                        | Some p -> p.args.[0] |> int |> (*)-1<OneOffset> ;  
+                   relTo = FivePrime
+                 };
          lApprox = true;
          rApprox = false;
-         right = { x = -1<OneOffset>; relTo = FivePrime } }
+         right = { x = -1<OneOffset>; relTo = FivePrime } 
+        }
     | UPSTREAM ->
         {left = {x = -gd.getFlank(); relTo = FivePrime};
          lApprox = true;
@@ -65,7 +70,12 @@ let translateGenePrefix (gd : GenomeDef) (gPart : StandardSlice) =
         {left = {x = 1<OneOffset>; relTo = ThreePrime};
          lApprox = false;
          rApprox = true;
-         right = { x = gd.getTermLen(); relTo = ThreePrime } }
+         right = { x = match pragmas.TryFind "termlen"  with
+                        | None -> gd.getTermLen() 
+                        | Some p -> p.args.[0] |> int |> (*)1<OneOffset> ; 
+                   relTo = ThreePrime 
+                  }
+        }
     | DOWNSTREAM ->
         {left = {x = 1<OneOffset>; relTo = ThreePrime};
          lApprox = false;
@@ -90,7 +100,13 @@ let translateGenePrefix (gd : GenomeDef) (gPart : StandardSlice) =
         {left = {x = 1<OneOffset>; relTo = FivePrime};
          lApprox = false;
          rApprox = true;
-         right = { x = gd.getMRNATermLen() ; relTo = ThreePrime } }
+         right = { x = 
+                    match pragmas.TryFind "termlenmrna"  with
+                    | None -> gd.getTermLenMRNA() 
+                    | Some p -> p.args.[0] |> int |> (*)1<OneOffset>
+                 ; relTo = ThreePrime 
+                 } 
+        }
 
 
 /// Translate gene part label.  Raises an exception for errors.
@@ -141,7 +157,7 @@ let getRG (a:Assembly) (rgs:GenomeDefs) (pr:PragmaCollection) =
     | Bad(msgs) -> failwith msgs.[0]
 
 /// Take a genepart and slices and get the actual DNA sequence.
-let realizeSequence verbose fwd (rg:GenomeDef) (gp:GenePartWithLinker) =
+let realizeSequence verbose (pragmas:PragmaCollection) fwd (rg:GenomeDef) (gp:GenePartWithLinker) =
 
     if verbose then
         printf "realizeSequence:  fetch fwd=%s %s\n"
@@ -156,7 +172,7 @@ let realizeSequence verbose fwd (rg:GenomeDef) (gp:GenePartWithLinker) =
     let feat = rg.get(gp.part.gene.[1..])
 
     // Come up with an initial slice based on the gene prefix type
-    let s = translateGenePrefix rg genePart
+    let s = translateGenePrefix pragmas rg genePart
 
     let finalSlice = applySlices verbose gp.part.mods s
     let left = adjustToPhysical feat finalSlice.left
@@ -288,7 +304,7 @@ let expandGenePart
             // Come up with an initial slice based on the gene prefix type
 
             // Get standard slice range for a gene
-            let s = translateGenePrefix rg' GENE
+            let s = translateGenePrefix a.pragmas rg' GENE
             let finalSlice = applySlices verbose gp.part.mods s
 
             // Ban approx slices to stay sane for now
@@ -371,7 +387,7 @@ let expandGenePart
 
         validateMods errorRef gp.part.where gp.part.mods
         // Come up with an initial slice based on the gene prefix type
-        let s = translateGenePrefix rg' genePart
+        let s = translateGenePrefix a.pragmas rg' genePart
         if verbose then printf "log: processing %A\n" a
 
         // finalSlice is the consolidated gene relative coordinate of desired piece

@@ -706,8 +706,8 @@ let private expandHB
             let rg' = getRG a rgs pr3
             let rg'' = getRG a rgs pr1
 
-            let sliceSeq = realizeSequence verbose fwd3 rg' gp // Get DNA sequence for this slice
-            let sliceSeqUp = realizeSequence verbose fwd1 rg'' gpUp // Get DNA sequence for upstream slice
+            let sliceSeq = realizeSequence verbose a.pragmas fwd3 rg' gp // Get DNA sequence for this slice
+            let sliceSeqUp = realizeSequence verbose a.pragmas fwd1 rg'' gpUp // Get DNA sequence for upstream slice
             let targetAALen = getLenPragma pr2 // Get optional length spec for the HB
 
             // Generate an alternative prefix for the GENEPART on RHS
@@ -726,7 +726,7 @@ let private expandHB
             // Assume they must be using a gene part next to a het block.  Bad?
             if (not (gp.part.gene.StartsWith("g"))) then
                 failwithf "Heterology block must be adjacent to g part, %s not allowed" gp.part.gene
-            let s = translateGenePrefix rg' GENE // Start with standard slice
+            let s = translateGenePrefix a.pragmas rg' GENE // Start with standard slice
             let startSlice = applySlices verbose gp.part.mods s // Apply modifiers
             let newSlice =
                 {startSlice with
@@ -759,9 +759,9 @@ let private expandHB
             let rg'' = getRG a rgs pr1
 
             // Get DNA sequence for this slice
-            let sliceSeq = realizeSequence verbose fwd4 rg' gp
+            let sliceSeq = realizeSequence verbose a.pragmas fwd4 rg' gp
             // Get DNA sequence for upstream slice
-            let sliceSeqUp = realizeSequence verbose fwd1 rg'' gpUp
+            let sliceSeqUp = realizeSequence verbose a.pragmas fwd1 rg'' gpUp
             // Get optional length spec for the HB
             let targetAALen = getLenPragma pr3
             // Generate an alternative prefix for the GENEPART on RHS
@@ -783,7 +783,7 @@ let private expandHB
                     "Slices adjacent to het block elements ~ must be gene slices - %s has '%c' gene part"
                     gp.part.gene gp.part.gene.[0]
 
-            let s = translateGenePrefix rg'' GENE // Start with standard slice
+            let s = translateGenePrefix a.pragmas rg'' GENE // Start with standard slice
             let startSlice = applySlices verbose gp.part.mods s // Apply modifiers
             let newSlice =
                 {startSlice with
@@ -818,8 +818,8 @@ let private expandHB
             let rg'' = getRG a rgs pr4
 
             // get actual sequence for slices (with mods applied)
-            let sliceSeq = realizeSequence verbose fwd1 rg' gp // Get DNA sequence for this slice
-            let sliceSeqDown = realizeSequence verbose fwd4 rg'' gpDown // Get DNA sequence for this slice
+            let sliceSeq = realizeSequence verbose a.pragmas fwd1 rg' gp // Get DNA sequence for this slice
+            let sliceSeqDown = realizeSequence verbose a.pragmas fwd4 rg'' gpDown // Get DNA sequence for this slice
             let targetAALen = getLenPragma pr2 // Get optional length spec for the HB
 
             // generate hetblock section off upstream slice
@@ -834,7 +834,7 @@ let private expandHB
             assert(gp.part.gene.[0] = 'g')
 
             // now build up the slice again and apply from scratch to the gene
-            let s = translateGenePrefix rg' GENE // Start with standard slice
+            let s = translateGenePrefix a.pragmas rg' GENE // Start with standard slice
             let startSlice = applySlices verbose gp.part.mods s // Apply modifiers
 
             // modify slice to take into account the bit we chopped off
