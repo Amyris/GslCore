@@ -16,6 +16,7 @@ group Build
   nuget SourceLink.Fake
   nuget FAKE
   nuget FSharp.Formatting
+  // nuget FSharp.Compiler.Service redirects: force
 
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
