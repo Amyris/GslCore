@@ -117,12 +117,27 @@ FEATURES             Location/Qualifiers
         let makeRange l r = sprintf "%A..%A" (l+1) (r+1) // +1 for human friendly coords
         let complement s = sprintf "complement(%s)" s
 
-        let emitPrimer name isFwd (primer:Primer) =
+        let emitPrimer isFwd (primer:Primer) =
             let searchDna = if isFwd then primer.Primer else primer.Primer.RevComp()
+            let searchBody = if isFwd then primer.body else primer.body.RevComp()
             // this isn't an ideal way to place primers but simpler than trying to infer coordinates during emission
             // will break if there are multiple binding sites but that might be a good thing to alert user
             let left = a.Sequence().IndicesOf(searchDna) |> Seq.head 
             let right = left + primer.Primer.Length-1
+            // naming primers using part it binds to
+            let containsPrimer (part:DNASlice) = 
+                part.dna.Contains searchBody
+            let bindingPart = List.tryFind containsPrimer a.dnaParts
+            let name =
+                match bindingPart with
+                | Some value -> 
+                    if value.sliceName <> "" then
+                        value.sliceName
+                    else if value.description <> "" then
+                        value.description
+                    else (ambId value.id)
+                | None -> ""
+            
             sprintf "     primer_bind     %s 
              /note=\"%s_%s\"
              /note=\"color: #a020f0; sequence: %s; direction: %s\"\n" 
@@ -137,8 +152,8 @@ FEATURES             Location/Qualifiers
             match pp with
             | GAP -> () // nothing to emit
             | DPP(dpp) ->
-                if dpp.fwd.Primer.Length > 0 then emitPrimer dpp.name true dpp.fwd
-                if dpp.rev.Primer.Length > 0 then emitPrimer dpp.name false dpp.rev
+                if dpp.fwd.Primer.Length > 0 then emitPrimer true dpp.fwd
+                if dpp.rev.Primer.Length > 0 then emitPrimer false dpp.rev
 
         "ORIGIN\n" |> w
         

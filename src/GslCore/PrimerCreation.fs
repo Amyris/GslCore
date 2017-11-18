@@ -2,7 +2,6 @@
 /// Support routines for primer design scenarios and primer generation for stitches
 open commonTypes
 open System
-open System.Text
 open constants // primer parameters
 open Amyris.Bio.primercore
 open Amyris.Bio
@@ -622,7 +621,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 {dp.pp with
                        maxLength = length;
                        // be less tough on temp if  we asking for high temp 68C
-                       tmPenalty = if dp.seamlessTm> 60.0<C> then 3.0 else 1.0}
+                       tmPenalty = if dp.targetTm> 60.0<C> then 3.0 else 1.0}
 
             // Handle approximate ends, and make sure we are looking at the right end being flexible..
             // bugfix 20111111 - wasn't using correct approximate end flag
@@ -635,10 +634,9 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     align = ANCHOR.CENTERLEFT;
                     strand = STRAND.TOP;
                     offset = 0;
-                    targetTemp = dp.seamlessTm;
+                    targetTemp = dp.targetTm; // was historically seamlessTm incorrectly till ~ 10/2017
                     sequencePenalties = None}
 
-                // primercore.oligoDesign false pen task
                 pdWrap false pen task
 
             else
@@ -648,9 +646,8 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                      align = ANCHOR.LEFT;
                      strand = STRAND.TOP;
                      offset = 0;
-                     targetTemp = dp.seamlessTm;
+                     targetTemp = dp.targetTm; // was historically seamlessTm incorrectly till ~ 10/2017
                      sequencePenalties = None}
-                //primercore.oligoDesign false pen task
                 pdWrap false pen task
 
         /// Called on success at finding fwd and reverse primers that can amplify the adjacent regions
