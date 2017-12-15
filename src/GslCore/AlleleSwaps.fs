@@ -127,54 +127,52 @@ let expandSimpleMut (asAACheck:bool) (_:GenomeDef) (g:PartIdLegacy) (m:Mutation)
             "ERROR: part %s should start with 'R'.  Non rabit part mutation not supported."
             g.id
 
-    match getRabit (int(g.id.[1..])) with
-    | None ->
-        failwithf "ERROR:  unable to retrieve part %s from hutch" g.id
-    | Some(hr) -> // got a hutch rabit
-        let rabit = hr.RabitSpecs.[0]
-        let dna = rabit.DnaElementSpecs.[0].DnaSequence.ToUpper()
-        // Now split by type of mutation and check the original base/amino acid is legit
-        match m.mType with
-        | NT ->
-            if m.loc <=0 || m.loc > dna.Length then
-                failwithf
-                    "ERROR: mutation position %d is outside range of rabit %s"
-                    m.loc g.id
-            if dna.[m.loc-1] <> m.f then
-                failwithf
-                    "ERROR: existing base at position %d in rabit %s is %c not %c"
-                    m.loc g.id (dna.[m.loc-1]) m.f
+    let hr = getRabit (int(g.id.[1..]))
 
-            // Design for mutation
+    let rabit = hr.RabitSpecs.[0]
+    let dna = rabit.DnaElementSpecs.[0].DnaSequence.ToUpper()
+    // Now split by type of mutation and check the original base/amino acid is legit
+    match m.mType with
+    | NT ->
+        if m.loc <=0 || m.loc > dna.Length then
+            failwithf
+                "ERROR: mutation position %d is outside range of rabit %s"
+                m.loc g.id
+        if dna.[m.loc-1] <> m.f then
+            failwithf
+                "ERROR: existing base at position %d in rabit %s is %c not %c"
+                m.loc g.id (dna.[m.loc-1]) m.f
 
-            let lhs = m.loc-1 // before the mutated base
-            let rhs = m.loc+1 // after the mutated base
+        // Design for mutation
+
+        let lhs = m.loc-1 // before the mutated base
+        let rhs = m.loc+1 // after the mutated base
+        let id = g.id
+        sprintf
+            "@%s[1:%d] {#dnasrc %s}; /%c/ {#inline }; @%s[%d:-1E] {#dnasrc %s} "
+            id lhs id m.t id rhs id
+        |> GslSourceCode
+    | AA ->
+        if m.loc <=0 || m.loc > dna.Length/3 then
+            failwithf
+                "ERROR: mutation position %d outside range of rabit %s amino acids"
+                m.loc g.id
+
+        let currentCodon = (dna.[(m.loc-1)*3..(m.loc-1)*3+2]).ToCharArray()
+
+        // Ensure we are in the right place in the gene
+        if (codon2aa currentCodon <> m.f) && asAACheck then
+            failwithf
+                "ERROR: for mutation %c%d%c , gene %s has amino acid %c (%s) in that position not %c"
+                m.f m.loc m.t g.id (codon2aa currentCodon) (arr2seq currentCodon) m.f
+        else
             let id = g.id
+            let lhs = m.loc-1
+            let rhs = m.loc+1
             sprintf
-                "@%s[1:%d] {#dnasrc %s}; /%c/ {#inline }; @%s[%d:-1E] {#dnasrc %s} "
+                "@%s[1:%da] {#dnasrc %s}; /$%c/ {#inline }; @%s[%da:-1E] {#dnasrc %s} "
                 id lhs id m.t id rhs id
             |> GslSourceCode
-        | AA ->
-            if m.loc <=0 || m.loc > dna.Length/3 then
-                failwithf
-                    "ERROR: mutation position %d outside range of rabit %s amino acids"
-                    m.loc g.id
-
-            let currentCodon = (dna.[(m.loc-1)*3..(m.loc-1)*3+2]).ToCharArray()
-
-            // Ensure we are in the right place in the gene
-            if (codon2aa currentCodon <> m.f) && asAACheck then
-                failwithf
-                    "ERROR: for mutation %c%d%c , gene %s has amino acid %c (%s) in that position not %c"
-                    m.f m.loc m.t g.id (codon2aa currentCodon) (arr2seq currentCodon) m.f
-            else
-                let id = g.id
-                let lhs = m.loc-1
-                let rhs = m.loc+1
-                sprintf
-                    "@%s[1:%da] {#dnasrc %s}; /$%c/ {#inline }; @%s[%da:-1E] {#dnasrc %s} "
-                    id lhs id m.t id rhs id
-                |> GslSourceCode
 
 
 /// 5' promoter mutation design - construct mutation with overlapping primers,
