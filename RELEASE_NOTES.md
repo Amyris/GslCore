@@ -1,3 +1,6 @@
+#### 0.4.31 - December 15 2017
+* Add flag to disable caching of rabit lookup.
+
 #### 0.4.30 - November 8 2017
 * Print nested exception messages during assembly transformation.
 
