@@ -5,7 +5,8 @@ open pragmaTypes
 open commonTypes
 open Amyris.Bio.utils
 open Amyris.Dna
-open System.Collections.Generic
+//open System.Collections.Generic
+open System.Collections.Concurrent
 open constants
 open uri
 open sbolExample
@@ -72,26 +73,39 @@ let loadThumperRef (f:string) =
 
 
 let thumper = "http://thumper.amyris.local"
-let fetchCache = new Dictionary<string,rycodExample.ThumperRycod.RyseComponentRequest>()
+
+// FIXME: this cache is global and mutable and can become stale when GSLC is embedded in a long-
+// running application.
+let private fetchCache = new ConcurrentDictionary<string,rycodExample.ThumperRycod.RyseComponentRequest>()
+
+/// Global flag to activate or deactivate caching of part fetch.
+/// Long-running clients of GSLC should set this flag to false to avoid building up a large cache
+/// that can become stale over time.
+let mutable useCache = true
 
 /// Hutch interaction: fetch part defs from RYCOd service and cache them.
 let fetch (url:string) =
-    match fetchCache.TryGetValue(url) with
-    | (true, x) -> Some x
-    | (false, _) ->
-        let v =
-            try
-                use wc = new System.Net.WebClient()
-                let s = wc.DownloadString(url)
-                let res = rycodExample.ThumperRycod.Parse(s)
-                res
-            with ex ->
-                failwithf
-                    "from thumper %s\nMight be rabit id that does not exist.\n%s\n"
-                    url ex.Message
 
-        fetchCache.Add(url,v)
-        Some v
+    let lookup () =
+        try
+            use wc = new System.Net.WebClient()
+            let s = wc.DownloadString(url)
+            let res = rycodExample.ThumperRycod.Parse(s)
+            res
+        with ex ->
+            failwithf
+                "from thumper %s\nMight be rabit id that does not exist.\n%s\n"
+                url ex.Message
+
+    if useCache then
+        match fetchCache.TryGetValue(url) with
+        | (true, x) -> x
+        | (false, _) ->
+            let result = lookup()
+            fetchCache.TryAdd(url, result) |> ignore
+            result
+    else
+        lookup()
 
 let getMS msId = sprintf "%s/rycod/megastitch_spec/%d" thumper msId |> fetch
 let getStitch stitchId = sprintf "%s/rycod/stitch_spec/%d" thumper stitchId |> fetch
@@ -101,25 +115,21 @@ let getRabit rId = sprintf "%s/rycod/rabit_spec/%d" thumper rId |> fetch
 
 /// Retrieve a Rabit specifiction from local cache or by making a thumper call.
 let getHutchInfoViaWeb ri =
-    match getRabit ri with
-    | None -> None
-    | Some(hr) ->
-        let rabit = hr.RabitSpecs.[0]
-        assert(rabit.Id.StartsWith("R."))
-        Some(
-           {id = int(rabit.Id.[2..]);
-            name = rabit.Name;
-            five = (match rabit.UpstreamLink.String with | Some(x) -> x | None -> "");
-            three = (match rabit.DownstreamLink.String with | None -> "" | Some(x) -> x);
-            orient =
-                match rabit.Direction with
-                | "FWD" -> FWD
-                | "REV" -> REV
-                | _ -> failwithf "inconceivable direction %A\n" rabit.Direction;
-            breed = rabit.Breed;
-            dnaSource = sprintf "R%d" ri}
-        )
+    let hr = getRabit ri
+    let rabit = hr.RabitSpecs.[0]
+    assert(rabit.Id.StartsWith("R."))
 
+    {id = int(rabit.Id.[2..]);
+     name = rabit.Name;
+     five = (match rabit.UpstreamLink.String with | Some(x) -> x | None -> "");
+     three = (match rabit.DownstreamLink.String with | None -> "" | Some(x) -> x);
+     orient =
+         match rabit.Direction with
+         | "FWD" -> FWD
+         | "REV" -> REV
+         | _ -> failwithf "inconceivable direction %A\n" rabit.Direction;
+     breed = rabit.Breed;
+     dnaSource = sprintf "R%d" ri}
 
 /// Determine which sets of linkers to use for a design
 let getLinkerSetsForDesign (aIn: DnaAssembly) =
@@ -407,10 +417,7 @@ let mapRyseLinkers
                         let h =
                             if (hutchAncillary.ContainsKey(rabitId)) then hutchAncillary.[rabitId]
                             else
-                                match getHutchInfoViaWeb rabitId with
-                                | None ->
-                                    failwithf " hutch info missing rabit R%d" rabitId
-                                | Some(x) -> x
+                                getHutchInfoViaWeb rabitId
 
                         let hFive = sprintf "%s" h.five
                         let hThree = sprintf "%s" h.three

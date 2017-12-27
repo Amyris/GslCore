@@ -43,110 +43,106 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
         | "rabit" ->
             let libName = "@"+pid.ToUpper()
             if not (library.ContainsKey(libName)) then
-                match getRabit (int(pid.[1..])) with
-                | None ->
-                    failwithf
-                        "ERROR: not part %s in library\n ERROR:  and unable to retrieve from hutch"
-                        libName
-                | Some(hr) ->
-                    // Have part from the hutch.  We might just use it verbatim or we might be
-                    // some modifications to it to make a new part
-                    let rabit = hr.RabitSpecs.[0]
-                    let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
+                let hr = getRabit (int(pid.[1..]))
 
-                    // Check for slice modifications.  We can't handle any other type of mod at this point, so
-                    // ensure there are none.
-                    if partId.mods |> List.exists (fun m -> match m with | SLICE(_)-> false | _ -> true) then
-                        failwithf "ERROR:  could not process mods for rabit %s %A\n" partId.id partId.mods
+                // Have part from the hutch.  We might just use it verbatim or we might be
+                // some modifications to it to make a new part
+                let rabit = hr.RabitSpecs.[0]
+                let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
 
-                    // Look for simple case.  If we are just using the part from the hutch unadulterated, then
-                    // we specify things differently, referring to the external id
-                    if partId.mods.Length = 0 then
-                        let dna = if ppp.fwd then dna else dna.RevComp()
-                        {id = None; 
-                         extId = Some(pid.[1..]); 
-                         sliceName = sliceName;
-                         uri = uri; // TODO: use the URI of rabit from hutch here instead?
-                         dna = dna; 
-                         sourceChr = "library";
-                         sourceFr = 0<ZeroOffset>;
-                         sourceTo = (dna.Length-1)*1<ZeroOffset>;
-                         sourceFwd = ppp.fwd;
-                         sourceFrApprox = false;
-                         sourceToApprox = false;
-                         // Don't assign coordinates to pieces until later when we decide
-                         // how they are getting joined up
-                         destFr = 0<ZeroOffset>; 
-                         destTo = 0<ZeroOffset>; 
-                         destFwd = ppp.fwd;
-                         description = rabit.Name; 
-                         sliceType = REGULAR; 
-                         amplified = false;
-                         template = Some dna; // not amplifying from this
-                         dnaSource =
-                            match ppp.pr.TryGetOne("dnasrc") with
-                            | Some(d) -> d
-                            | None -> pid;
-                         pragmas = ppp.pr;
-                         breed = B_X; // will be replaced at final submission
-                         materializedFrom = Some(ppp);
-                         annotations = []} // FIXME: need to generate annotations based on Rabit metadata
-                    else
-                        // Otherwise, they are taking a hutch part and doing something to it,
-                        // so the hutch is just another DNA source and they are effectively
-                        // building a new rabit
+                // Check for slice modifications.  We can't handle any other type of mod at this point, so
+                // ensure there are none.
+                if partId.mods |> List.exists (fun m -> match m with | SLICE(_)-> false | _ -> true) then
+                    failwithf "ERROR:  could not process mods for rabit %s %A\n" partId.id partId.mods
 
-                        // Start off assuming it's the full DNA slice
-                        let startSlice =
-                           {left = {x = 1<OneOffset>; relTo = FivePrime};
-                            lApprox = false; 
-                            rApprox = false;
-                            right = {x = -1<OneOffset>; relTo = ThreePrime}}
+                // Look for simple case.  If we are just using the part from the hutch unadulterated, then
+                // we specify things differently, referring to the external id
+                if partId.mods.Length = 0 then
+                    let dna = if ppp.fwd then dna else dna.RevComp()
+                    {id = None; 
+                     extId = Some(pid.[1..]); 
+                     sliceName = sliceName;
+                     uri = uri; // TODO: use the URI of rabit from hutch here instead?
+                     dna = dna; 
+                     sourceChr = "library";
+                     sourceFr = 0<ZeroOffset>;
+                     sourceTo = (dna.Length-1)*1<ZeroOffset>;
+                     sourceFwd = ppp.fwd;
+                     sourceFrApprox = false;
+                     sourceToApprox = false;
+                     // Don't assign coordinates to pieces until later when we decide
+                     // how they are getting joined up
+                     destFr = 0<ZeroOffset>; 
+                     destTo = 0<ZeroOffset>; 
+                     destFwd = ppp.fwd;
+                     description = rabit.Name; 
+                     sliceType = REGULAR; 
+                     amplified = false;
+                     template = Some dna; // not amplifying from this
+                     dnaSource =
+                        match ppp.pr.TryGetOne("dnasrc") with
+                        | Some(d) -> d
+                        | None -> pid;
+                     pragmas = ppp.pr;
+                     breed = B_X; // will be replaced at final submission
+                     materializedFrom = Some(ppp);
+                     annotations = []} // FIXME: need to generate annotations based on Rabit metadata
+                else
+                    // Otherwise, they are taking a hutch part and doing something to it,
+                    // so the hutch is just another DNA source and they are effectively
+                    // building a new rabit
 
-                        // Apply the slice(s) to get a final coordinate range
-                        let finalSlice = applySlices verbose partId.mods startSlice 
+                    // Start off assuming it's the full DNA slice
+                    let startSlice =
+                       {left = {x = 1<OneOffset>; relTo = FivePrime};
+                        lApprox = false; 
+                        rApprox = false;
+                        right = {x = -1<OneOffset>; relTo = ThreePrime}}
 
-                        // Find the left and right hand ends of the slice
-                        let x, y =
-                            getBoundsFromSlice finalSlice dna.Length (Library(partId.id))
-                            |> returnOrFail
-                    
-                        let finalDNA =
-                            dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
-                            |> DnaOps.revCompIf (not ppp.fwd)
+                    // Apply the slice(s) to get a final coordinate range
+                    let finalSlice = applySlices verbose partId.mods startSlice 
 
-                        let name1 =
-                            if partId.mods.Length = 0 then rabit.Name
-                            else (rabit.Name + (printSlice finalSlice))
-                        let name2 = if ppp.fwd then name1 else "!" + name1
+                    // Find the left and right hand ends of the slice
+                    let x, y =
+                        getBoundsFromSlice finalSlice dna.Length (Library(partId.id))
+                        |> returnOrFail
+                
+                    let finalDNA =
+                        dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
+                        |> DnaOps.revCompIf (not ppp.fwd)
 
-                        {id = None; 
-                         extId = None;
-                         sliceName = sliceName;
-                         uri = uri; // TODO: use URI from hutch part?  mint new URI?
-                         dna = finalDNA; 
-                         amplified = false;
-                         template = Some finalDNA;
-                         sourceChr = "library"; 
-                         sourceFr = (finalSlice.left.x/(1<OneOffset>)-1)*1<ZeroOffset>; 
-                         sourceTo = (finalSlice.right.x/(1<OneOffset>)-1)*1<ZeroOffset>;
-                         sourceFwd = true;
-                         sourceFrApprox = false;
-                         sourceToApprox = false;
-                         // Don't assign coordinates to pieces until later when we decide how they are getting joined up
-                         destFr = 0<ZeroOffset>;
-                         destTo = 0<ZeroOffset>;
-                         destFwd = ppp.fwd;
-                         description = name2;
-                         sliceType = REGULAR; 
-                         dnaSource =
-                            match ppp.pr.TryGetOne("dnasrc") with
-                            | Some(d) -> d
-                            | None -> pid;
-                         pragmas = ppp.pr;
-                         breed = B_X; // they are hacking rabit, all bets are off
-                         materializedFrom = Some(ppp);
-                         annotations = []} // FIXME: need to generate annotations based on Rabit metadata
+                    let name1 =
+                        if partId.mods.Length = 0 then rabit.Name
+                        else (rabit.Name + (printSlice finalSlice))
+                    let name2 = if ppp.fwd then name1 else "!" + name1
+
+                    {id = None; 
+                     extId = None;
+                     sliceName = sliceName;
+                     uri = uri; // TODO: use URI from hutch part?  mint new URI?
+                     dna = finalDNA; 
+                     amplified = false;
+                     template = Some finalDNA;
+                     sourceChr = "library"; 
+                     sourceFr = (finalSlice.left.x/(1<OneOffset>)-1)*1<ZeroOffset>; 
+                     sourceTo = (finalSlice.right.x/(1<OneOffset>)-1)*1<ZeroOffset>;
+                     sourceFwd = true;
+                     sourceFrApprox = false;
+                     sourceToApprox = false;
+                     // Don't assign coordinates to pieces until later when we decide how they are getting joined up
+                     destFr = 0<ZeroOffset>;
+                     destTo = 0<ZeroOffset>;
+                     destFwd = ppp.fwd;
+                     description = name2;
+                     sliceType = REGULAR; 
+                     dnaSource =
+                        match ppp.pr.TryGetOne("dnasrc") with
+                        | Some(d) -> d
+                        | None -> pid;
+                     pragmas = ppp.pr;
+                     breed = B_X; // they are hacking rabit, all bets are off
+                     materializedFrom = Some(ppp);
+                     annotations = []} // FIXME: need to generate annotations based on Rabit metadata
 
             else
                 // Part is in the library
@@ -192,14 +188,13 @@ let fetchFullPartSequence (_ (* verbose*):bool) (library: SequenceLibrary) (part
         | "rabit" ->
             let libName = "@"+pid.ToUpper()
             if not (library.ContainsKey(libName)) then
-                match getRabit (int(pid.[1..])) with
-                | None -> EXT_FAIL("not found")
-                | Some(hr) ->
-                    // Have part from the hutch.  We might just use it verbatim or we might be
-                    // some modifications to it to make a new part
-                    let rabit = hr.RabitSpecs.[0]
-                    let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
-                    EXT_FETCH_OK({dna = dna; source = "hutch"; id = pid; name = rabit.Name})
+                let hr = getRabit (int(pid.[1..]))
+
+                // Have part from the hutch.  We might just use it verbatim or we might be
+                // some modifications to it to make a new part
+                let rabit = hr.RabitSpecs.[0]
+                let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
+                EXT_FETCH_OK({dna = dna; source = "hutch"; id = pid; name = rabit.Name})
             else
                 // Part is in the library
                 EXT_FETCH_OK(
