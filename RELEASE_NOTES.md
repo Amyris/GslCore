@@ -1,3 +1,6 @@
+#### 0.4.32 - January 24th 2017
+* Demetrix production release
+
 #### 0.4.31 - December 15 2017
 * Add flag to disable caching of rabit lookup.
 
