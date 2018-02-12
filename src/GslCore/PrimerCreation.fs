@@ -180,7 +180,14 @@ let tuneTails
     let fullTemplate = DnaOps.concat [ rev.body.RevComp() ; middleDNA ; fwd.body ]
 
     /// Target Tm for middle annealing part.  Cheat if it's a linker and we just want to keep this part (ideally) full length
-    let annealTarget = match firmMiddle with | Some(x) -> x | None -> dp.seamlessOverlapTm
+    let annealTarget = 
+            match firmMiddle with 
+            | Some(x) -> 
+                    if verbose then printfn "setAnnealTarget to firmMiddle=%A" x
+                    x 
+            | None -> 
+                    if verbose then printfn "setAnnealTarget to seamlessOverlapTm=%A" dp.seamlessOverlapTm
+                    dp.seamlessOverlapTm
     //let annealTarget = dp.seamlessOverlapTm // Just use this,  rev/fwdTailLenFixed vars take care of constraining RYSE linkers
 
     // Find two positions f and r that create a better ovelap tm
@@ -1179,7 +1186,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     let midOverlapContribution = (hd.dna.Length * 2 - minInlineOverlap)/2 |> max 0
                     let fwdMiddleLen = (min lenSF maxSandwichLength)+midOverlapContribution
                     let revMiddleLen = (min lenSR maxSandwichLength)+midOverlapContribution
-                    if hd.dna.Length = 0 then
+                    if hd.dna.Length = 0 then 
                         (None,
                          0,
                          Microsoft.FSharp.Core.int.MaxValue,
@@ -1218,11 +1225,13 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                          revTailLenMin,
                          revTailLenMax)
                     else
-                        let linkerTm = temp dp.pp hd.dna.arr hd.dna.Length
+                        // let linkerTm = temp dp.pp hd.dna.arr hd.dna.Length
+                        // changing this because if the inline sequence is really short, that will become the target overlap
+                        // could do a min value for this, but leaving it to default seamlessTm
                         (None,
                          ((0.8 * float fwdMiddleLen)|>round),
                          Microsoft.FSharp.Core.int.MaxValue,
-                         Some(linkerTm),
+                         None, // Some(linkerTm),
                          None,
                          ((0.8 * float revMiddleLen)|>int),
                          Microsoft.FSharp.Core.int.MaxValue)
