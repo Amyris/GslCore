@@ -115,7 +115,7 @@ let checkPrimersVAssembly (pa:(DivergedPrimerPair list*DnaAssembly) list) =
                 // Ensure assembly contains primer
                 if not (ff || fr) then
                     failwithf
-                        "fwd primer validation failure.  Primer %O\ntail=%O\body=%O\n does not occur fwd or rc in template %s\n>template\n%s\n>assembly\n%s" 
+                        "fwd XXX primer validation failure.  Primerlast10 %O\ntail=%O\nbody=%O\n does not occur fwd or rc in template %s\n>template\n%s\n>assembly\n%s" 
                         fwd 
                         dpp.fwd.tail 
                         dpp.fwd.body 
