@@ -310,7 +310,13 @@ let mapRyseLinkers
                 (prepLinker last)::res
             else
                 if phase then // Must be in phase two by the time we get here
-                    failwith "in mapRyseLinkers:assign, ran out of linkers while still in phase one :(  .  Are you missing a ### marker for your megastitch?"
+                    let alreadyAssigned = 
+                            res 
+                            |> List.rev 
+                            |> List.map (fun x -> x.description)
+                            |> fun x -> String.Join(";",x)
+                    failwithf "in mapRyseLinkers:assign, ran out of linkers while still in phase one :(  .  Are you missing a ### marker for your megastitch?\n%s"
+                                alreadyAssigned
 
                 match linkers with
                 | [linkerName] ->
