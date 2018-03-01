@@ -142,6 +142,11 @@ let fusePragmaDef =
      desc = "Create a seamless junction with the next part.";
      invertsTo = None; validate = noValidate}
 
+let ampPragmaDef =
+    {name = "amp"; argShape = Zero; scope = PartOnly;
+     desc = "Create a seamless junction with the next part.";
+     invertsTo = None; validate = noValidate}
+
 /// Base set of hard coded pragmas.  Plugins might augment this list
 let pragmaDefsStatic : PragmaDef list =
    [warningPragmaDef;
@@ -151,6 +156,7 @@ let pragmaDefsStatic : PragmaDef list =
     markersetPragmaDef;
     namePragmaDef;
     fusePragmaDef;
+    ampPragmaDef;
     {name = "linkers"; argShape = AtLeast(1); scope = BlockOnly(Persistent);
      desc = "Override the default set of RYSE linkers.";
      invertsTo = None; validate = noValidate}; // TODO: import linker parse function here

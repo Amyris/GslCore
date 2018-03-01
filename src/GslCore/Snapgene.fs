@@ -156,6 +156,7 @@ FEATURES             Location/Qualifiers
         for pp in primers do 
             match pp with
             | GAP -> () // nothing to emit
+            | SANDWICH -> () // nothing to emit
             | DPP(dpp) ->
                 if dpp.fwd.Primer.Length > 0 then emitPrimer true dpp.fwd
                 if dpp.rev.Primer.Length > 0 then emitPrimer false dpp.rev

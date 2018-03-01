@@ -73,7 +73,8 @@ let simplePrimerDump (file:string) (primers:DivergedPrimerPair list list) (assem
 
         for dpp in primerList do
             match dpp with
-                | GAP -> () // Don't need to emit these
+                | GAP 
+                | SANDWICHGAP -> () // Don't need to emit these
                 | DPP(dpp) -> 
                     primerInfo true dpp.fwd
                     primerInfo false dpp.rev
