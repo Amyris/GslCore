@@ -1,3 +1,7 @@
+#### 0.4.32 - March 1 2018
+* Fix parallelism failure on single-core machines.
+* Improve primer naming in snapgene output.
+
 #### 0.4.31 - December 15 2017
 * Add flag to disable caching of rabit lookup.
 
