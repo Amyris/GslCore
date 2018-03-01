@@ -201,6 +201,8 @@ let tuneTails
     let X = rev.body.Length+middleDNA.Length-1
     /// First base of inline region
     let Y = rev.body.Length
+    if verbose then
+        printfn "tuneTailOpt: X=%d Y=%d\n template=%s" X Y fullTemplate.str
 
     /// Recursive optimization of the primer ends, adjusting lengths to get the amp / anneal and primer lengths optimized
     let rec tuneTailsOpt itersRemaining (state:TuneState) (seen':Set<TuneVector>) =
@@ -276,11 +278,14 @@ let tuneTails
                 match fwdLen with
                 | OligoOver(_) -> // cut something off
                     if state.fb>dp.pp.minLength then  yield CHOP_F_AMP
-                    if fwdTailLenFixed.IsNone && state.ft > fwdTailLenMin then yield CHOP_F_ANNEAL
+                    // Put guard on this to stop best anneal data running away to zero kelvin ;(
+                    if fwdTailLenFixed.IsNone && state.ft > fwdTailLenMin && state.bestAnnealDelta < 10.0<C> then 
+                        yield CHOP_F_ANNEAL
                 | OligoMax(_) -> // could slide or cut
                     if state.bestFwdDelta < 0.0<C> && state.fb>dp.pp.minLength then yield CHOP_F_AMP
                     if fwdTailLenFixed.IsNone then
-                        if  state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then yield CHOP_F_ANNEAL
+                        if  state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then 
+                            yield CHOP_F_ANNEAL
                         if state.fb < fwd.body.Length && state.ft > fwdTailLenMin then yield SLIDE_F_RIGHT
                         if state.rt > revTailLenMin && state.ft < fwdTailLenMax then
                             yield SLIDE_F_LEFT
@@ -290,8 +295,8 @@ let tuneTails
                         if state.bestFwdDelta < 0.0<C> && state.ft < fwdTailLenMin && state.fb>dp.pp.minLength
                             then yield CHOP_F_AMP
                         elif state.fb < fwd.body.Length then yield EXT_F_AMP
-                        if state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin
-                            then yield CHOP_F_ANNEAL
+                        if state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then 
+                                yield CHOP_F_ANNEAL
                         elif state.ft < fwdTailLenMax then yield EXT_F_ANNEAL
 
                         match sign state.bestAnnealDelta, sign state.bestFwdDelta with
@@ -317,7 +322,7 @@ let tuneTails
                             if (state.fb<fwd.body.Length && state.rt > revTailLenMin && state.ft < fwdTailLenMax)
                                 then yield SLIDE_F_LEFT
                         | 0, 0 -> () // no complaints
-                        | _ as x -> failwithf "unexpected delta sign combo %A" x
+                        | x -> failwithf "unexpected delta sign combo %A" x
 
                 match revLen with
                 | OligoOver(_) -> // cut something off reverse primer
