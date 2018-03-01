@@ -205,6 +205,8 @@ let tuneTails
     if verbose then
         printfn "tuneTailOpt: X=%d Y=%d\n template=%s" X Y fullTemplate.str
 
+    /// Maximum amount by which we can stray from ideal annealing term during tune tails search
+    let maxAnnealSearchDeviation = 10.0<C>
     /// Recursive optimization of the primer ends, adjusting lengths to get the amp / anneal and primer lengths optimized
     let rec tuneTailsOpt itersRemaining (state:TuneState) (seen':Set<TuneVector>) =
 
@@ -280,7 +282,7 @@ let tuneTails
                 | OligoOver(_) -> // cut something off
                     if state.fb>dp.pp.minLength then  yield CHOP_F_AMP
                     // Put guard on this to stop best anneal data running away to zero kelvin ;(
-                    if fwdTailLenFixed.IsNone && state.ft > fwdTailLenMin && state.bestAnnealDelta < 10.0<C> then 
+                    if fwdTailLenFixed.IsNone && state.ft > fwdTailLenMin && state.bestAnnealDelta < maxAnnealSearchDeviation then 
                         yield CHOP_F_ANNEAL
                 | OligoMax(_) -> // could slide or cut
                     if state.bestFwdDelta < 0.0<C> && state.fb>dp.pp.minLength then yield CHOP_F_AMP
@@ -297,7 +299,7 @@ let tuneTails
                             then yield CHOP_F_AMP
                         elif state.fb < fwd.body.Length then yield EXT_F_AMP
                         if state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then 
-                                yield CHOP_F_ANNEAL
+                            yield CHOP_F_ANNEAL
                         elif state.ft < fwdTailLenMax then yield EXT_F_ANNEAL
 
                         match sign state.bestAnnealDelta, sign state.bestFwdDelta with
