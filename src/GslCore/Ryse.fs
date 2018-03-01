@@ -263,7 +263,12 @@ let mapRyseLinkers
         let noLinkersLeftMsg =
             sprintf "mapRyseLinkers: out of linkers.  Started with %A" startLinkers
 
-        let markerTransition nextLinker markerHd partsTl =
+        // Marker encountered.
+        // lastParts are the parts that goes before the marker in reverse order
+        // markerHd is the marker part
+        // partsTl are the remaining parts in the assembly
+        // let markerTransition nextLinker markerHd partsTl =
+        let markerTransition (lastParts:DNASlice list) markerHd partsTl =
             // Reconstruct output with linker and moved piece
             // If we hit the marker, flip orientation, restart linker list but backwards
             printVerbose
@@ -286,7 +291,7 @@ let mapRyseLinkers
 
             // phase set to false to denote second phase,
             // grab the second set of linkers allLinkers2
-            assign allLinkers2 false partsTl (Seq.take linkersReq allLinkers2 |> List.ofSeq |> List.rev) (hd'::nextLinker::res)
+            assign allLinkers2 false partsTl (Seq.take linkersReq allLinkers2 |> List.ofSeq |> List.rev) (hd'::lastParts@res)
 
         // We *PRE* assign linkers to pieces so as we recognize a pattern, we
         // are emitting the linker that comes before (upstream in dna construct
@@ -358,7 +363,7 @@ let mapRyseLinkers
                 let linker = prepLinker linkerName
                 if b.sliceType = MARKER then
                     // a takes the place of a linker in this scenario
-                    markerTransition a b c 
+                    markerTransition [a;linker] b c 
                 else
                     printVerbose (sprintf
                         "inlineST starting following rabit, assign linker %s"
@@ -448,33 +453,7 @@ let mapRyseLinkers
                 // DETECT MARKER, transition to phase II
                 if hd.sliceType = MARKER then
                     // enter marker transition with linker to go before the marker part, marker part and remaining parts to place
-                    markerTransition linker hd tl 
-                    (*
-                    // Reconstruct output with linker and moved piece
-                    // If we hit the marker, flip orientation, restart linker list but backwards
-                    printVerbose
-                        "countRyseLinkersNeeded in phase II start with 1 for final leading 0 linker (note 9 linker not included in count)"
-                    let linkersReq = countRyseLinkersNeeded printVerbose 1 tl
-
-                    // check this first
-                    if linkersReq > allLinkers2.Length then
-                        failwithf
-                            "mapRyseLinkers - need %d linkers to finish, only %d available %A\n"
-                            linkersReq allLinkers2.Length errorDesc
-
-                    printVerbose (sprintf
-                        "\n\n#############################################\npart 2 of megastitch - %d linkers required, using %A\n"
-                        linkersReq (Seq.take linkersReq allLinkers2 |> List.ofSeq) )
-
-                    // Flipping part around, but only for marker case.
-                    // Should this also happen for the regular parts?  Must be dealt with elsewhere ;(
-                    let hd' = { hd with destFwd = if phase then hd.destFwd else not hd.destFwd }
-
-                    // phase set to false to denote second phase,
-                    // grab the second set of linkers allLinkers2
-                    assign allLinkers2 false tl (Seq.take linkersReq allLinkers2 |> List.ofSeq |> List.rev) (hd'::linker::res)
-                    *)
-
+                    markerTransition [linker] hd tl 
                 else
                     // We are putting linker before the piece hd (output gets flipped at the end).
                     // Make sure linker is appropriate to precede part hd.
