@@ -445,7 +445,8 @@ let foldmap
             assert (statesForNodes.Length = nodeArray.Length)
 
             let nCores = System.Environment.ProcessorCount
-            let useNCores = nCores - 1 // leave one for the OS
+            // leave one for the OS, make sure at least 1!
+            let useNCores = nCores - 1 |> max 1 
 
             Array.zip statesForNodes nodeArray
             |> PSeq.map (fun (inputState, n) ->
