@@ -119,7 +119,12 @@ FEATURES             Location/Qualifiers
 
         let emitPrimer isFwd (primer:Primer) =
             let searchDna = if isFwd then primer.Primer else primer.Primer.RevComp()
-            let searchBody = if isFwd then primer.body else primer.body.RevComp()
+            let ampBody = 
+                match primer.Interval DNAIntervalType.AMP with 
+                    | Some(i) -> primer.Primer.[i.il..i.ir]
+                    | None -> primer.body
+            //search using either the ampBody or reverse complement of it depending on direction of primer
+            let searchBody =  if isFwd then ampBody else ampBody.RevComp()
             // this isn't an ideal way to place primers but simpler than trying to infer coordinates during emission
             // will break if there are multiple binding sites but that might be a good thing to alert user
             let left = a.Sequence().IndicesOf(searchDna) |> Seq.head 
