@@ -182,13 +182,13 @@ let tuneTails
 
     /// Target Tm for middle annealing part.  Cheat if it's a linker and we just want to keep this part (ideally) full length
     let annealTarget = 
-            match firmMiddle with 
-            | Some(x) -> 
-                    if verbose then printfn "setAnnealTarget to firmMiddle=%A" x
-                    x 
-            | None -> 
-                    if verbose then printfn "setAnnealTarget to seamlessOverlapTm=%A" dp.seamlessOverlapTm
-                    dp.seamlessOverlapTm
+        match firmMiddle with 
+        | Some(x) -> 
+                if verbose then printfn "setAnnealTarget to firmMiddle=%A" x
+                x 
+        | None -> 
+                if verbose then printfn "setAnnealTarget to seamlessOverlapTm=%A" dp.seamlessOverlapTm
+                dp.seamlessOverlapTm
     //let annealTarget = dp.seamlessOverlapTm // Just use this,  rev/fwdTailLenFixed vars take care of constraining RYSE linkers
 
     // Find two positions f and r that create a better ovelap tm
