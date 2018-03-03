@@ -184,11 +184,11 @@ let tuneTails
     let annealTarget = 
         match firmMiddle with 
         | Some(x) -> 
-                if verbose then printfn "setAnnealTarget to firmMiddle=%A" x
-                x 
+            if verbose then printfn "setAnnealTarget to firmMiddle=%A" x
+            x 
         | None -> 
-                if verbose then printfn "setAnnealTarget to seamlessOverlapTm=%A" dp.seamlessOverlapTm
-                dp.seamlessOverlapTm
+            if verbose then printfn "setAnnealTarget to seamlessOverlapTm=%A" dp.seamlessOverlapTm
+            dp.seamlessOverlapTm
     //let annealTarget = dp.seamlessOverlapTm // Just use this,  rev/fwdTailLenFixed vars take care of constraining RYSE linkers
 
     // Find two positions f and r that create a better ovelap tm
