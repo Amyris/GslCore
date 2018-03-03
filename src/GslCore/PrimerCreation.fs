@@ -872,6 +872,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 else
                     s.description
         if verbose then
+            printfn "procAsembly --->"
             printfn "procAssembly: top,  prev=[%s]\n                    n=[%s]\n                    l=[%s]\n            slice out=[%s]"
                 (String.Join(";",(prev |> Seq.map(nameFromSlice))))
                 (String.Join(";",(l |> Seq.map(nameFromSlice))))
@@ -1359,7 +1360,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                         dp
                         errorName
                         (choppedD::x::hd::prev) // prev slices. Include the sandwich x and the downstream d which may have been chopped
-                        (choppedD::x::hd::sliceOut') // updated slices we are emitting // don't emit the sandwich to this list and it isn't a PCR generated product
+                        (choppedD::x::hd::sliceOut') // updated slices we are emitting  - pair the sandwich with a SANDWICHGAP Dpp type
                         (GAP::SANDWICHGAP::DPP({fwd = primerF; rev = primerR; name = hd.description})::primersOut)
                         e // todo slices
 
@@ -1483,7 +1484,12 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     failwithf "These lists should have same length :( - error in procAssembly"
                 ()
             finalOutput
-        | hd::tl when hd.sliceType = INLINEST ->
+        | hd::tl when hd.sliceType = INLINEST && (not (hd.pragmas.ContainsKey("rabitend"))) ->
+            if verbose then
+                printfn "procAssembly: ... (GAP) INLINEST"
+            let prevNew = hd::prev
+            procAssembly dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
+        | hd::tl when hd.sliceType = INLINEST && hd.pragmas.ContainsKey("rabitend") ->
             if verbose then
                 printfn "procAssembly: ... (GAP) INLINEST"
             let prevNew = hd::prev
