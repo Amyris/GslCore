@@ -1,3 +1,6 @@
+#### 0.4.33 - March 2 2018
+* Constrain minimum primer melting temperature.
+
 #### 0.4.32 - March 1 2018
 * Fix parallelism failure on single-core machines.
 * Improve primer naming in snapgene output.
