@@ -9,7 +9,10 @@ open pragmaTypes
 open Amyris.ErrorHandling
 
 /// location of test gslc_lib fixtures
-let testLibDir = @"../../../../TestGslcLib"
+// Note different for dotnet core relative to binary executables
+let testLibDir = @"../../../../../TestGslcLib"
+
+// let testLibDir = @"../../../../TestGslcLib"
 
 [<TestFixture>]
 type TestPromTermLen() = 
@@ -24,6 +27,13 @@ type TestPromTermLen() =
 
     let checkOneGenome pragmas name promLen termLen termLenMRNA =
         let gd = new RefGenome.GenomeDef(testLibDir,name)
+
+
+        printfn "XXX envlookup=%d"  (gd.EnvLenLookup "termlen" 666)
+        printfn "XXX name=%s termlen=%d" name (gd.getTermLen())
+        gd.Load()
+        printfn "XXX envlookup=%d"  (gd.EnvLenLookup "termlen" 666)
+        printfn "XXX name=%s termlen=%d" name (gd.getTermLen())
 
         let part = DnaCreation.translateGenePrefix pragmas gd TERMINATOR
         same "terminator length test" termLen ((part.right.x-part.left.x+1<OneOffset>)/1<OneOffset>) // +1 since ends are inclusive
@@ -42,6 +52,12 @@ type TestPromTermLen() =
         | _ -> failwith "building promlen pragma"
         
     [<Test>]
+    member __.TestGenomesLoadable() =
+        let gd = new RefGenome.GenomeDef(testLibDir,"TestGenome")
+        gd.Load()
+        ()
+
+    [<Test>]
     member __.TestPragmasExist() =
         let checkPragmaExists name =
             Assert.DoesNotThrow (fun () -> returnOrFail (buildPragma name ["250"]) |> ignore) |> ignore
@@ -56,6 +72,7 @@ type TestPromTermLen() =
 
     [<Test>]
     member __.TestCustomTerminatorLen() =
+        printfn "YYY"
         checkOneGenome emptyPragmas "TestGenome2" 750 250 300
 
     [<Test>]

@@ -4,17 +4,17 @@ nuget FSharp.Core >= 4.1.0 redirects: force
 nuget Dmx.Amyris.Bio >= 2.0.23 framework: >= netstandard2.0
 nuget FSharp.Data
 nuget Newtonsoft.Json
-nuget FsLexYacc < 7
-nuget FsLexYacc.Runtime < 7
+nuget FsLexYacc
+nuget FsLexYacc.Runtime
 nuget FParsec
 nuget MathNet.Numerics
-nuget FSharp.Collections.ParallelSeq
+nuget FSharp.Collections.ParallelSeq >= 1.1.0
 
 group Build
   source https://nuget.org/api/v2
 
   nuget SourceLink.Fake
-  nuget FAKE
+  nuget FAKE 
   nuget FSharp.Formatting
   // nuget FSharp.Compiler.Service redirects: force
 
@@ -23,5 +23,8 @@ group Build
 group Test
   source https://nuget.org/api/v2
 
-  nuget NUnit ~> 2
-  nuget NUnit.Runners ~> 2
+  nuget NUnit.Console ~> 3
+  nuget NUnit.Framework
+  nuget Microsoft.NET.Test.Sdk  >= 15.5.0
+  nuget NUnit >= 3.9.0
+  nuget NUnit3TestAdapter >= 3.9.0
