@@ -574,6 +574,18 @@ let prettyPrintPrimer = function
     | GAP -> "GAP"
     | SANDWICHGAP -> "GAPSANDWICH"
 
+type PrimerPosOrient = FWD of int |REV of int |NONE
+let parsePrimerPos (pragmas:PragmaCollection) =
+        match pragmas.TryGetValues("primerpos") with
+        | Some(v) ->
+            match v |> List.map (fun (s:string) -> s.ToUpper()) with
+            // TODO: these should be parsed and converted into union cases much earlier
+            // in compiler execution
+            | [ "FWD"; offsetStr ] -> FWD(int offsetStr)
+            | [ "REV"; offsetStr ] -> REV(int offsetStr)
+            | _ -> failwithf "ERROR: invalid primerpos pragma '%A', should be fwd ### or rev ### " v
+        | None -> NONE
+
 /// Time to design some primers given a list of assemblyout structures
 let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
     let verbose = opts.verbose
@@ -1006,19 +1018,15 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 //
                 // Parse any primer position directive
                 let fwdTailLenMax,revTailLenMax =
-                    match hd.pragmas.TryGetValues("primerpos") with
-                    | Some(v) ->
-                        match v |> List.map (fun (s:string) -> s.ToUpper()) with
-                        // TODO: these should be parsed and converted into union cases much earlier
-                        // in compiler execution
-                        | [ "FWD"; offsetStr ] ->
-                                let x = (hd.dna.Length+1)-int(offsetStr) |> max 0// Convert to tail length
-                                x, 999999
-                        | [ "REV"; offsetStr ] ->
-                                let x = int(offsetStr) |> max 0
-                                999999,x
-                        | _ -> failwithf "ERROR: invalid primerpos pragma '%A', should be fwd ### or rev ### " v
-                    | None -> 999999,999999
+                    match parsePrimerPos hd.pragmas with
+                    | FWD(offset) ->
+                        let x = (hd.dna.Length+1)-offset |> max 0// Convert to tail length
+                        x, 999999
+                    | REV(offset) ->
+                        let x = offset |> max 0
+                        999999,x
+                    | NONE -> 999999,999999 // no primerpos
+
                 if verbose then
                     printf "primerpos directive: fwdTailLenMax = %A revTailLenMax = %A\n" fwdTailLenMax revTailLenMax
 
@@ -1504,7 +1512,55 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 (hd.dna.Length > 100 || hd.pragmas.ContainsKey("amp")) ->
 
                 printfn "procAssembly: ... generate seamless junction between prev=%s and this=%s" pHd.description hd.description
-                let primerF,offsetF,primerR,offsetR = seamless dp pHd hd
+
+                let primerPos = parsePrimerPos pHd.pragmas
+
+                let fwdTailLenMax,revTailLenMax =
+                    match primerPos with
+                    | FWD(offset) ->
+                        let x = -offset // Convert to tail length
+                        x, 999999
+                    | REV(offset) ->
+                        let x = offset 
+                        999999,x
+                    | NONE -> 999999,999999 // no primerpos
+                if verbose then
+                        printfn "procAssembly: hasPrimerPos = %s" (match primerPos with | NONE -> "no" | _ -> "yes")
+                        printfn "procAssembly: fwdTailLenMax = %d" fwdTailLenMax
+                        printfn "procAssembly: revTailLenMax = %d" revTailLenMax
+
+                let primerFPreChop,offsetF,primerRPreChop,offsetR = seamless dp pHd hd
+
+                // step 2, chop tails off maybe if the primer positioning requires it
+                let primerFStep2 = 
+                        {primerFPreChop with 
+                            tail = primerFPreChop.tail.[..(fwdTailLenMax|> min primerFPreChop.tail.Length)-1] 
+                        }
+                let primerRStep2 = 
+                        {primerRPreChop with 
+                            tail = primerRPreChop.tail.[..(revTailLenMax|> min primerRPreChop.tail.Length)-1] 
+                        }
+
+                // step 3,  backfill primer if warranted to make a longer overlap
+                let primerF,primerR =
+                        match primerPos with
+                        | FWD x  when x > 0 ->  // extend rev tail
+                              //                     o----------->
+                              //    ---------------|--------------------
+                              //          <------------oxxxxxxx
+                              let maxTailLen = dp.pp.maxLength-primerRStep2.body.Length |> min (primerFStep2.body.Length+x-1)
+                              let primerRNewTail = hd.dna.[..maxTailLen-1].RevComp()
+                              {primerFStep2 with body = primerFStep2.body.[x-1..]},{primerRStep2 with tail = primerRNewTail}
+                        | REV x  when x < 0 ->  // extend fwd fail
+                              //              xxxxxo----------->
+                              //    ---------------|--------------------
+                              //          <------o
+                              let maxTailLen = dp.pp.maxLength-primerFStep2.body.Length |> min (primerRStep2.body.Length+x-1)
+                              let primerFNewTail = pHd.dna.[pHd.dna.Length-maxTailLen..]
+                              {primerFStep2 with tail = primerFNewTail},{primerRStep2 with body = primerRStep2.body.[(-x)-1..]}
+                        | _ -> primerFStep2,primerRStep2
+                            
+
                 // If we stitched fwd/rev off of linker hd then the previous and next elements (prev) and next
                 // might need to be modified (chopped) if the ends were flexible
                 let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight p offsetR)::(List.tail sliceOut)
