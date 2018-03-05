@@ -58,12 +58,14 @@ let rec processGSL (s: ConfigurationState) gslText =
 let materializeDna (s:ConfigurationState) (assem:seq<Assembly>) =
     let opts, library, rgs = s.opts, s.ga.seqLibrary, s.ga.rgs
 
+    let markerProviders = s.plugins |> getAllProviders getMarkerProviders
+
     if opts.verbose then printf "Processing %d assemblies\n" (Seq.length assem)
 
     assem
     |> Seq.mapi (fun i a ->
         try
-            expandAssembly opts.verbose rgs library i a
+            expandAssembly opts.verbose markerProviders rgs library i a
             |> ok
         with e ->
             fail(exceptionToAssemblyMessage a e))

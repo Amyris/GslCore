@@ -29,26 +29,28 @@ open SourceLink
 // The name of the project
 // (used by attributes in AssemblyInfo, name of a NuGet package and directory in 'src')
 let project = "GslCore"
+let dmxProject = "Dmx.GslCore"
+let dmxProjectName = "Dmx.GslCore"
 
 // Short summary of the project
 // (used as description in AssemblyInfo and as a short summary for NuGet package)
-let summary = "Core library and basic plug-ins for the GSL compiler."
+let summary = "Core library and basic plug-ins for the GSL compiler. (Demetrix production version)"
 
 // Longer description of the project
 // (used as a description for NuGet package; line breaks are automatically cleaned up)
-let description = "Core library and basic plug-ins for the Amyris Genotype Specification Language (GSL) compiler."
+let description = "Core library and basic plug-ins for the Amyris Genotype Specification Language (GSL) compiler. (Demetrix production release)"
 
 // List of author names (for NuGet package)
-let authors = [ "Darren Platt"; "Chris Macklin" ]
+let authors = [ "Darren Platt"; "Chris Macklin"]
 
 // Tags for your project (for NuGet package)
-let tags = "GSL amyris compiler'"
+let tags = "GSL amyris compiler demetrix"
 
 // File system information
 let solutionFile  = "GslCore.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
-let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
+let testAssemblies = "tests/**/bin/Release/netstandard2.0/*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
@@ -80,14 +82,14 @@ let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
     let getAssemblyInfoAttributes projectName =
-        [ Attribute.Title (projectName)
-          Attribute.Product project
+        [ Attribute.Title (dmxProjectName)
+          Attribute.Product dmxProject
           Attribute.Description summary
           Attribute.Version release.AssemblyVersion
           Attribute.FileVersion release.AssemblyVersion ]
 
     let getProjectDetails projectPath =
-        let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
+        let projectName = dmxProjectName // System.IO.Path.GetFileNameWithoutExtension(projectPath)
         ( projectPath,
           projectName,
           System.IO.Path.GetDirectoryName(projectPath),
@@ -140,12 +142,19 @@ Target "Build" (fun _ ->
 // Run the unit tests using test runner
 
 Target "RunTests" (fun _ ->
-    !! testAssemblies
-    |> NUnit (fun p ->
-        { p with
-            DisableShadowCopy = true
-            TimeOut = TimeSpan.FromMinutes 20.
-            OutputFile = "TestResults.xml" })
+    DotNetCli.Test 
+        (fun p -> 
+            {p with 
+                Configuration="Release"
+                Project="tests/GslCore.Tests"
+            }
+        )
+    
+    // NUnit (fun p ->
+    //     { p with
+    //         DisableShadowCopy = true
+    //         TimeOut = TimeSpan.FromMinutes 20.
+    //         OutputFile = "TestResults.xml" })
 )
 
 #if MONO

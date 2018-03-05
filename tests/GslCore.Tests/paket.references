@@ -1,7 +1,8 @@
-Amyris.Bio
+Dmx.Amyris.Bio
 FSharp.Data
 FSharp.Core
 FsLexYacc.Runtime
 group Test
+Microsoft.NET.Test.Sdk
 NUnit
-NUnit.Runners
+NUnit3TestAdapter

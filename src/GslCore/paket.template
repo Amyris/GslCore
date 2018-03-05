@@ -1,10 +1,10 @@
 type project
 owners
-    Amyris
+    Demetrix
 authors
-    Amyris
+    Amyris, Demetrix
 projectUrl
-    http://github.com/AmyrisInc/GslCore
+    http://github.com/demetrixbio/GslCore
 iconUrl
     https://raw.githubusercontent.com/Amyris/Amyris.Bio/master/docs/files/img/amyris_logo.png
 licenseUrl
@@ -14,8 +14,8 @@ requireLicenseAcceptance
 copyright
     Copyright 2016
 tags
-    GSL compiler amyris yeast F#
+    GSL compiler amyris yeast F# demetrix
 summary
-    Core library for GSL compiler
+    Core library for GSL compiler (Demetrix production version)
 description
-    Core library and plugin defintions for the Amyris Genotype Specification Language (GSL) compiler.
+    Core library and plugin defintions for the Amyris Genotype Specification Language (GSL) compiler. (demetrix version)
