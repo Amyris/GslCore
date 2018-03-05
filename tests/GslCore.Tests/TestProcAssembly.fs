@@ -9,8 +9,11 @@ open LexAndParse
 open pragmaTypes
 open Amyris.Dna
 open constants
+
 [<TestFixture>]
 type TestProcAssembly() = 
+
+    let verbose = false  // enable for detailed (very detailed) output from procAssembly
 
     /// Simple slice creator with just the parameters
     /// needed for testing procAssembly
@@ -228,7 +231,7 @@ type TestProcAssembly() =
             Breed.B_X
     let _doProcAssembly testName (slices:DNASlice list) designParams =
         PrimerCreation.procAssembly
-            true // debug
+            verbose // debug
             designParams
             testName
             [] // prev
