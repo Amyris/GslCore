@@ -943,7 +943,7 @@ let rec procAssembly
         let sliceOut' = sliceOut // daz  (I think this is now reincluding a slice)  //    incPrev prev sliceOut |> List.rev
         if verbose then
             printfn "procAssembly: done with slices"
-        List.rev primersOut,sliceOut'
+        List.rev primersOut,List.rev sliceOut' // reverse the primers and the slices since we pushed as we built
     | hd::next::tl when hd.sliceType = FUSIONST && next.sliceType=INLINEST ->
         // Fusing a slice to a following inline sequence is redundant as that's the
         // strategy we employ by default, but it will mess things up to try to put a seamless stitch here into a possibly
@@ -1448,20 +1448,6 @@ let rec procAssembly
                 // Assume it's a stand-alone inline sequence that could be made with a pair of primers
                 printfn "procAssembly:  final sliceOut' prev empty branch"
                 if sliceOut = [] then // Assume it's a stand-alone inline sequence that could be made with a pair of primers
-                    (* type DNASlice = { id : int option ; extId : string option ; dna : char array ;  sourceChr : string ; sourceFr : int<ZeroOffset> ; sourceTo : int<ZeroOffset>
-                        ; sourceFwd : bool ;
-                        sourceFrApprox: bool; sourceToApprox : bool;
-                         destFr : int<ZeroOffset> ; destTo : int<ZeroOffset> ; destFwd : bool
-                        ; sliceName : string ; description : string ; sliceType : SliceType ; pragmas:Map<string,string>;
-                        dnaSource : string}      *)
-                        (*
-                        let slice = { id = None ; extId = None ; dna = last.dna ; sourceChr = "inline" ;
-                                        sourceFr = 0<ZeroOffset> ; (sourceTo = last.dna.Length-1)*1<ZeroOffset> ;
-                                        sourceFwd = true ; sourceFrApprox = false; sourceToApprox = false ;
-                                        destFr = 0<ZeroOffset> ; destTo = 0<ZeroOffset> (*fixed later *) ;
-                                        description = "inline dna" ; sliceType = INLINEST ; pragmas = last.pragmas
-
-                        *)
                     [last] // Fake slice for now.. TODO TODO
                 else failwith "expected preceding linker adjacent to terminal inline sequence"
             | p::_ -> 
@@ -1471,7 +1457,8 @@ let rec procAssembly
                 // 4) reverse list to get natural forward order since we pushed results on successively
                 if verbose then
                     printfn "procAssembly:  potentially trimming p=%s last=%s" p.description last.description
-                last::(cutRight p offsetR)::(List.tail sliceOut)  |> List.rev
+                last::(cutRight p offsetR)::(List.tail sliceOut)  
+                |> List.rev // Finally reverse the slice out list since we pushed it as we created it
 
         if verbose then
                 printfn "sliceOut'=%s" (String.Join(";",[for s in sliceOut' -> s.description]))
@@ -1488,7 +1475,7 @@ let rec procAssembly
             if not outputParity then
                 failwithf "These lists should have same length :( - error in procAssembly"
             ()
-        finalOutput
+        finalOutput // RETURN POINT *****
     | hd::tl when hd.sliceType = INLINEST && (not (hd.pragmas.ContainsKey("rabitend"))) ->
         if verbose then
             printfn "procAssembly: ... (GAP) INLINEST"
