@@ -1329,17 +1329,23 @@ let rec procAssembly
 
             if verbose then
                 printfn "regular inline case hd=%s, cutting offsetR=%d" hd.description offsetR
+                printfn "procAssembly: prepping for sliceOut' skipped=%s sliceOut=%s" 
+                    (if skipped then "yes" else "no")
+                    (String.Join(";",[for x in sliceOut -> x.description]))
             let sliceOut' =
                 match prev with // look at previous slices to consider sliceOut update
                 | [] -> sliceOut // no changes to sliceout
-                | p1::p2::_ when skipped -> // skipped means we had to reach over a small inline while generating reverse primer
+                | p1::p2::tl when skipped -> // skipped means we had to reach over a small inline while generating reverse primer
                     if verbose then
                         printfn "cutRight p1=%s p2=%s offsetR=%d sliceOut=%A"
                             p1.description p2.description offsetR sliceOut
                     // take p2 (penultimate previous) and cut it by the offset of the primer from the floating end.  Keep p1, the inline slice and rest of sliceOut beyond first
 
                     // is List.tail sliceOut correct?  Shouldn't is be skipping two previous slices FIX? BUG?
-                    p1::(cutRight p2 offsetR)::(List.tail sliceOut) // messy, undo previously pushed out slice in penultimate pos
+
+                    // new sliceout starts with p1, the small skipped inline slice, then p2 cut to reflect the primer adjusted boundary
+                    // finally we include the remainder of the slice out
+                    p1::(cutRight p2 offsetR)::tl 
                 | p::_ -> // simple prev case, cut to any offset we generated
                     if verbose then printfn "cutRight p=%s offsetR=%d" p.description offsetR
                     //(cutRight p offsetR)::sliceOut
@@ -1360,6 +1366,10 @@ let rec procAssembly
                 // If no sandwich sequence, hd was not a linker and this is a simple inline sequence
                 if verbose then
                     printfn "procAssembly:  taking None arm of long inline hd=%A" hd
+                    printfn "procAssembly:  sliceout construction:"
+                    printfn "procAssembly:  hd=%s" hd.description
+                    printfn "procAssembly:  choppedD=%s" choppedD.description
+                    printfn "procAssembly:  sliceOut'=%s" (String.Join(";",[for x in sliceOut' -> x.description]))
                 procAssembly
                     verbose
                     dp
@@ -1494,11 +1504,15 @@ let rec procAssembly
             printfn "procAssembly: ... (GAP) INLINEST"
         let prevNew = hd::prev
         procAssembly verbose dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
+    // This cases catches inline sequences just before a linker marked rabitend
     | hd::tl when hd.sliceType = INLINEST && hd.pragmas.ContainsKey("rabitend") ->
         if verbose then
-            printfn "procAssembly: ... (GAP) INLINEST"
+            printfn "procAssembly: ... (GAP) INLINEST rabitend case hd=%s" hd.description
+            printfn "procAssembly: ... new sliceOut = %s" (String.Join(";",[for x in hd::sliceOut -> x.description]))
+        // push the slice onto the prev stack
         let prevNew = hd::prev
-        procAssembly verbose dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
+        procAssembly verbose dp errorName prevNew (hd::sliceOut) (SANDWICHGAP::primersOut) tl
+        // procAssembly verbose dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
     | hd::tl ->
         if verbose then
             printfn "procAssembly: ... (GAP) catchall case"

@@ -163,8 +163,16 @@ type TestProcAssembly() =
             false // to approx
             true // amplified
             Breed.B_INLINE
-    let shortInlineWithRabitStart = { shortInline with pragmas = shortInline.pragmas.Add(rabitStart)}
-    let shortInlineWithRabitEnd = { shortInline with pragmas = shortInline.pragmas.Add(rabitEnd)}
+    let shortInlineWithRabitStart = 
+        { shortInline with 
+            pragmas = shortInline.pragmas.Add(rabitStart)
+            description = shortInline.description+"#rabitstart"
+        }
+    let shortInlineWithRabitEnd = 
+        { shortInline with 
+            pragmas = shortInline.pragmas.Add(rabitEnd);
+            description = shortInline.description+"#rabitend"
+        }
     let linkerAlice = 
         makeSimpleSlice
             (Dna "GATCGATTAGATCGATAGGCTACG")
@@ -234,7 +242,7 @@ type TestProcAssembly() =
     let doProcAssemblyLongOligos testName (slices:DNASlice list) = 
         _doProcAssembly testName slices 
             { DesignParams.initialDesignParams with 
-              pp = { DesignParams.initialDesignParams.pp with maxLength = 100 }
+                            pp = { DesignParams.initialDesignParams.pp with maxLength = 100 }
             }
 
     /// Check that high level layout of diverged primer pair types meets expectation
@@ -273,6 +281,7 @@ type TestProcAssembly() =
                 Assert.IsTrue(e.dna.StartsWith(a.dna),sprintf "expect %s to start with %s" e.sliceName a.sliceName)
             | _ -> 
                 Assert.IsTrue(e.dna.Contains(a.dna),sprintf "expect %s to contain %s" e.sliceName a.sliceName)
+
     [<Test>]
     /// Equivalent of gFOO^
     member __.koNoLinkers() =
@@ -364,7 +373,6 @@ type TestProcAssembly() =
                 [ linkerAlice; oBar ; longInlineAmp; oBar ; linkerDoug]
         checkPattern "DGDGDGD" dpps
         checkSequence [ linkerAlice; oBar ; fuse ; longInlineAmp; fuse ; oBar; linkerDoug] slices
-   (* 
     [<Test>]
     member __.testRabitEnd() =
         let dpps,slices = 
@@ -381,6 +389,13 @@ type TestProcAssembly() =
                 "testRabitEndPostMarker" 
                 [ linkerAlice; uFoo ; linkerBob ;  marker ; shortInlineWithRabitEnd ; linkerCharlie ; dFoo ; linkerDoug]
         checkPattern "DGDGSDGD" dpps
-        checkSequence [ linkerAlice; uFoo ; linkerBob ;  marker; shortInlineWithRabitEnd ; oBar ; linkerCharlie ; dFoo ; linkerDoug] slices
+        checkSequence [ linkerAlice; uFoo ; linkerBob ;  marker; shortInlineWithRabitEnd ; linkerCharlie ; dFoo ; linkerDoug] slices
 
-*)
+    [<Test>]
+    member __.testRabitEndPostMarkerExtraSlice() =
+        let dpps,slices = 
+            doProcAssembly 
+                "testRabitEndPostMarkerExtraSlice" 
+                [ linkerAlice; uFoo ; linkerBob ;  marker ; shortInlineWithRabitEnd ; linkerCharlie ; oBar ; dFoo ; linkerDoug]
+        checkPattern "DGDGSDGDGD" dpps
+        checkSequence [ linkerAlice; uFoo ; linkerBob ;  marker; shortInlineWithRabitEnd ; linkerCharlie ; oBar; fuse ; dFoo ; linkerDoug] slices
