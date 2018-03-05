@@ -1522,7 +1522,8 @@ let rec procAssembly
             (pHd.dna.Length>100 || hd.pragmas.ContainsKey("amp")) &&  
             (hd.dna.Length > 100 || hd.pragmas.ContainsKey("amp")) ->
 
-            printfn "procAssembly: ... generate seamless junction between prev=%s and this=%s" pHd.description hd.description
+            if verbose then
+                printfn "procAssembly: ... generate seamless junction between prev=%s and this=%s" pHd.description hd.description
 
             let primerPos = parsePrimerPos pHd.pragmas
 
