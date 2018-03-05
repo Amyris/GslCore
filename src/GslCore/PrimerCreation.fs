@@ -860,6 +860,55 @@ let linkerRev2 verbose (dp:DesignParams) errorName (last:DNASlice option) =
 
     linkerRev2Iterative dp.pp (2*approxMargin)
 
+/// Chop bases off a primer whose tail is a linker until it meets the length requirement
+let trimLinkerTailBody (dp:DesignParams) (p:Primer) =
+    let tailTargetTM = if p.tail.Length=0 then 0.0<C> else temp dp.pp p.tail.arr p.tail.Length
+    let bodyTargetTm = dp.targetTm
+
+    let rec find bLen tLen =
+        if bLen+tLen<=dp.pp.maxLength || (bLen=dp.pp.minLength && tLen=dp.pp.minLength) then
+            {p with body=p.body.[..bLen-1]; tail = p.tail.[p.tail.Length-tLen..]}
+        else
+            // Someone needs to lose a basepair
+            if bLen = dp.pp.minLength then find bLen (tLen-1)
+            elif tLen = dp.pp.minLength then find (bLen-1) tLen
+            else
+                let bLen' = bLen - 1
+                let tLen' = tLen - 1
+                let bTm = temp dp.pp p.body.arr bLen'
+                let tTm = temp dp.pp (p.tail.[p.tail.Length-tLen'..].arr) tLen'
+                if abs(tTm-tailTargetTM) < abs(bTm-bodyTargetTm) then
+                    // Pick on tail, it's not doing so bad
+                    find bLen (tLen-1)
+                else
+                    // Pick on body, it's not doing so bad
+                    find (bLen-1) tLen
+    find p.body.Length p.tail.Length
+
+let nameFromSlice (s:DNASlice) = 
+        if s.description.Length > 25 then
+            sprintf "%s..[%d]" (s.description.[..24]) s.description.Length
+        else
+            s.description
+
+// Two functions for cutting left or right into a slice, used when those slice ends were approximate
+// and primer design ended up chopping into them.
+let cutRight (slice:DNASlice) n =
+    if slice.dna.Length-1-n<0 then
+        failwithf "in cutRight dna slice %s length is %d, cut is %d"
+            slice.description  slice.dna.Length n
+    {slice with
+           sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
+           dna = slice.dna.[0..slice.dna.Length-1-n]}
+
+let cutLeft (slice:DNASlice) n =
+    if slice.dna.Length-1-n<0 then
+        failwithf "in cutLeft dna slice %s length is %d, cut is %d"
+            slice.description  slice.dna.Length n
+    {slice with
+           sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
+           dna = slice.dna.[n..slice.dna.Length-1]}
+
 /// Recursively process an assembly, tracking the previous and remaining DNA slices
 /// emitting an output set of DNA slices and a diverged primer pair list
 let rec procAssembly
@@ -871,11 +920,6 @@ let rec procAssembly
         (primersOut:DivergedPrimerPair list)
         (l:DNASlice list) =
 
-    let nameFromSlice (s:DNASlice) = 
-            if s.description.Length > 25 then
-                sprintf "%s..[%d]" (s.description.[..24]) s.description.Length
-            else
-                s.description
     if verbose then
         printfn "procAsembly --->"
         printfn "procAssembly: top,  prev=[%s]\n                    n=[%s]\n                    l=[%s]\n            slice out=[%s]"
@@ -894,49 +938,6 @@ let rec procAssembly
             if verbose then
                 printfn "Adding %s" p.dna.str
             p::slices
-
-    /// Chop bases off a primer whose tail is a linker until it meets the length requirement
-    let trimLinkerTailBody (p:Primer) =
-        let tailTargetTM = if p.tail.Length=0 then 0.0<C> else temp dp.pp p.tail.arr p.tail.Length
-        let bodyTargetTm = dp.targetTm
-
-        let rec find bLen tLen =
-            if bLen+tLen<=dp.pp.maxLength || (bLen=dp.pp.minLength && tLen=dp.pp.minLength) then
-                {p with body=p.body.[..bLen-1]; tail = p.tail.[p.tail.Length-tLen..]}
-            else
-                // Someone needs to lose a basepair
-                if bLen = dp.pp.minLength then find bLen (tLen-1)
-                elif tLen = dp.pp.minLength then find (bLen-1) tLen
-                else
-                    let bLen' = bLen - 1
-                    let tLen' = tLen - 1
-                    let bTm = temp dp.pp p.body.arr bLen'
-                    let tTm = temp dp.pp (p.tail.[p.tail.Length-tLen'..].arr) tLen'
-                    if abs(tTm-tailTargetTM) < abs(bTm-bodyTargetTm) then
-                        // Pick on tail, it's not doing so bad
-                        find bLen (tLen-1)
-                    else
-                        // Pick on body, it's not doing so bad
-                        find (bLen-1) tLen
-        find p.body.Length p.tail.Length
-
-    // Two functions for cutting left or right into a slice, used when those slice ends were approximate
-    // and primer design ended up chopping into them.
-    let cutRight (slice:DNASlice) n =
-        if slice.dna.Length-1-n<0 then
-            failwithf "in cutRight dna slice %s length is %d, cut is %d"
-                slice.description  slice.dna.Length n
-        {slice with
-               sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
-               dna = slice.dna.[0..slice.dna.Length-1-n]}
-
-    let cutLeft (slice:DNASlice) n =
-        if slice.dna.Length-1-n<0 then
-            failwithf "in cutLeft dna slice %s length is %d, cut is %d"
-                slice.description  slice.dna.Length n
-        {slice with
-               sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
-               dna = slice.dna.[n..slice.dna.Length-1]}
 
     match l with
     | [] ->
@@ -977,8 +978,11 @@ let rec procAssembly
         (hd.sliceType = LINKER) ||
         (hd.sliceType =
             INLINEST && // Actual mid rabit inline slice not one at the end of a rabit
-            not (hd.pragmas.ContainsKey("rabitend") || hd.pragmas.ContainsKey("rabitstart"))) &&
-            prev <> []
+            not (       hd.pragmas.ContainsKey("rabitend") || 
+                        hd.pragmas.ContainsKey("rabitstart") ||
+                        hd.pragmas.ContainsKey("amp") // if directed to amplify, don't do as an inline
+            )
+         ) && prev <> [] // must be a previous slice to do an inline
         ->
         if verbose then
             printfn "procAssembly: LINKER or inline not rabitstart/end"
@@ -1269,6 +1273,13 @@ let rec procAssembly
                      ((0.8 * float revMiddleLen)|>int),
                      Microsoft.FSharp.Core.int.MaxValue)
 
+            if fwdTailLenMin > dp.pp.maxLength then
+                failwithf "%s: required primer fwd primer tail length %d exceeds primer max length of %d" 
+                                errorName fwdTailLenMin dp.pp.maxLength
+            if revTailLenMin > dp.pp.maxLength then
+                failwithf "%s: required primer revfwd primer tail length %d exceeds primer max length of %d" 
+                                errorName revTailLenMin dp.pp.maxLength
+
             let primerF,primerR =
                 tuneTails
                     verbose
@@ -1412,7 +1423,7 @@ let rec procAssembly
                 {primerR'' with
                            tail = last.dna.RevComp();
                            body = DnaOps.append sandwichDNA primerR''.body}
-                |> trimLinkerTailBody
+                |> trimLinkerTailBody dp
         //
         // Body, [sandwich],  tail  (linker)
         // <-bbbbbbbbbbb sssssss TTTTTTTTTTTTTTT
@@ -1476,7 +1487,9 @@ let rec procAssembly
                 failwithf "These lists should have same length :( - error in procAssembly"
             ()
         finalOutput // RETURN POINT *****
-    | hd::tl when hd.sliceType = INLINEST && (not (hd.pragmas.ContainsKey("rabitend"))) ->
+    | hd::tl when 
+        hd.sliceType = INLINEST && 
+        (not (hd.pragmas.ContainsKey("rabitend") || hd.pragmas.ContainsKey("amp"))) ->
         if verbose then
             printfn "procAssembly: ... (GAP) INLINEST"
         let prevNew = hd::prev
@@ -1527,55 +1540,55 @@ let rec procAssembly
 
             // step 3,  backfill primer if warranted to make a longer overlap
             let primerF,primerR =
-                    match primerPos with
-                    | FWD x  when x > 0 ->  // extend rev tail
-                          //                     o----------->
-                          //    ---------------|--------------------
-                          //          <------------oxxxxxxx
-                          let maxTailLen = dp.pp.maxLength-primerRStep2.body.Length |> min (primerFStep2.body.Length+x-1)
-                          let primerRNewTail = hd.dna.[..maxTailLen-1].RevComp()
-                          {primerFStep2 with body = primerFStep2.body.[x-1..]},{primerRStep2 with tail = primerRNewTail}
-                    | REV x  when x < 0 ->  // extend fwd fail
-                          //              xxxxxo----------->
-                          //    ---------------|--------------------
-                          //          <------o
-                          let maxTailLen = dp.pp.maxLength-primerFStep2.body.Length |> min (primerRStep2.body.Length+x-1)
-                          let primerFNewTail = pHd.dna.[pHd.dna.Length-maxTailLen..]
-                          {primerFStep2 with tail = primerFNewTail},{primerRStep2 with body = primerRStep2.body.[(-x)-1..]}
-                    | _ -> primerFStep2,primerRStep2
+                match primerPos with
+                | FWD x  when x > 0 ->  // extend rev tail
+                      //                     o----------->
+                      //    ---------------|--------------------
+                      //          <------------oxxxxxxx
+                      let maxTailLen = dp.pp.maxLength-primerRStep2.body.Length |> min (primerFStep2.body.Length+x-1)
+                      let primerRNewTail = hd.dna.[..maxTailLen-1].RevComp()
+                      {primerFStep2 with body = primerFStep2.body.[x-1..]},{primerRStep2 with tail = primerRNewTail}
+                | REV x  when x < 0 ->  // extend fwd fail
+                      //              xxxxxo----------->
+                      //    ---------------|--------------------
+                      //          <------o
+                      let maxTailLen = dp.pp.maxLength-primerFStep2.body.Length |> min (primerRStep2.body.Length+x-1)
+                      let primerFNewTail = pHd.dna.[pHd.dna.Length-maxTailLen..]
+                      {primerFStep2 with tail = primerFNewTail},{primerRStep2 with body = primerRStep2.body.[(-x)-1..]}
+                | _ -> primerFStep2,primerRStep2
                         
 
             // If we stitched fwd/rev off of linker hd then the previous and next elements (prev) and next
             // might need to be modified (chopped) if the ends were flexible
             let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight p offsetR)::(List.tail sliceOut)
 
-            let fusionSlice = {     id = None
-                                    extId = None
-                                    dna = Dna("")
-                                    sourceChr=""
-                                    sourceFr = 0<ZeroOffset>
-                                    sourceTo = 0<ZeroOffset>
-                                    sourceFwd = true
-                                    sourceFrApprox = false
-                                    sourceToApprox = false
-                                    destFr = 0<ZeroOffset>;
-                                    destTo = 0<ZeroOffset>;
-                                    destFwd = true
-                                    /// is this slice created by PCR
-                                    amplified = false
-                                    template = None
-                                    sliceName = "fusion"
-                                    uri = None
-                                    description = "fusion"
-                                    sliceType = FUSIONST
-                                    pragmas = EmptyPragmas
-                                    dnaSource = ""
-                                    breed = B_VIRTUAL
-                                    /// Keep track of the part this slice was materialized from.
-                                    materializedFrom = None
-                                    annotations = []
+            let fusionSlice = {     
+                id = None
+                extId = None
+                dna = Dna("")
+                sourceChr=""
+                sourceFr = 0<ZeroOffset>
+                sourceTo = 0<ZeroOffset>
+                sourceFwd = true
+                sourceFrApprox = false
+                sourceToApprox = false
+                destFr = 0<ZeroOffset>;
+                destTo = 0<ZeroOffset>;
+                destFwd = true
+                /// is this slice created by PCR
+                amplified = false
+                template = None
+                sliceName = "fusion"
+                uri = None
+                description = "fusion"
+                sliceType = FUSIONST
+                pragmas = EmptyPragmas
+                dnaSource = ""
+                breed = B_VIRTUAL
+                /// Keep track of the part this slice was materialized from.
+                materializedFrom = None
+                annotations = []
             }
-
 
             procAssembly
                 verbose
@@ -1591,14 +1604,12 @@ let rec procAssembly
             if verbose then
                 printfn "procAssembly: ... regular branch of catch all"
             procAssembly verbose dp errorName (hd::prev) (hd::sliceOut)  (GAP::primersOut) tl
-        //procAssembly dp errorName (hd::prev) (incPrev prev sliceOut)  (GAP::primersOut) tl
 
 // --- end procAssembly ------------------------------------------------------------------------
 
 /// Time to design some primers given a list of assemblyout structures
 let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
     let verbose = opts.verbose
-
 
     let primers',newSlices' =
         linkedTree
