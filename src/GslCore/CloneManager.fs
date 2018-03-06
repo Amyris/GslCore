@@ -59,7 +59,6 @@ let dumpCM (outDir:string) (tag:string) (assemblies: DnaAssembly list) (primers 
             match dpp with
                 | None -> ()
                 | Some(GAP) -> () // Nothing to do here
-                | Some(SANDWICHGAP) -> () // Nothing to do here
                 | Some(DPP(dp)) ->
                     // Diverged primer pair off this part, need to show them
 

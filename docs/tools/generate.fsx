@@ -17,7 +17,7 @@ let githubLink = "https://github.com/Update GitHome in build.fsx/GSL"
 
 // Specify more information about your project
 let info =
-  [ "project-name", "GslCore"
+  [ "project-name", "GSL"
     "project-author", "Darren Platt"
     "project-summary", "Compiler and tools for GSL."
     "project-github", githubLink
@@ -114,7 +114,7 @@ let buildDocumentation () =
     ( content, docTemplate, output, replacements = ("root", root)::info,
       layoutRoots = layoutRootsAll.["en"],
       generateAnchors = true,
-      processRecursive = false,lineNumbers=false)
+      processRecursive = false)
 
   // And then process files which are placed in the sub directories
   // (some sub directories might be for specific language).
@@ -133,7 +133,7 @@ let buildDocumentation () =
     Literate.ProcessDirectory
       ( dir, docTemplate, output @@ dirname, replacements = ("root", root)::info,
         layoutRoots = layoutRoots,
-        generateAnchors = true ,lineNumbers=false)
+        generateAnchors = true )
 
 // Generate
 copyFiles()

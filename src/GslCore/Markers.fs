@@ -43,4 +43,3 @@ let loadMarkers (libPath:string) =
 
 let legalMarkers path =
     loadMarkers path |> Set.map (fun halfMarker -> halfMarker.name)
-

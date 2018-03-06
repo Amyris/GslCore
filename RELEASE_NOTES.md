@@ -1,10 +1,4 @@
-#### 0.4.34 - March 5th 2017
-* Demetrix production release for seamless freestyle branch
-
-#### 0.4.33 - March 1st 2017
-* Demetrix production release for seamless flexible
-
-#### 0.4.32 - January 24th 2017
+#### 0.4.32 - March 1 2018
 * Fix parallelism failure on single-core machines.
 * Improve primer naming in snapgene output.
 

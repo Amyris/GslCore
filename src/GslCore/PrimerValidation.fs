@@ -52,9 +52,7 @@ let checkPrimers (primers : DivergedPrimerPair list list) =
                     failwithf "primer annotation single anneal region fwd %d-%d %O"
                         x.il x.ir dpp.fwd.Primer
                 | None, None -> () // fine
-            | GAP 
-            | SANDWICHGAP 
-                -> ()
+            | GAP -> ()
 
 let checkPrimersVAssembly (pa:(DivergedPrimerPair list*DnaAssembly) list) =
     for pList, assembly in pa do
@@ -85,8 +83,7 @@ let checkPrimersVAssembly (pa:(DivergedPrimerPair list*DnaAssembly) list) =
                         assembly.name
                         (assemblySeq.arr |> format60)
                 ()
-            | GAP 
-            | SANDWICHGAP -> ()
+            | GAP -> ()
         
         let lastN N (c: Dna) = c.[c.Length-1-N |> max 0..c.Length-1]
 
@@ -118,7 +115,7 @@ let checkPrimersVAssembly (pa:(DivergedPrimerPair list*DnaAssembly) list) =
                 // Ensure assembly contains primer
                 if not (ff || fr) then
                     failwithf
-                        "fwd XXX primer validation failure.  Primerlast10 %O\ntail=%O\nbody=%O\n does not occur fwd or rc in template %s\n>template\n%s\n>assembly\n%s" 
+                        "fwd primer validation failure.  Primer %O\ntail=%O\body=%O\n does not occur fwd or rc in template %s\n>template\n%s\n>assembly\n%s" 
                         fwd 
                         dpp.fwd.tail 
                         dpp.fwd.body 
@@ -134,5 +131,4 @@ let checkPrimersVAssembly (pa:(DivergedPrimerPair list*DnaAssembly) list) =
                         assembly.name
                         (templateSeq.arr |> format60)
                         (assemblySeq.arr |> format60)
-            | GAP 
-            | SANDWICHGAP -> ()
+            | GAP -> ()

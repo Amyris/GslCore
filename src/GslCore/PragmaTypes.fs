@@ -142,11 +142,6 @@ let fusePragmaDef =
      desc = "Create a seamless junction with the next part.";
      invertsTo = None; validate = noValidate}
 
-let ampPragmaDef =
-    {name = "amp"; argShape = Zero; scope = PartOnly;
-     desc = "Create a seamless junction with the next part.";
-     invertsTo = None; validate = noValidate}
-
 /// Base set of hard coded pragmas.  Plugins might augment this list
 let pragmaDefsStatic : PragmaDef list =
    [warningPragmaDef;
@@ -156,7 +151,6 @@ let pragmaDefsStatic : PragmaDef list =
     markersetPragmaDef;
     namePragmaDef;
     fusePragmaDef;
-    ampPragmaDef;
     {name = "linkers"; argShape = AtLeast(1); scope = BlockOnly(Persistent);
      desc = "Override the default set of RYSE linkers.";
      invertsTo = None; validate = noValidate}; // TODO: import linker parse function here
@@ -234,15 +228,6 @@ let pragmaDefsStatic : PragmaDef list =
      invertsTo = None; validate = noValidate};
      {name = "swapend"; argShape = One; scope = PartOnly;
      desc = "State an end preference for an allele swap. Arg should be '3' or '5'.";
-     invertsTo = None; validate = parseInt};
-     {name = "promlen"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "preferred promoter length - overrides genome or system default.";
-     invertsTo = None; validate = parseInt};
-     {name = "termlen"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "preferred terminator length - overrides genome or system default.";
-     invertsTo = None; validate = parseInt};
-     {name = "termlenmrna"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "preferred terminator region length when part of mRNA part- overrides genome or system default.";
      invertsTo = None; validate = parseInt};
     ]
 

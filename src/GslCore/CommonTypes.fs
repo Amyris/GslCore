@@ -279,7 +279,6 @@ type PrimerPair = {fwd:Primer; rev:Primer; name:string}
 
 type DivergedPrimerPair =
     | DPP of PrimerPair
-    | SANDWICHGAP
     | GAP
 
 type RYSELinker = {name:string; dna: Dna}
