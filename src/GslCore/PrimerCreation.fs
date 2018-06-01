@@ -1138,6 +1138,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                    However, when we make the final construct for thumper, the sandwich region goes into the body not
                    the tail since the tails are checked against linkers and the sandwich sequence ends up in the rabit
                    DNA sequence.  What a mess.. :)
+                   
                 //               ftftftftftftftftftf  fbfbfbfbfbf
                 //    sandwichR ; middle ; sandwichF ; >>>>>
                 // rbr<rtrtrtrtrtrtrtrtrtrt
