@@ -326,19 +326,44 @@ let private inlinePassedArgs (vb: VariableBindings) (fd, fc: FunctionCall) =
         | _ -> error (InternalError(TypeError)) "No function locals node found in function defintion block." fd.body
     | x -> internalTypeMismatch (Some "function body") "Block" x
 
+let private renumberLines (newPos:SourcePosition) (block:AstNode) =
+    let rec updatePos (newPos:SourcePosition) (node:AstNode) =
+        match node with
+        | Block b -> Block {b with x = b.x |> List.map (updatePos newPos) }
+        | Splice s -> Splice (s |> Array.map (updatePos newPos))
+        | Part p ->  Part {p with x = { p.x with basePart = updatePos newPos p.x.basePart}}
+        | x -> x.PushPos(newPos)
+
+    match block with
+    | Block _b -> // they actually provided a block
+        ok (updatePos newPos block)
+    | _ -> // This node isn't a block - shouldn't occur
+        error (InternalError(TypeError)) "Renumbering function expansion expected block node" block
 
 /// Replace a function call with the contents of a function definition.
 let private inlineFunctionCall (s: FunctionInliningState) (node: AstNode) =
     match node with
     | FunctionCall(fcw) when s.insideDefDepth = 0 -> // only do inlining if we're not inside a def
         let fc = fcw.x
-        match s.defs.TryFind(fc.name) with
-        | Some(fd) ->
-            // inline the args into the function call block
-            // this new block replaces the function call
-            checkArgs fd fc node
-            >>= inlinePassedArgs s.vars
-        | None -> error UnresolvedFunction fc.name node
+
+        // step back one character since tokenizer is already past end when snapshot was token
+        // aim to point at last character of function name.
+        // let e = { fcw.Pos.Value.e with pos_cnum = fcw.Pos.Value.e.pos_cnum-1 }
+        let e = fcw.Pos.Value.e
+
+        match fcw.Pos with
+        | None ->
+            error (InternalError(TypeError)) "Expected function call to have a source position" node
+        | Some newPos ->
+            match s.defs.TryFind(fc.name) with
+            | Some(fd) ->
+                // inline the args into the function call block
+                // this new block replaces the function call
+                checkArgs fd fc node
+                >>= inlinePassedArgs s.vars
+                >>= renumberLines {newPos with e = e}
+
+            | None -> error UnresolvedFunction fc.name node
     | _ -> ok node
 
 let inlineFunctionCalls = foldmap Serial TopDown updateFunctionInliningState initialInliningState inlineFunctionCall
@@ -977,7 +1002,7 @@ let private expandRoughage (rw: Node<Roughage>) =
     let l2Expression = createL2Expression l2Locus l2Elements
 
     // wrap the marker pragma and the L2 line up in a block
-    Block({x=[markerPragma; l2Expression]; pos=None})
+    Block({x=[markerPragma; l2Expression]; pos=[]})
 
 let private expandRoughageLine node =
     match node with

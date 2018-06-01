@@ -134,6 +134,7 @@ FunctionDefArgs:
 
 FunctionDeclaration:
     | LET ID LPAREN FunctionDefArgs RPAREN EQUALS CodeSection END { createFunctionDeclaration $2 $4 $7 }
+    | LET ID LPAREN RPAREN EQUALS CodeSection END { createFunctionDeclaration $2 [] $6 }
 
 // ==================
 // function calls
@@ -155,6 +156,7 @@ CommaSeparatedTypedValues:
 
 FunctionCall:
     | ID LPAREN CommaSeparatedTypedValues RPAREN { createFunctionCall $1 $3 }
+    | ID LPAREN RPAREN { createFunctionCall $1 [] }
 
 // ==================
 // literals

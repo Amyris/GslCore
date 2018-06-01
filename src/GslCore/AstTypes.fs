@@ -36,7 +36,7 @@ type SourcePosition =
 
 /// Interface type to allow generic retrieval of a source code position.
 type ISourcePosition =
-    abstract member OptionalSourcePosition : SourcePosition option with get
+    abstract member OptionalSourcePosition : SourcePosition list with get
 
 let emptySourcePosition = {s = Position.FirstLine(""); e = Position.FirstLine("")}
 
@@ -90,28 +90,36 @@ let posBracketTokens left right : SourcePosition = {s = left.pos.s; e = right.po
 /// Wrapper type for every AST node.
 /// This enables adding extensible metadata to the AST for tracking things such as source code position.
 [<CustomEquality>][<NoComparison>]
-type Node<'T when 'T: equality> = {x: 'T; pos: SourcePosition option}
+type Node<'T when 'T: equality> = {x: 'T; pos: SourcePosition list} // most recent position at head
     with
+    member x.Pos = 
+        match x.pos with
+        | [] -> None
+        | hd::_ -> Some hd
+    member x.PushPos(p:SourcePosition) =
+        {x with pos = p::x.pos}
+
     /// Override equality to ignore source code position.  We just care about semantic comparison.
     /// This is mostly to aid in testing.  We shouldn't need to be comparing generic AST nodes during parsing.
     override this.Equals other =
         match other with
         | :? Node<'T> as o -> this.x = o.x
         | _ -> false
+    
 
 /// Generic helper functions for wrapping node payloads.
 
 /// Wrap a value in a NodeWrapper without source position.
-let nodeWrap x = {x = x; pos = None}
+let nodeWrap x = {x = x; pos = []}
 
 /// Wrap a valye in a NodeWrapper with a position taken from a Positioned token.
-let nodeWrapWithTokenPosition (token: Positioned<_>) x = {x = x; pos = Some token.pos}
+let nodeWrapWithTokenPosition (token: Positioned<_>) x = {x = x; pos = [token.pos]}
 
 /// Convert a Positioned token into a node by applying a function to the token's payload.
-let tokenAsNodeAfter f (token: Positioned<_>) = {x = f (token.i); pos = Some token.pos}
+let tokenAsNodeAfter f (token: Positioned<_>) = {x = f (token.i); pos = [token.pos]}
 
 /// Straight-up convert a Positioned token into a node.
-let tokenAsNode (token: Positioned<_>) = {x = token.i; pos = Some token.pos}
+let tokenAsNode (token: Positioned<_>) = {x = token.i; pos = [token.pos]}
  
 // ==================
 // AST type declaration
@@ -216,7 +224,80 @@ and AstNode =
     | Splice of AstNode []
     with
     /// Get the position from a node.
+    member x.PushPos(newPos:SourcePosition) =
+        match x with
+        | Int(nw) -> Int(nw.PushPos newPos)
+        | Float(nw) -> Float(nw.PushPos newPos)
+        | String(nw) -> String(nw.PushPos newPos)
+        | Docstring(nw) -> Docstring(nw.PushPos newPos)
+        | TypedVariable(nw) -> TypedVariable(nw.PushPos newPos)
+        | TypedValue(nw) -> TypedValue(nw.PushPos newPos)
+        | VariableBinding(nw) -> VariableBinding(nw.PushPos newPos)
+        | BinaryOperation(nw) -> BinaryOperation(nw.PushPos newPos)
+        | Negation(nw) -> Negation(nw.PushPos newPos)
+        | ParseRelPos(nw) -> ParseRelPos(nw.PushPos newPos)
+        | RelPos(nw) -> RelPos(nw.PushPos newPos) 
+        | Slice(nw) -> Slice(nw.PushPos newPos)
+        | Mutation(nw) -> Mutation(nw.PushPos newPos)
+        | DotMod(nw) -> DotMod(nw.PushPos newPos)
+        | Part(nw) -> Part(nw.PushPos newPos)
+        | Marker(nw) -> Marker(nw.PushPos newPos)
+        | PartId(nw) -> PartId(nw.PushPos newPos)
+        | InlineDna(nw) -> InlineDna(nw.PushPos newPos)
+        | InlineProtein(nw) -> InlineProtein(nw.PushPos newPos)
+        | HetBlock(nw) -> HetBlock(nw.PushPos newPos)
+        | Gene(nw) -> Gene(nw.PushPos newPos)
+        | L2Id(nw) -> L2Id(nw.PushPos newPos)
+        | L2Element(nw) -> L2Element(nw.PushPos newPos)
+        | L2Expression(nw) -> L2Expression(nw.PushPos newPos)
+        | Roughage(nw) -> Roughage(nw.PushPos newPos)
+        | ParsePragma(nw) -> ParsePragma(nw.PushPos newPos)
+        | Pragma(nw) -> Pragma(nw.PushPos newPos)
+        | Block(nw) -> Block(nw.PushPos newPos)
+        | FunctionDef(nw) -> FunctionDef(nw.PushPos newPos)
+        | FunctionLocals(nw) -> FunctionLocals(nw.PushPos newPos)
+        | FunctionCall(nw) -> FunctionCall(nw.PushPos newPos)
+        | Assembly(nw) -> Assembly(nw.PushPos newPos)
+        | ParseError(nw) -> ParseError(nw.PushPos newPos)
+        | Splice(_)  as x -> x // Slices are defined to have no position so don't try to update (see .pos below) 
+    /// Get the position from a node.
     member x.pos =
+        match x with
+        | Int(nw) -> nw.Pos
+        | Float(nw) -> nw.Pos
+        | String(nw) -> nw.Pos
+        | Docstring(nw) -> nw.Pos
+        | TypedVariable(nw) -> nw.Pos
+        | TypedValue(nw) -> nw.Pos
+        | VariableBinding(nw) -> nw.Pos
+        | BinaryOperation(nw) -> nw.Pos
+        | Negation(nw) -> nw.Pos
+        | ParseRelPos(nw) -> nw.Pos
+        | RelPos(nw) -> nw.Pos
+        | Slice(nw) -> nw.Pos
+        | Mutation(nw) -> nw.Pos
+        | DotMod(nw) -> nw.Pos
+        | Part(nw) -> nw.Pos
+        | Marker(nw) -> nw.Pos
+        | PartId(nw) -> nw.Pos
+        | InlineDna(nw) -> nw.Pos
+        | InlineProtein(nw) -> nw.Pos
+        | HetBlock(nw) -> nw.Pos
+        | Gene(nw) -> nw.Pos
+        | L2Id(nw) -> nw.Pos
+        | L2Element(nw) -> nw.Pos
+        | L2Expression(nw) -> nw.Pos
+        | Roughage(nw) -> nw.Pos
+        | ParsePragma(nw) -> nw.Pos
+        | Pragma(nw) -> nw.Pos
+        | Block(nw) -> nw.Pos
+        | FunctionDef(nw) -> nw.Pos
+        | FunctionLocals(nw) -> nw.Pos
+        | FunctionCall(nw) -> nw.Pos
+        | Assembly(nw) -> nw.Pos
+        | ParseError(nw) -> nw.Pos
+        | Splice(_) -> None
+    member x.positions =
         match x with
         | Int(nw) -> nw.pos
         | Float(nw) -> nw.pos
@@ -251,7 +332,8 @@ and AstNode =
         | FunctionCall(nw) -> nw.pos
         | Assembly(nw) -> nw.pos
         | ParseError(nw) -> nw.pos
-        | Splice(_) -> None
+        | Splice(_) -> []
+
     /// Get a string representation of the type of this node.
     member x.TypeName = GetUnionCaseName x
 
@@ -461,8 +543,13 @@ let posFromList (nodes: AstNode list) : SourcePosition option =
 /// Create a parse error with message and position.
 let createParseError msg pos = ParseError({x=msg; pos=pos})
 
+let posOptionToList (pos:SourcePosition option) =
+    match pos with
+    | Some p -> [p]
+    | None -> []
+
 /// Wrap a value with position taken from another node.
-let nodeWrapWithNodePosition (node: AstNode) v = {x = v; pos = node.pos}
+let nodeWrapWithNodePosition (node: AstNode) v = {x = v; pos = node.pos |> posOptionToList}
 
 /// Convert a string token to a TypedVariable
 let tokenToVariable (token: PString) (t: GslVarType) : AstNode =
@@ -476,11 +563,11 @@ let createFloat (intPart: PInt) (fracPart: PInt) : AstNode =
     // position is bracketed by the two pieces
     let pos: SourcePosition = {s = intPart.pos.s; e = fracPart.pos.e}
     let v = sprintf "%d.%d" intPart.i fracPart.i |> float
-    Float({x = v; pos = Some pos})
+    Float({x = v; pos = [pos]})
 
 /// Create a binary operation node from two other AST nodes.
 let createBinaryOp op left right =
-    BinaryOperation({x = {op = op; left = left; right = right}; pos = posBracket left right})
+    BinaryOperation({x = {op = op; left = left; right = right}; pos = posBracket left right |> posOptionToList})
 
 /// Create an AST node for negation.
 let negate node = Negation(nodeWrapWithNodePosition node node)
@@ -540,7 +627,7 @@ let createParseRelPos number (qualifier: PString option) position =
 let createParseSlice (leftRPInt, leftRPQual) (rightRPInt, rightRPQual) lApprox rApprox =
     let left = createParseRelPos leftRPInt leftRPQual Left
     let right = createParseRelPos rightRPInt rightRPQual Right
-    let pos = posBracket left right
+    let pos = posBracket left right |> posOptionToList
     Slice({x = {left = left; right = right; lApprox = lApprox; rApprox = rApprox}; pos = pos})
 
 
@@ -551,11 +638,11 @@ let createMutation (s: PString) mutType =
     let t = mutStr.[mutStr.Length-1]
     let pos = Convert.ToInt32(mutStr.[2..mutStr.Length-2])
     let mut = {f = f; t = t; loc = pos; mType = mutType}
-    Mutation({x = mut; pos = Some s.pos})
+    Mutation({x = mut; pos = [s.pos]})
 
 /// Create a top-level part.
 let createPart mods pragmas basePart =
-    Part({x = {basePart = basePart; mods = mods; pragmas = pragmas; fwd = true}; pos = basePart.pos})
+    Part({x = {basePart = basePart; mods = mods; pragmas = pragmas; fwd = true}; pos = basePart.pos |> posOptionToList})
 
 /// Create a top-level part with empty collections and default values from a base part.
 let createPartWithBase = createPart [] []
@@ -563,7 +650,7 @@ let createPartWithBase = createPart [] []
 /// Create a top-level part given a gene ID.
 let createGenePart (gene: PString) (linker: Linker option) =
     // The base part for this part will be a Gene AST node.
-    createPartWithBase (Gene({x = {gene = gene.i; linker = linker}; pos = Some gene.pos}))
+    createPartWithBase (Gene({x = {gene = gene.i; linker = linker}; pos = [gene.pos]}))
 
 /// Capture a list of parsed mods and stuff them into their associated part.
 let stuffModsIntoPart astPart mods =
@@ -593,7 +680,7 @@ let revPart astPart =
 /// Create a part whose base part is an assembly of the passed list of parts.
 let createAssemblyPart parts =
     let pos = posFromList parts
-    let assem = Assembly({x = parts; pos = pos})
+    let assem = Assembly({x = parts; pos = pos|> posOptionToList})
     createPart [] [] assem
 
 // ------ creating level 2 GSL nodes ------
@@ -601,7 +688,7 @@ let createAssemblyPart parts =
 let createL2IdNode (prefix: Node<string> option) (id: Node<string>) =
     let pos =
         match prefix with
-        | Some(p) -> posBracket (String(p)) (String(id)) // be lazy and wrap these as nodes to use existing function
+        | Some(p) -> posBracket (String(p)) (String(id)) |> posOptionToList // be lazy and wrap these as nodes to use existing function
         | None -> id.pos
     {x={prefix = prefix; id = id}; pos=pos}
 
@@ -611,7 +698,7 @@ let createL2Id prefix id = L2Id(createL2IdNode prefix id)
 /// Create a level 2 element from a promoter and target.
 /// Promoter and target should be L2 IDs.
 let createL2Element (promoter: AstNode) (target: AstNode) =
-    let pos = posBracket promoter target
+    let pos = posBracket promoter target |> posOptionToList
     L2Element({x={promoter=promoter; target=target}; pos=pos})
 
 /// Create a level 2 expression from optional locus and list of elements.
@@ -620,7 +707,7 @@ let createL2Expression (locus: AstNode option) (parts: AstNode list) =
         match locus with
         | Some(l) -> posFromList (l::parts)
         | None -> posFromList parts
-    L2Expression({x={locus=locus; parts=parts}; pos=pos})
+    L2Expression({x={locus=locus; parts=parts}; pos=pos |> posOptionToList})
 
 // ------ creating Roughage AST node ------
 
@@ -630,7 +717,7 @@ let createRoughagePart dir (p: Node<L2Id>) (t: Node<L2Id>) =
         match dir with
         | RoughageFwd -> posBracket (L2Id(p)) (L2Id(t))
         | RoughageRev -> posBracket (L2Id(t)) (L2Id(p))
-    {x=elem; pos=pos}
+    {x=elem; pos=pos |> posOptionToList}
 
 let createRoughageElement partFwd partRev marker =
     let pos = partFwd.pos
@@ -640,6 +727,6 @@ let createRoughageLine (locus, marker) parts =
     // be lazy and use the position of whatever the first part is
     let pos =
         match parts with
-        | [] -> None
+        | [] -> []
         | hd::_ -> hd.pos
     Roughage({x={locus=locus; marker=marker; parts=parts}; pos=pos})

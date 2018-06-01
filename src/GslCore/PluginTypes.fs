@@ -1,5 +1,6 @@
 ﻿/// Definitions of plug-in types and interfaces.
 module PluginTypes
+open System
 open Amyris.ErrorHandling
 open commonTypes
 open commandConfig
@@ -131,16 +132,16 @@ type AssemblyTransformationMessage<'A when 'A :> ISourcePosition> =
         let verbose = defaultArg verbose false
         seq {
             match (x.assembly :> ISourcePosition).OptionalSourcePosition with
-            | Some(p) ->
-                yield sprintf "%O during %s %s:" x.kind phase (p.Format())
+            | [] ->
+                yield sprintf "%O during %s:" x.kind phase
+                yield x.msg
+            |  hd::tl -> 
+                yield sprintf "%O during %s %s:" x.kind phase (String.Join(";",hd::tl |> List.map (fun p ->p.Format())))
                 yield x.msg
                 yield "================================================================="
                 match sourceCode with
-                | Some(source) -> yield! p.SourceContext(source)
+                | Some(source) -> yield! hd.SourceContext(source)
                 | None -> ()
-            | None ->
-                yield sprintf "%O during %s:" x.kind phase
-                yield x.msg
 
             if verbose then
                 yield sprintf "\n%+A" x.assembly
