@@ -199,9 +199,9 @@ gBAZ"""
         let tree = compile stuffPragmasPipeline (GslSourceCode(source)) |> returnOrFail
         // now replace the outer name pragma and make sure the second pass triggers the collision error
         match tree.wrappedNode with
-        | Block({x=[Pragma(npw); assem]; pos=p}) -> 
+        | Block({x=[Pragma(npw); assem]; positions=p}) -> 
             let newNamePrag = Pragma({npw with x = {npw.x with args = ["differentName"]}})
-            Block({x=[newNamePrag; assem]; pos=p})
+            Block({x=[newNamePrag; assem]; positions=p})
         | _ -> failwith "Didn't unwrap correctly."
         |> AstTreeHead |> stuffPragmasPipeline
         |> assertFail
