@@ -1,12 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="fsc.props"/>
+  <Import Project="fsc.props" />
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-     <RootNamespace>GslCore</RootNamespace>
-     <AssemblyName>Dmx.GslCore</AssemblyName>
-     <Name>Dmx.GslCore</Name>
+    <RootNamespace>GslCore</RootNamespace>
+    <AssemblyName>Dmx.GslCore</AssemblyName>
+    <Name>Dmx.GslCore</Name>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
+  <!--  Don't know how to do this for new sdk style project files
+        Run manually as (remove space from - - )
+        ../../packages/FsLexYacc/build/fsyacc.exe - - module GslParser GslParser.fsy
+        <FsLexYacc Include="GslParser.fsy"> </FsLexYacc>
+  -->
   <ItemGroup>
     <Compile Include="Constants.fs" />
     <Compile Include="Markers.fs" />

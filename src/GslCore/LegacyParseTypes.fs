@@ -76,7 +76,7 @@ type Assembly =
     designParams: DesignParams;
     capabilities: Capabilities; 
     docStrings: string list;
-    sourcePosition: SourcePosition option}
+    sourcePosition: SourcePosition list}
     interface ISourcePosition with
         member x.OptionalSourcePosition = x.sourcePosition
 
@@ -189,7 +189,7 @@ let private createLegacyPart part =
     | Gene(gw) ->
         convertMods part.x.mods
         >>= (fun mods ->
-            let where = match gw.pos with | Some(p) -> p | None -> emptySourcePosition
+            let where = match gw.positions with | hd::_tl -> hd | [] -> emptySourcePosition
             let genePart = {gene = gw.x.gene; mods = mods; where = where}
             ok (GENEPART({part=genePart; linker=gw.x.linker})))
     | Marker(_) -> ok MARKERPART
@@ -241,7 +241,7 @@ let convertAssembly (context: AssemblyConversionContext) (pw, aplw) =
                 designParams = designParams;
                 capabilities = context.pragmaEnv.capabilities; 
                 docStrings = context.docs.assigned;
-                sourcePosition = pw.pos})
+                sourcePosition = pw.positions})
 
 // ======================
 // conversion from L2 AST node to legacy L2 line type

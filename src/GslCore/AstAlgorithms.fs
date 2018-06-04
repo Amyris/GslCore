@@ -66,51 +66,51 @@ let decompile tree =
         | BookkeepingNode _ -> ()
         | Splice _ -> failwithf "Cannot decompile a bootstrap splice marker.  The tree must be spliced first."
         // leaf nodes are easy
-        | Int({x=i; pos=_}) -> appendf "%d" i
-        | Float({x=i; pos=_}) -> appendf "%f" i
-        | String({x=i; pos=_}) ->
+        | Int({x=i; positions=_}) -> appendf "%d" i
+        | Float({x=i; positions=_}) -> appendf "%f" i
+        | String({x=i; positions=_}) ->
             if state.quoteStrings then appendf "\"%s\"" i
             else append i
         | Docstring(dw) ->
             appendf "///%s" dw.x
-        | TypedVariable({x=(name, _); pos=_}) -> appendf "&%s" name
-        | TypedValue({x=(_, inner); pos=_}) -> _print inner state
-        | VariableBinding({x=vb; pos=_}) ->
+        | TypedVariable({x=(name, _); positions=_}) -> appendf "&%s" name
+        | TypedValue({x=(_, inner); positions=_}) -> _print inner state
+        | VariableBinding({x=vb; positions=_}) ->
             appendf "let %s = " vb.name
             _print vb.value state
-        | BinaryOperation({x=binop; pos=_}) ->
+        | BinaryOperation({x=binop; positions=_}) ->
             // Explicitly group every binary in parens to keep things unambiguous.
             append "("
             _print binop.left state
             append (match binop.op with | Add -> " + " | Subtract -> " - " | Multiply -> " * " | Divide -> " / ")
             _print binop.right state
             append ")"
-        | Negation({x=inner; pos=_}) ->
+        | Negation({x=inner; positions=_}) ->
             append "-"
             _print inner state
         // basic parts
         | Marker(_) -> append "###"
-        | PartId({x=name; pos=_}) -> appendf "@%s" name
-        | InlineDna({x=dna; pos=_}) -> appendf "/%s/" dna
-        | InlineProtein({x=pseq; pos=_}) -> appendf "/$%s/" pseq
+        | PartId({x=name; positions=_}) -> appendf "@%s" name
+        | InlineDna({x=dna; positions=_}) -> appendf "/%s/" dna
+        | InlineProtein({x=pseq; positions=_}) -> appendf "/$%s/" pseq
         | HetBlock(_) -> append "~"
-        | Gene({x=pg; pos=_}) ->
+        | Gene({x=pg; positions=_}) ->
             match pg.linker with
             | Some({l1=l1; l2=l2; orient=o}) ->
                 append (sprintf "%s-%s-%s-%s" l1 l2 o pg.gene)
             | None -> append pg.gene
         // part mods
-        | ParseRelPos({x=rp; pos=_}) ->
+        | ParseRelPos({x=rp; positions=_}) ->
             _print rp.i state
             match rp.qualifier with
             | Some(rpq) -> append (relPosQualifierToString rpq)
             | None -> ()
-        | RelPos({x=rp; pos=_}) ->
+        | RelPos({x=rp; positions=_}) ->
             appendff
                 "%d%s"
                 rp.x
                 (match rp.relTo with | FivePrime -> "S" | ThreePrime -> "E")
-        | Slice({x=s; pos=_}) ->
+        | Slice({x=s; positions=_}) ->
             append "["
             if s.lApprox then append "~"
             _print s.left state
@@ -118,20 +118,20 @@ let decompile tree =
             if s.rApprox then append "~"
             _print s.right state
             append "]"
-        | Mutation({x=mut; pos=_}) ->
+        | Mutation({x=mut; positions=_}) ->
             match mut.mType with | AA -> append "$" | NT -> append "*"
             append (sprintf "%c%d%c" mut.f mut.loc mut.t)
-        | DotMod({x=s; pos=_}) -> appendf ".%s" s
-        | ParsePragma({x=pp; pos=_}) ->
+        | DotMod({x=s; positions=_}) -> appendf ".%s" s
+        | ParsePragma({x=pp; positions=_}) ->
             appendf "#%s" pp.name
             for v in pp.values do
                 append " "
                 _print v {state with quoteStrings = false} // don't quote string pragma values
-        | Pragma({x=p; pos=_}) ->
+        | Pragma({x=p; positions=_}) ->
             appendf "#%s" p.definition.name
             for arg in p.args do
                 appendf " %s" arg
-        | FunctionDef({x=fd; pos=_}) ->
+        | FunctionDef({x=fd; positions=_}) ->
             // declaration line
             appendff "let %s(%s) =" fd.name (String.concat ", " fd.argNames)
             newline()
@@ -139,7 +139,7 @@ let decompile tree =
             _print fd.body state
             minorIndent()
             append "end"
-        | FunctionCall({x=fc; pos=_}) ->
+        | FunctionCall({x=fc; positions=_}) ->
             appendf "%s(" fc.name
             // the args are nodes, so recurse and add separators
             let rec printArgs args =
@@ -153,7 +153,7 @@ let decompile tree =
                     printArgs tl
             printArgs fc.args
             append ")"
-        | Part({x=p; pos=_}) ->
+        | Part({x=p; positions=_}) ->
             // Print the base part.
             // Need to make sure subassemblies are grouped in parens.
             // TODO: decide what we want to do about assemblies with only one part.
@@ -183,7 +183,7 @@ let decompile tree =
                     _print prag revisedState
                     if i < nPragmas-1 then append " ")
                 append "}"
-        | Assembly({x=parts; pos=_}) ->
+        | Assembly({x=parts; positions=_}) ->
             // print all the parts in the assembly separated by semicolons
             printSemicolonSeparatedList parts
         | L2Id(lw) -> append lw.x.String
@@ -200,7 +200,7 @@ let decompile tree =
                 if nParts > 0 then append " ; "
             | None -> ()
             printSemicolonSeparatedList lw.x.parts
-        | Roughage({x=rLine; pos=_}) ->
+        | Roughage({x=rLine; positions=_}) ->
             // decompile lines of rougage as individual blocks 
             append "<@ "
 
@@ -227,7 +227,7 @@ let decompile tree =
                 )
             append (String.concat "::" (header@tail))
             append " @>"
-        | Block({x=lines; pos=_}) ->
+        | Block({x=lines; positions=_}) ->
             for l in lines do
                 let printInnerLine() = _print l {state with indentLevel = state.indentLevel + 1}
                 match l with
@@ -268,19 +268,19 @@ let children node =
     // variable binding
     | VariableBinding(vb) -> Seq.singleton vb.x.value
     // typed value
-    | TypedValue({x = (_, n); pos = _}) -> Seq.singleton n
+    | TypedValue({x = (_, n); positions = _}) -> Seq.singleton n
     // Simple operations on values
-    | BinaryOperation({x = binOp; pos = _}) -> seq {
+    | BinaryOperation({x = binOp; positions = _}) -> seq {
         yield binOp.left
         yield binOp.right }
-    | Negation({x = n; pos = _}) -> Seq.singleton n
+    | Negation({x = n; positions = _}) -> Seq.singleton n
     // Slicing
-    | ParseRelPos({x = {i = n; qualifier = _;}; pos = _}) -> Seq.singleton n
-    | Slice({x = slice; pos = _}) -> seq {
+    | ParseRelPos({x = {i = n; qualifier = _;}; positions = _}) -> Seq.singleton n
+    | Slice({x = slice; positions = _}) -> seq {
         yield slice.left
         yield slice.right }
     // generic part with mods, pragmas, direction
-    | Part({x = part; pos = _}) -> seq {
+    | Part({x = part; positions = _}) -> seq {
         yield part.basePart
         yield! Seq.ofList part.mods
         yield! Seq.ofList part.pragmas }
@@ -292,13 +292,13 @@ let children node =
         match lw.x.locus with | Some(l) -> yield l | None -> ()
         yield! Seq.ofList lw.x.parts }
     // pragmas
-    | ParsePragma({x = pp; pos = _}) -> Seq.ofList pp.values
+    | ParsePragma({x = pp; positions = _}) -> Seq.ofList pp.values
     // Block of code
-    | Block({x = nodes; pos = _}) -> Seq.ofList nodes
+    | Block({x = nodes; positions = _}) -> Seq.ofList nodes
     // Function definition and call
-    | FunctionDef({x = f; pos = _}) -> Seq.singleton f.body
-    | FunctionCall({x = fc; pos = _}) -> Seq.ofList fc.args
-    | Assembly({x = parts; pos = _}) -> Seq.ofList parts
+    | FunctionDef({x = f; positions = _}) -> Seq.singleton f.body
+    | FunctionCall({x = fc; positions = _}) -> Seq.ofList fc.args
+    | Assembly({x = parts; positions = _}) -> Seq.ofList parts
     | x -> nonExhaustiveError x
 
 ///Visit every AST node in the tree starting at the top and returning children in depth-first

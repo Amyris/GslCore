@@ -1,8 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="fsc.props"/>
+  <Import Project="fsc.props" />
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AstFixtures.fs" />
@@ -13,6 +14,7 @@
     <Compile Include="TestParsing.fs" />
     <Compile Include="TestPragmas.fs" />
     <Compile Include="TestL2Expansion.fs" />
+    <Compile Include="TestLineNumbers.fs" />
     <Compile Include="TestAst.fs" />
     <Compile Include="TestBootstrap.fs" />
     <Compile Include="TestSliceAnnotations.fs" />
