@@ -9,7 +9,9 @@ open pragmaTypes
 open Amyris.ErrorHandling
 
 /// location of test gslc_lib fixtures
-let testLibDir = @"../../../../TestGslcLib"
+let testLibDir1 = @"../../../../TestGslcLib"
+let testLibDir2 = @"../../../../../TestGslcLib"
+
 
 [<TestFixture>]
 type TestPromTermLen() = 
@@ -23,6 +25,9 @@ type TestPromTermLen() =
             failwithf "%s: expected= %d and actual=%d not equal" context expected actual
 
     let checkOneGenome pragmas name promLen termLen termLenMRNA =
+        let testLibDir = 
+            if System.IO.Directory.Exists testLibDir1 then testLibDir1  
+                else testLibDir2
         let gd = new RefGenome.GenomeDef(testLibDir,name)
 
         let part = DnaCreation.translateGenePrefix pragmas gd TERMINATOR
@@ -56,6 +61,10 @@ type TestPromTermLen() =
 
     [<Test>]
     member __.TestCustomTerminatorLen() =
+        let testFolderExists1 = System.IO.Directory.Exists testLibDir1
+        let testFolderExists2 = System.IO.Directory.Exists testLibDir2
+        Assert.IsTrue (testFolderExists1 || testFolderExists2)
+
         checkOneGenome emptyPragmas "TestGenome2" 750 250 300
 
     [<Test>]
