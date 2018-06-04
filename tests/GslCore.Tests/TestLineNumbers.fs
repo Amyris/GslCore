@@ -28,7 +28,7 @@ type TestLineNumbers() =
 
     /// NB: note lines are numbered from zero internally, and columns.
     /// The parser typically reports one character past the end of the identifier
-    let checkPosition (pos:SourcePosition option) (startLine,startCol,endLine,endCol) =
+    let checkPosition (pos:SourcePosition option) (startLine, startCol, endLine, endCol) =
         match pos with
         | None -> Assert.Fail("expected source position to be Some not None")
         | Some p ->
