@@ -39,6 +39,35 @@ type TestLineNumbers() =
             Assert.AreEqual(endLine,endP.Line)
             Assert.AreEqual(endCol,endP.Column)
 
+    /// compile one GSL source example and extract assemblies
+    let compileOne source =
+        source 
+        |> GslSourceCode
+        |> compile (phase1 Set.empty) 
+        |> returnOrFail
+        |> fun x -> extractAssemblies x.wrappedNode
+
+    let tripleRecursiveCallExample = """#refgenome cenpk
+#platform stitch
+
+let fun1(up,down) = // line 3 (zero numbered)
+&up ; &down // line 4
+end
+
+let funTwo(gene) = // line 7 
+fun1(&gene,&gene) // line 8
+end
+
+fun1(uADH1,dADH1) // line 11
+funTwo(uADH4) // line 12
+
+let functionThree() = // line 14
+ funTwo(uADH7) // line 15
+end
+
+
+         functionThree() // line 19
+""" 
     do
         // initialize pragmas
         pragmaTypes.finalizePragmas []
@@ -58,14 +87,7 @@ knockout(uADH2,dADH2)
 knockout(uADH3,dADH3)
 knockout(uADH4,dADH4)""" 
 
-        let result = 
-            source 
-            |> GslSourceCode
-            |> compile (phase1 Set.empty) 
-            |> returnOrFail
-
-
-        let assemblies = extractAssemblies result.wrappedNode
+        let assemblies = compileOne source
 
         Assert.AreEqual(4,assemblies.Length)
 
@@ -87,13 +109,7 @@ let knockout() =
 end
 knockout()" 
                         
-        let result = 
-            source 
-            |> GslSourceCode
-            |> compile (phase1 Set.empty) 
-            |> returnOrFail
-
-        let assemblies = extractAssemblies result.wrappedNode
+        let assemblies = compileOne source
 
         // test coordinates of first assembly
         let a1 = List.head assemblies
@@ -101,49 +117,7 @@ knockout()"
 
     [<Test>]
     member i__.TestRecursiveFunctionExpansion() =
-        let source = """#refgenome cenpk
-#platform stitch
-
-let fun1(up,down) = // line 3 (zero numbered)
-&up ; &down // line 4
-end
-
-let funTwo(gene) = // line 7 
-fun1(&gene,&gene) // line 8
-end
-
-fun1(uADH1,dADH1) // line 11
-funTwo(uADH4) // line 12
-
-let functionThree() = // line 14
- funTwo(uADH7) // line 15
-end
-
-
-         functionThree() // line 19
-""" 
-
-        let result = 
-            source 
-            |> GslSourceCode
-            |> compile (phase1 Set.empty) 
-            |> returnOrFail
-
-
-        let assemblies = extractAssemblies result.wrappedNode
-
-        // Helpful debugging tool
-        let _coordsFormatted =
-            String.Join(
-                "\n",
-                [for a in assemblies ->
-                        String.Join(";",
-                            [for p in a.positions ->
-                                sprintf "%d,%d->%d,%d" p.s.Line p.s.Column p.e.Line p.e.Column
-                            ]
-                        )
-                ]
-            )
+        let assemblies = compileOne tripleRecursiveCallExample 
 
         Assert.AreEqual(3,assemblies.Length)
 
@@ -159,3 +133,27 @@ end
         let a3 = List.item 2 assemblies
         checkPosition a3.pos (19,9,19,22)
 
+    [<Test>]
+    [<Ignore>] // See issue #15
+    member __.TestRecursiveFunctionExpansionHasThreeSources() =
+
+        let assemblies = compileOne tripleRecursiveCallExample 
+
+        // Helpful debugging tool
+        let coordsFormatted =
+            String.Join(
+                "\n",
+                [for a in assemblies ->
+                        String.Join(";",
+                            [for p in a.positions ->
+                                sprintf "%d,%d->%d,%d" p.s.Line p.s.Column p.e.Line p.e.Column
+                            ]
+                        )
+                ]
+            )
+
+        let assembly3 = List.item 2 assemblies
+        printfn "coordinates for triple recursive example:%A" coordsFormatted
+        // Expect assembly 3 to have coordinates on line 19, 15, 8 and 4 (4 sets)
+        // Due to bug/missing feature, it currently returns only 19 and 4, and test is marked ignore
+        Assert.AreEqual(4,assembly3.positions.Length)

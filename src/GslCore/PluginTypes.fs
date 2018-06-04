@@ -136,7 +136,7 @@ type AssemblyTransformationMessage<'A when 'A :> ISourcePosition> =
                 yield sprintf "%O during %s:" x.kind phase
                 yield x.msg
             |  hd::tl -> 
-                yield sprintf "%O during %s %s:" x.kind phase (String.Join(";",hd::tl |> List.map (fun p ->p.Format())))
+                yield sprintf "%O during %s %s:" x.kind phase (String.Join("; ",hd::tl |> List.map (fun p ->p.Format())))
                 yield x.msg
                 yield "================================================================="
                 match sourceCode with
