@@ -2,7 +2,7 @@ source https://nuget.org/api/v2
 
 nuget FSharp.Core >= 4.1.0 redirects: force
 nuget Dmx.Amyris.Bio >= 2.0.23 framework: >= netstandard2.0
-nuget FSharp.Data
+nuget FSharp.Data >= 3.0.0-beta3 beta
 nuget Newtonsoft.Json
 nuget FsLexYacc < 7
 nuget FsLexYacc.Runtime < 7
@@ -22,6 +22,9 @@ group Build
 
 group Test
   source https://nuget.org/api/v2
+  nuget Dmx.Amyris.Bio restriction: >= netstandard2.0
 
-  nuget NUnit ~> 2
-  nuget NUnit.Runners ~> 2
+  nuget NUnit ~> 3
+  nuget NUnit.ConsoleRunner ~> 3
+  nuget Microsoft.NET.Test.Sdk
+  nuget NUnit3TestAdapter
