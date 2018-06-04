@@ -263,7 +263,12 @@ let mapRyseLinkers
         let noLinkersLeftMsg =
             sprintf "mapRyseLinkers: out of linkers.  Started with %A" startLinkers
 
-        let markerTransition nextLinker markerHd partsTl =
+        // Marker encountered.
+        // lastParts are the parts that goes before the marker in reverse order
+        // markerHd is the marker part
+        // partsTl are the remaining parts in the assembly
+        // let markerTransition nextLinker markerHd partsTl =
+        let markerTransition (lastParts:DNASlice list) markerHd partsTl =
             // Reconstruct output with linker and moved piece
             // If we hit the marker, flip orientation, restart linker list but backwards
             printVerbose
@@ -277,7 +282,7 @@ let mapRyseLinkers
                     linkersReq allLinkers2.Length errorDesc
 
             printVerbose (sprintf
-                "\n\n#############################################\npart 2 of megastitch - %d linkers required, using %A\n"
+                "\n\n#############################################\npart 2 of megastitch - %d linkers required, using %A"
                 linkersReq (Seq.take linkersReq allLinkers2 |> List.ofSeq) )
 
             // Flipping part around, but only for marker case.
@@ -286,7 +291,7 @@ let mapRyseLinkers
 
             // phase set to false to denote second phase,
             // grab the second set of linkers allLinkers2
-            assign allLinkers2 false partsTl (Seq.take linkersReq allLinkers2 |> List.ofSeq |> List.rev) (hd'::nextLinker::res)
+            assign allLinkers2 false partsTl (Seq.take linkersReq allLinkers2 |> List.ofSeq |> List.rev) (hd'::lastParts@res)
 
         // We *PRE* assign linkers to pieces so as we recognize a pattern, we
         // are emitting the linker that comes before (upstream in dna construct
@@ -297,8 +302,19 @@ let mapRyseLinkers
         // linker to the left of the B stitch elements (downstream of Rabit in
         // B stitch orientation)
         printVerbose (sprintf
-            "\n\n==============================================\nin mapRyseLinkers:\nassign: sliceList=%A \nlinkers=%A\n"
+            "\n\n==============================================\nin mapRyseLinkers:\nassign: sliceList=%A \nlinkers=%A"
             (List.map (fun (x:DNASlice) ->x.description) l) linkers)
+
+
+        let reportFinalAndReturn (res:DNASlice list) =
+            // print out parts we are returning with linkers inserted
+            // (reverse temporarily here so we show them the final order, but return unreversed)
+            printVerbose (sprintf
+                    "\n\n==============================================\nin mapRyseLinkers:\nFinal output: sliceList=%A \n"
+                    (res |> List.rev |> List.map (fun (x:DNASlice) ->x.description) ) 
+            )
+            res
+
         // recursive match expression
         match l with
         | [] ->
@@ -307,23 +323,23 @@ let mapRyseLinkers
                 printVerbose (sprintf
                     "in mapRyseLinkers:assign: end of megaMono, picking %A for last primer"
                     last)
-                (prepLinker last)::res
+                (prepLinker last)::res |> reportFinalAndReturn
             else
                 if phase then // Must be in phase two by the time we get here
                     let alreadyAssigned = 
                             res 
                             |> List.rev 
                             |> List.map (fun x -> x.description)
-                            |> fun x -> String.Join(";",x)
-                    failwithf "in mapRyseLinkers:assign, ran out of linkers while still in phase one :(  .  Are you missing a ### marker for your megastitch?\n%s"
+                            |> fun x -> String.Join(" ; ",x)
+                    failwithf "in mapRyseLinkers:assign, ran ut of linkers while still in phase one :(  .  Are you missing a ### marker for your megastitch?\n\nAssigned:%s"
                                 alreadyAssigned
 
                 match linkers with
                 | [linkerName] ->
                     printVerbose (sprintf
-                        "in mapRyseLinkers:assign, finishing on %A linker\n"
+                        "in mapRyseLinkers:assign, finishing on %A linker"
                         linkerName)
-                    (prepLinker linkerName)::res
+                    (prepLinker linkerName)::res |> reportFinalAndReturn
                 | x ->
                     failwithf
                         "mapRyseLinkers: unexpected linker complement  '%s' left at end \nphase=%s (%s)\n"
@@ -347,10 +363,10 @@ let mapRyseLinkers
                 let linker = prepLinker linkerName
                 if b.sliceType = MARKER then
                     // a takes the place of a linker in this scenario
-                    markerTransition a b c 
+                    markerTransition [a;linker] b c 
                 else
                     printVerbose (sprintf
-                        "inlineST starting following rabit, assign linker %s\n"
+                        "inlineST starting following rabit, assign linker %s"
                         linkerName)
                     // In general if we just put a linker in front of an inline sequence, the following part
                     // (labeled b here) should come along for the ride with no additional linker in front of it
@@ -374,7 +390,7 @@ let mapRyseLinkers
                 // want to process is specially if it's a marker for example,
                 // we can't simply push it to the output part list
                 printVerbose (sprintf
-                    "inlineST ending preceding rabit, assign linker %s, remaining %A\n"
+                    "inlineST ending preceding rabit, assign linker %s, remaining %A"
                     linkerName (b::c))
                 // fixed this - wasn't pushing b out
                 assign startLinkers phase (b::c) linkers (a::res)
@@ -382,12 +398,12 @@ let mapRyseLinkers
         | [a;b] when b.sliceType = INLINEST && a.sliceType = REGULAR ->
             // a is regular and b inline - special terminal inline case
             //
-            printVerbose "terminal regular::inlineST case, take one linker\n"
+            printVerbose "terminal regular::inlineST case, take one linker"
             match linkers with
             | [] -> failwith noLinkersLeftMsg
             | linkerName::ltl ->
                 printVerbose (sprintf
-                    "assign linker %s, no remaining parts\n"
+                    "assign linker %s, no remaining parts"
                     linkerName)
                 let linker = prepLinker linkerName
 
@@ -398,56 +414,46 @@ let mapRyseLinkers
         | a::b::c when a.sliceType = INLINEST && b.sliceType = REGULAR ->
             // a is an inline and b regular, so take b and a and move them to
             // the output
-            printVerbose "inlineST no linker needed\n"
+            printVerbose "inlineST no linker needed"
             assign startLinkers phase c linkers (b::a::res)
 
         | a::b::c when a.sliceType = FUSIONST ->
             // No need for a linker before or after a fusion place holder, since
             // it doesn't really exist, but is a hint to join the two adjacent/
             // pieces.
-            printVerbose "Fusion ST no linker needed\n"
+            printVerbose "Fusion ST no linker needed"
 
+            assign startLinkers phase c linkers (b::res) // Was emitting A previously daz
+
+        | a::b::c when a.sliceType = INLINEST && b.sliceType = INLINEST ->
+            // Double inline slice type.  Room for more logic here to potentially merge short slices but for now
+            // just avoid dropping linkers into the middle of it all
+            printVerbose "Double inline no linker needed"
             assign startLinkers phase c linkers (b::a::res)
 
+        | a::b::c when a.sliceType = INLINEST && b.sliceType = FUSIONST
+                        && (not (a.pragmas.ContainsKey("rabitstart")))
+                        && (not (a.pragmas.ContainsKey("rabitend"))) ->
+            // inline then fuse slice type and no directive to end or start here.  
+            // avoid dropping linkers into the middle of it all
+            printVerbose "inline then fuse no linker needed"
+            assign startLinkers phase (b::c) linkers (a::res)
+
+
         | hd::tl -> // General case, chomp one linker
+            printVerbose "General case - assign a linker"
             match linkers with
             | [] -> failwith noLinkersLeftMsg
             | linkerName::lt ->
                 let linker = prepLinker linkerName
                 printVerbose (sprintf
-                    "Assigning linker %s to %s/%s\n"
+                    "Assigning linker %s to %s/%s"
                     linkerName hd.description (formatST hd.sliceType))
 
                 // DETECT MARKER, transition to phase II
                 if hd.sliceType = MARKER then
                     // enter marker transition with linker to go before the marker part, marker part and remaining parts to place
-                    markerTransition linker hd tl 
-                    (*
-                    // Reconstruct output with linker and moved piece
-                    // If we hit the marker, flip orientation, restart linker list but backwards
-                    printVerbose
-                        "countRyseLinkersNeeded in phase II start with 1 for final leading 0 linker (note 9 linker not included in count)"
-                    let linkersReq = countRyseLinkersNeeded printVerbose 1 tl
-
-                    // check this first
-                    if linkersReq > allLinkers2.Length then
-                        failwithf
-                            "mapRyseLinkers - need %d linkers to finish, only %d available %A\n"
-                            linkersReq allLinkers2.Length errorDesc
-
-                    printVerbose (sprintf
-                        "\n\n#############################################\npart 2 of megastitch - %d linkers required, using %A\n"
-                        linkersReq (Seq.take linkersReq allLinkers2 |> List.ofSeq) )
-
-                    // Flipping part around, but only for marker case.
-                    // Should this also happen for the regular parts?  Must be dealt with elsewhere ;(
-                    let hd' = { hd with destFwd = if phase then hd.destFwd else not hd.destFwd }
-
-                    // phase set to false to denote second phase,
-                    // grab the second set of linkers allLinkers2
-                    assign allLinkers2 false tl (Seq.take linkersReq allLinkers2 |> List.ofSeq |> List.rev) (hd'::linker::res)
-                    *)
-
+                    markerTransition [linker] hd tl 
                 else
                     // We are putting linker before the piece hd (output gets flipped at the end).
                     // Make sure linker is appropriate to precede part hd.
@@ -489,7 +495,9 @@ let mapRyseLinkers
                     assign startLinkers phase tl lt (hd::linker::res) // Reconstruct output with linker and moved piece
 
     let res = {aIn with dnaParts = assign allLinkers1 true aIn.dnaParts allLinkers1 []|> List.rev |> recalcOffset }
-    printVerbose "DONE:  mapRyseLinkers\n"
+
+    
+    printVerbose "DONE:  mapRyseLinkers"
     res
 
 

@@ -4,17 +4,17 @@ nuget FSharp.Core >= 4.1.0 redirects: force
 nuget Dmx.Amyris.Bio >= 2.0.23 framework: >= netstandard2.0
 nuget FSharp.Data >= 3.0.0-beta3 beta
 nuget Newtonsoft.Json
-nuget FsLexYacc < 7
-nuget FsLexYacc.Runtime < 7
+nuget FsLexYacc
+nuget FsLexYacc.Runtime
 nuget FParsec
 nuget MathNet.Numerics
-nuget FSharp.Collections.ParallelSeq
+nuget FSharp.Collections.ParallelSeq >= 1.1.0
 
 group Build
   source https://nuget.org/api/v2
 
   nuget SourceLink.Fake
-  nuget FAKE
+  nuget FAKE 
   nuget FSharp.Formatting
   // nuget FSharp.Compiler.Service redirects: force
 

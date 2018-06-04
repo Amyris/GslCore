@@ -143,9 +143,13 @@ Target "Build" (fun _ ->
 // Run the unit tests using test runner
 
 Target "RunTests" (fun _ ->
-    Fake.DotNetCli.Test(
-        fun p -> {p with WorkingDir = "tests/GslCore.Tests"}
-    )
+    DotNetCli.Test 
+        (fun p -> 
+            {p with 
+                Configuration="Release"
+                Project="tests/GslCore.Tests"
+            }
+        )
 )
 
 

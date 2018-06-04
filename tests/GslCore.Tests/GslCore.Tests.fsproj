@@ -21,6 +21,7 @@
     <Compile Include="TestSeamlessPrimers.fs" />
     <Compile Include="testPromTermLen.fs" />
     <Compile Include="TestDnaAssemblyTransformation.fs" />
+    <Compile Include="TestProcAssembly.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\GslCore\GslCore.fsproj" />

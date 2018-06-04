@@ -12,7 +12,6 @@ open Amyris.ErrorHandling
 let testLibDir1 = @"../../../../TestGslcLib"
 let testLibDir2 = @"../../../../../TestGslcLib"
 
-
 [<TestFixture>]
 type TestPromTermLen() = 
     let emptyPragmas = PragmaCollection(Map.empty)
@@ -20,15 +19,23 @@ type TestPromTermLen() =
         // initialize pragmas
         pragmaTypes.finalizePragmas []
 
+    let testLibDir = 
+        if System.IO.Directory.Exists testLibDir1 then testLibDir1  
+            else testLibDir2
+
     let same context expected actual =
         if expected<>actual then 
             failwithf "%s: expected= %d and actual=%d not equal" context expected actual
 
     let checkOneGenome pragmas name promLen termLen termLenMRNA =
-        let testLibDir = 
-            if System.IO.Directory.Exists testLibDir1 then testLibDir1  
-                else testLibDir2
         let gd = new RefGenome.GenomeDef(testLibDir,name)
+
+
+        printfn "XXX envlookup=%d"  (gd.EnvLenLookup "termlen" 666)
+        printfn "XXX name=%s termlen=%d" name (gd.getTermLen())
+        gd.Load()
+        printfn "XXX envlookup=%d"  (gd.EnvLenLookup "termlen" 666)
+        printfn "XXX name=%s termlen=%d" name (gd.getTermLen())
 
         let part = DnaCreation.translateGenePrefix pragmas gd TERMINATOR
         same "terminator length test" termLen ((part.right.x-part.left.x+1<OneOffset>)/1<OneOffset>) // +1 since ends are inclusive
@@ -46,6 +53,12 @@ type TestPromTermLen() =
             checkOneGenome map refGenome expProm expTerm expTermMRNA 
         | _ -> failwith "building promlen pragma"
         
+    [<Test>]
+    member __.TestGenomesLoadable() =
+        let gd = new RefGenome.GenomeDef(testLibDir,"TestGenome")
+        gd.Load()
+        ()
+
     [<Test>]
     member __.TestPragmasExist() =
         let checkPragmaExists name =

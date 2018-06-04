@@ -49,7 +49,10 @@ let dumpSliceLayout (slices:DNASlice list) =
  
 /// Insert FUSE directives and MT linkers to get a seamless design from later primergen
 let procInsertFuse verbose (l:DNASlice list) =
-
+    if verbose then
+        printfn "Entering procInsertFuse"
+        let names = l |> List.map (fun l -> l.sliceName)
+        printfn "Slices presented: %s" (String.Join(";",names))
     let rec procInsertFuseInternal (l:DNASlice list) res =
         if verbose then printfn "placeFuseForSeamless: top l=%s" (dumpSliceLayout l)
         let finish parts =mt::(List.rev parts)@[mtRev]
