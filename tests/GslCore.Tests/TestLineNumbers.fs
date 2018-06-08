@@ -47,7 +47,7 @@ type TestLineNumbers() =
         |> returnOrFail
         |> fun x -> extractAssemblies x.wrappedNode
 
-    let tripleRecursiveCallExample = """#refgenome cenpk
+    let tripleNestedCallExample = """#refgenome cenpk
 #platform stitch
 
 let fun1(up,down) = // line 3 (zero numbered)
@@ -117,7 +117,7 @@ knockout()"
 
     [<Test>]
     member i__.TestRecursiveFunctionExpansion() =
-        let assemblies = compileOne tripleRecursiveCallExample 
+        let assemblies = compileOne tripleNestedCallExample 
 
         Assert.AreEqual(3,assemblies.Length)
 
@@ -134,10 +134,10 @@ knockout()"
         checkPosition a3.pos (19,9,19,22)
 
     [<Test>]
-    [<Ignore>] // See issue #15
-    member __.TestRecursiveFunctionExpansionHasThreeSources() =
+    [<Ignore("currently losing intermediate levels of nested functions")>] // See issue #15
+    member __.TestNestedFunctionExpansionHasThreeSources() =
 
-        let assemblies = compileOne tripleRecursiveCallExample 
+        let assemblies = compileOne tripleNestedCallExample 
 
         // Helpful debugging tool
         let coordsFormatted =
@@ -153,7 +153,7 @@ knockout()"
             )
 
         let assembly3 = List.item 2 assemblies
-        printfn "coordinates for triple recursive example:%A" coordsFormatted
+        printfn "coordinates for triple nested example:%A" coordsFormatted
         // Expect assembly 3 to have coordinates on line 19, 15, 8 and 4 (4 sets)
         // Due to bug/missing feature, it currently returns only 19 and 4, and test is marked ignore
         Assert.AreEqual(4,assembly3.positions.Length)
