@@ -1517,11 +1517,22 @@ let rec procAssembly
         // procAssembly verbose dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
     | hd::tl ->
         if verbose then
-            printfn "procAssembly: ... (GAP) catchall case"
+            printfn 
+                "procAssembly: ... (GAP) catchall case - should this be fused with previous slice? hd.dna.Length=%d hd.containsAmp=%s" 
+                hd.dna.Length 
+                (if hd.pragmas.ContainsKey("amp") then "Y" else "N")
+            match prev with
+            | pHd::_ ->
+                printfn "procAssembly: ...                      phd.dna.Length=%d phd.containsAmp=%s"  
+                    pHd.dna.Length 
+                    (if pHd.pragmas.ContainsKey("amp") then "Y" else "N")
+            | [] ->
+                printfn "procAssembly: ...                      prev empty"
+
         // Check if this slice should have been fused with previous slice?
         match prev with
         | pHd::_ when 
-            (pHd.dna.Length>100 || hd.pragmas.ContainsKey("amp")) &&  
+            (pHd.dna.Length>100 || pHd.pragmas.ContainsKey("amp")) &&  
             (hd.dna.Length > 100 || hd.pragmas.ContainsKey("amp")) ->
 
             printfn "procAssembly: ... generate seamless junction between prev=%s and this=%s" pHd.description hd.description

@@ -1,3 +1,6 @@
+#### 0.4.35 - June 7th 2018
+* Demetrix production release for double slice bug fix and improved line numbers
+
 #### 0.4.34 - March 5th 2017
 * Demetrix production release for seamless freestyle branch
 
