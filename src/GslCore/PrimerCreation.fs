@@ -1,4 +1,4 @@
-﻿module PrimerCreation
+module PrimerCreation
 /// Support routines for primer design scenarios and primer generation for stitches
 open commonTypes
 open System
@@ -181,7 +181,14 @@ let tuneTails
     let fullTemplate = DnaOps.concat [ rev.body.RevComp() ; middleDNA ; fwd.body ]
 
     /// Target Tm for middle annealing part.  Cheat if it's a linker and we just want to keep this part (ideally) full length
-    let annealTarget = match firmMiddle with | Some(x) -> x | None -> dp.seamlessOverlapTm
+    let annealTarget = 
+        match firmMiddle with 
+        | Some(x) -> 
+            if verbose then printfn "setAnnealTarget to firmMiddle=%A" x
+            x 
+        | None -> 
+            if verbose then printfn "setAnnealTarget to seamlessOverlapTm=%A" dp.seamlessOverlapTm
+            dp.seamlessOverlapTm
     //let annealTarget = dp.seamlessOverlapTm // Just use this,  rev/fwdTailLenFixed vars take care of constraining RYSE linkers
 
     // Find two positions f and r that create a better ovelap tm
@@ -195,7 +202,11 @@ let tuneTails
     let X = rev.body.Length+middleDNA.Length-1
     /// First base of inline region
     let Y = rev.body.Length
+    if verbose then
+        printfn "tuneTailOpt: X=%d Y=%d\n template=%s" X Y fullTemplate.str
 
+    /// Maximum amount by which we can stray from ideal annealing term during tune tails search
+    let maxAnnealSearchDeviation = 10.0<C>
     /// Recursive optimization of the primer ends, adjusting lengths to get the amp / anneal and primer lengths optimized
     let rec tuneTailsOpt itersRemaining (state:TuneState) (seen':Set<TuneVector>) =
 
@@ -270,11 +281,14 @@ let tuneTails
                 match fwdLen with
                 | OligoOver(_) -> // cut something off
                     if state.fb>dp.pp.minLength then  yield CHOP_F_AMP
-                    if fwdTailLenFixed.IsNone && state.ft > fwdTailLenMin then yield CHOP_F_ANNEAL
+                    // Put guard on this to stop best anneal data running away to zero kelvin ;(
+                    if fwdTailLenFixed.IsNone && state.ft > fwdTailLenMin && state.bestAnnealDelta < maxAnnealSearchDeviation then 
+                        yield CHOP_F_ANNEAL
                 | OligoMax(_) -> // could slide or cut
                     if state.bestFwdDelta < 0.0<C> && state.fb>dp.pp.minLength then yield CHOP_F_AMP
                     if fwdTailLenFixed.IsNone then
-                        if  state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then yield CHOP_F_ANNEAL
+                        if  state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then 
+                            yield CHOP_F_ANNEAL
                         if state.fb < fwd.body.Length && state.ft > fwdTailLenMin then yield SLIDE_F_RIGHT
                         if state.rt > revTailLenMin && state.ft < fwdTailLenMax then
                             yield SLIDE_F_LEFT
@@ -284,8 +298,8 @@ let tuneTails
                         if state.bestFwdDelta < 0.0<C> && state.ft < fwdTailLenMin && state.fb>dp.pp.minLength
                             then yield CHOP_F_AMP
                         elif state.fb < fwd.body.Length then yield EXT_F_AMP
-                        if state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin
-                            then yield CHOP_F_ANNEAL
+                        if state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then 
+                            yield CHOP_F_ANNEAL
                         elif state.ft < fwdTailLenMax then yield EXT_F_ANNEAL
 
                         match sign state.bestAnnealDelta, sign state.bestFwdDelta with
@@ -311,7 +325,7 @@ let tuneTails
                             if (state.fb<fwd.body.Length && state.rt > revTailLenMin && state.ft < fwdTailLenMax)
                                 then yield SLIDE_F_LEFT
                         | 0, 0 -> () // no complaints
-                        | _ as x -> failwithf "unexpected delta sign combo %A" x
+                        | x -> failwithf "unexpected delta sign combo %A" x
 
                 match revLen with
                 | OligoOver(_) -> // cut something off reverse primer
@@ -1124,7 +1138,6 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                    However, when we make the final construct for thumper, the sandwich region goes into the body not
                    the tail since the tails are checked against linkers and the sandwich sequence ends up in the rabit
                    DNA sequence.  What a mess.. :)
-
                 //               ftftftftftftftftftf  fbfbfbfbfbf
                 //    sandwichR ; middle ; sandwichF ; >>>>>
                 // rbr<rtrtrtrtrtrtrtrtrtrt
@@ -1356,62 +1369,36 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
             | None -> assert(primerR.Primer.Length=0)
             | Some(ds) -> primerCheck primerR.Primer.arr (ds.dna.RevComp().[offsetR..].arr)
 
-<<<<<<< HEAD
-        if verbose then
-                printfn "sliceOut'=%s" (String.Join(";",[for s in sliceOut' -> s.description]))
-        let finalOutput = (DPP({fwd = {body=Dna(""); tail =Dna(""); annotation = []}; rev = primerR; name = last.description})::primersOut |> List.rev,
-                             sliceOut') // Last linker
-        let finalDPPs,finalSlices = finalOutput
-        let outputParity = finalDPPs.Length = finalSlices.Length
-        if verbose || (not outputParity) then
-                
-            let y = (String.Join(";",(finalDPPs |> Seq.map(prettyPrintPrimer))))
-            let x = (String.Join(";",(finalSlices |> Seq.map(nameFromSlice))))
-            printfn "procAssembly: finalOutput(slices n=%d): %s" (finalSlices.Length) x
-            printfn "procAssembly: finalOutput(primer n=%d): %s" (finalDPPs.Length) y
-            if not outputParity then
-                failwithf "These lists should have same length :( - error in procAssembly"
-            ()
-        finalOutput // RETURN POINT *****
-    | hd::tl when 
-        hd.sliceType = INLINEST && 
-        (not (hd.pragmas.ContainsKey("rabitend") || hd.pragmas.ContainsKey("amp"))) ->
-        if verbose then
-            printfn "procAssembly: ... (GAP) INLINEST"
-        let prevNew = hd::prev
-        procAssembly verbose dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
-    // This cases catches inline sequences just before a linker marked rabitend
-    | hd::tl when hd.sliceType = INLINEST && hd.pragmas.ContainsKey("rabitend") ->
-        if verbose then
-            printfn "procAssembly: ... (GAP) INLINEST rabitend case hd=%s" hd.description
-            printfn "procAssembly: ... new sliceOut = %s" (String.Join(";",[for x in hd::sliceOut -> x.description]))
-        // push the slice onto the prev stack
-        let prevNew = hd::prev
-        procAssembly verbose dp errorName prevNew (hd::sliceOut) (SANDWICHGAP::primersOut) tl
-        // procAssembly verbose dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
-    | hd::tl ->
-        if verbose then
-            printfn "procAssembly: ... (GAP) catchall case"
-        // Check if this slice should have been fused with previous slice?
-        match prev with
-        | pHd::_ when 
-            (pHd.dna.Length>100 || hd.pragmas.ContainsKey("amp")) &&  
-            (hd.dna.Length > 100 || hd.pragmas.ContainsKey("amp")) ->
+            let sliceOut' =
+                match prev with
+                | [] ->
+                    // We are on the last element and there are no precending elements.  This could
+                    // be a stand-alone, single DNA slice.  Process it as such.  This is going to create
+                    // trouble if the user intended a RYSE design but they might not be headed there so we have
+                    // to handle this case.
+                    // Assume it's a stand-alone inline sequence that could be made with a pair of primers
+                    if sliceOut = [] then // Assume it's a stand-alone inline sequence that could be made with a pair of primers
+                        (* type DNASlice = { id : int option ; extId : string option ; dna : char array ;  sourceChr : string ; sourceFr : int<ZeroOffset> ; sourceTo : int<ZeroOffset>
+                            ; sourceFwd : bool ;
+                            sourceFrApprox: bool; sourceToApprox : bool;
+                             destFr : int<ZeroOffset> ; destTo : int<ZeroOffset> ; destFwd : bool
+                            ; sliceName : string ; description : string ; sliceType : SliceType ; pragmas:Map<string,string>;
+                            dnaSource : string}      *)
+                            (*
+                            let slice = { id = None ; extId = None ; dna = last.dna ; sourceChr = "inline" ;
+                                            sourceFr = 0<ZeroOffset> ; (sourceTo = last.dna.Length-1)*1<ZeroOffset> ;
+                                            sourceFwd = true ; sourceFrApprox = false; sourceToApprox = false ;
+                                            destFr = 0<ZeroOffset> ; destTo = 0<ZeroOffset> (*fixed later *) ;
+                                            description = "inline dna" ; sliceType = INLINEST ; pragmas = last.pragmas
 
-            if verbose then
-                printfn "procAssembly: ... generate seamless junction between prev=%s and this=%s" pHd.description hd.description
+                            *)
+                        [last] // Fake slice for now.. TODO TODO
+                    else failwith "expected preceding linker adjacent to terminal inline sequence"
+                | p::_ -> last::(cutRight p offsetR)::sliceOut  |> List.rev
 
-            let primerPos = parsePrimerPos pHd.pragmas
-
-            let fwdTailLenMax,revTailLenMax =
-                match primerPos with
-                | FWD(offset) ->
-                    let x = -offset // Convert to tail length
-                    x, 999999
-                | REV(offset) ->
-                    let x = offset 
-                    999999,x
-                | NONE -> 999999,999999 // no primerpos
+            (DPP({fwd = {body=Dna(""); tail =Dna(""); annotation = []}; rev = primerR; name = errorName})::primersOut |> List.rev,
+             sliceOut') // Last linker
+        | hd::tl when hd.sliceType = INLINEST ->
             if verbose then
                 printfn "procAssembly: ... (GAP) INLINEST"
             let prevNew = hd::prev
