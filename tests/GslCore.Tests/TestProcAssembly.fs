@@ -13,7 +13,7 @@ open constants
 [<TestFixture>]
 type TestProcAssembly() = 
 
-    let verbose = true  // enable for detailed (very detailed) output from procAssembly
+    let verbose = false  // enable for detailed (very detailed) output from procAssembly
 
     do
         // initialize pragmas
