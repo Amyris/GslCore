@@ -1105,7 +1105,11 @@ let rec procAssembly
                     | tlhd::tltl -> Some(next),tlhd,tltl
                 else 
                     if verbose then
-                        printfn "procAssembly: ... not sandwich case hd=sliceType %A, next sliceType=%A" hd.sliceType next.sliceType // e.g. hd = inline
+                        printfn "procAssembly: ... not sandwich case hd=sliceType %A (%s), next sliceType=%A (%s)" 
+                            hd.sliceType 
+                            hd.sliceName
+                            next.sliceType // e.g. hd = inline
+                            next.sliceName
                     None,next,tl
 
             // FWD primer creation

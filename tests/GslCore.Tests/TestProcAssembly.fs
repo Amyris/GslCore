@@ -13,7 +13,11 @@ open constants
 [<TestFixture>]
 type TestProcAssembly() = 
 
-    let verbose = false  // enable for detailed (very detailed) output from procAssembly
+    let verbose = true  // enable for detailed (very detailed) output from procAssembly
+
+    do
+        // initialize pragmas
+        pragmaTypes.finalizePragmas []
 
     /// Simple slice creator with just the parameters
     /// needed for testing procAssembly
@@ -95,6 +99,7 @@ type TestProcAssembly() =
             false // to approx
             true // amplified
             Breed.B_MARKER
+    /// really short inline (14) which will be implemented with primers
     let shortInline = 
         makeSimpleSlice
             (Dna "CACATGTGGAGATT")
@@ -122,6 +127,11 @@ type TestProcAssembly() =
                       args = []
                      }
 
+    let fusePragma = {definition = {name = "fuse"; argShape = Zero; scope = PartOnly;
+                         desc = "join part with next part without linker";
+                         invertsTo = Some("fuse"); validate = noValidate};
+                      args = []
+                     }
     let inlinePragma = {definition = {name = "inline"; argShape = Zero; scope = PartOnly;
                          desc = "inline pragma";
                          invertsTo = Some("inline"); validate = noValidate};
@@ -140,6 +150,37 @@ type TestProcAssembly() =
             true // amplified
             Breed.B_INLINE
 
+    /// 75 bp inline
+    let mediumInline = 
+        makeSimpleSlice 
+            (Dna "TTTGACGTGTAGTCGTGCGCGGTCGCGCGCGTCTATTTTTGTCGTCGTACGTACGTACGGCTAGCGTACGTACGT")
+            "mediuminline"
+            SliceType.INLINEST
+            EmptyPragmas
+            false // from approx
+            false // to approx
+            true // amplified
+            Breed.B_INLINE
+
+    /// small 48 bp inline
+    let smallInline = 
+        makeSimpleSlice 
+            (Dna "TAGCTATATAGGTAGCTAGACTATCTTTATCTTACTACTTCTCTTTAT")
+            "smallinline"
+            SliceType.INLINEST
+            EmptyPragmas
+            false // from approx
+            false // to approx
+            true // amplified
+            Breed.B_INLINE
+
+    let smallInlineAmp = {smallInline with pragmas = smallInline.pragmas.Add(amp) ; sliceName = smallInline.sliceName+"#amp"}
+    let smallInlineFuse = {smallInline with pragmas = smallInline.pragmas.Add(fusePragma) ; sliceName = smallInline.sliceName+"#fuse"}
+    let mediumInlineAmp = {mediumInline with pragmas = mediumInline.pragmas.Add(amp) ; sliceName = mediumInline.sliceName+"#amp"}
+    let mediumInlineFuse = {mediumInline with pragmas = mediumInline.pragmas.Add(fusePragma) ; sliceName = mediumInline.sliceName+"#fuse"}
+
+    let longInlineAmp = {longInline with pragmas = longInline.pragmas.Add(amp) ; sliceName = longInline.sliceName+"#amp"}
+    let longInlineAmpFuse = {longInlineAmp with pragmas = longInlineAmp.pragmas.Add(fusePragma) ; sliceName = longInlineAmp.sliceName+"#fuse"}
     let longInlineAmp = {longInline with pragmas = longInline.pragmas.Add(amp) ; sliceName = longInline.sliceName+"#amp"}
     let longInlineInline = {longInline with pragmas = longInline.pragmas.Add(inlinePragma)}
     let shortInlineWithRabitStart = { shortInline with pragmas = shortInline.pragmas.Add(rabitStart)}
@@ -230,6 +271,9 @@ type TestProcAssembly() =
             false // amplified
             Breed.B_X
     let _doProcAssembly testName (slices:DNASlice list) designParams =
+        // simulate what compiler will do cleaning up inline seqs
+        // that are too short to be treated as inlines
+        let cleanedSlices = cleanLongSlicesInPartsList pragmaTypes.EmptyPragmas slices
         PrimerCreation.procAssembly
             verbose // debug
             designParams
@@ -237,7 +281,7 @@ type TestProcAssembly() =
             [] // prev
             []  // slice out
             []  // (primersOut:DivergedPrimerPair list)
-            slices
+            cleanedSlices
 
     let doProcAssembly testName (slices:DNASlice list) = 
         _doProcAssembly testName slices DesignParams.initialDesignParams
@@ -285,6 +329,15 @@ type TestProcAssembly() =
             | _ -> 
                 Assert.IsTrue(e.dna.Contains(a.dna),sprintf "expect %s to contain %s" e.sliceName a.sliceName)
 
+    /// perform one test and check output pattern and sequences
+    let runOne name slicesIn pattern seqs =
+        let dpps,slices = 
+            doProcAssemblyLongOligos // NB long oligos
+                name
+                slicesIn
+        checkPattern pattern dpps
+        checkSequence seqs slices
+            
     [<Test>]
     /// Equivalent of gFOO^
     member __.koNoLinkers() =
@@ -343,25 +396,24 @@ type TestProcAssembly() =
 
     [<Test>]
     member __.testLongInline() =
-        //   longInline gets built here by long primers
+        //   longInline gets built here by amplification, so execpt
+        //  auto fuse on each end
         //  <------------------------------------o
         //                o------------------------------------>
         //                |------- inline -------|
-        let dpps,slices = 
-            doProcAssemblyLongOligos // NB long oligos
-                "testLongInline" 
-                [ linkerAlice; oBar ; longInline; oBar ; linkerDoug]
-        checkPattern "DGDGD" dpps
-        checkSequence [ linkerAlice; oBar ; longInline; oBar; linkerDoug] slices
+        runOne
+            "testLongInline" 
+            [ linkerAlice; oBar ; longInline; oBar ; linkerDoug]
+            "DGDGDGD"
+            [ linkerAlice; oBar ; fuse; longInline; fuse; oBar; linkerDoug]
     
     [<Test>]
     member __.testInlineWithInline() =
-        let dpps,slices = 
-            doProcAssemblyLongOligos // NB long oligos
-                "testInlineWithInline" 
-                [ linkerAlice; oBar ; longInlineInline; oBar ; linkerDoug]
-        checkPattern "DGDGD" dpps
-        checkSequence [ linkerAlice; oBar ; longInlineInline; oBar; linkerDoug] slices
+        runOne
+            "testInlineWithInline" 
+            [ linkerAlice; oBar ; longInlineInline; oBar ; linkerDoug]
+            "DGDGD"
+            [ linkerAlice; oBar ; longInlineInline; oBar; linkerDoug]
 
     [<Test>]
     member __.testInlineWithAmp() =
@@ -370,35 +422,93 @@ type TestProcAssembly() =
         // ----------------+------ inline --------+--------------
         //           <----------o            <--------o
 
-        let dpps,slices = 
-            doProcAssemblyLongOligos // NB long oligos
-                "testInlineWithAmp" 
-                [ linkerAlice; oBar ; longInlineAmp; oBar ; linkerDoug]
-        checkPattern "DGDGDGD" dpps
-        checkSequence [ linkerAlice; oBar ; fuse ; longInlineAmp; fuse ; oBar; linkerDoug] slices
+        runOne
+            "testInlineWithAmp" 
+            [ linkerAlice; oBar ; longInlineAmp; oBar ; linkerDoug]
+            "DGDGDGD"
+            [ linkerAlice; oBar ; fuse ; longInlineAmp; fuse ; oBar; linkerDoug]
+
+    [<Test>]
+    member __.testDoubleLongInlineWithAmp() =
+        // In this case, both long inline sequences should be made by amplification
+        //           --------->               -------->           <-----------
+        // ----------------+------ inline --------+----- inline -----+-------
+        //           ----------              <--------         --------->
+        runOne
+            "testDoubleLongInlineWithAmp" 
+            [ linkerAlice; oBar ; longInlineAmp; longInlineAmp ; oBar ; linkerDoug]
+            "DGDGDGDGD"
+            [ linkerAlice; oBar ; fuse ; longInlineAmp; fuse; longInlineAmp; fuse ; oBar; linkerDoug]
+
+    [<Test>]
+    member __.testDoubleMediumInlineWithAmp() =
+        // same as long case above but medium (under automatic threshold) but with amp so 
+        // should fuse and amplify them
+        runOne
+            "testDoubleMediumInlineWithAmp" 
+            [ linkerAlice; oBar ; mediumInlineAmp; mediumInlineAmp ; oBar ; linkerDoug]
+            "DGDGDGDGD"
+            [ linkerAlice; oBar ; fuse ; mediumInlineAmp; fuse; mediumInlineAmp; fuse ; oBar; linkerDoug]
+
+    [<Test>]
+    member __.testDoubleMediumLong1InlineWithAmp() =
+        // mixed long and short inline sequences tagged for amplification
+        runOne
+            "testDoubleMediumInlineWithAmp" 
+            [ linkerAlice; oBar ; mediumInlineAmp; longInlineAmp ; oBar ; linkerDoug]
+            "DGDGDGDGD"
+            [ linkerAlice; oBar ; fuse ; mediumInlineAmp; fuse; longInlineAmp; fuse ; oBar; linkerDoug]
+
+    [<Test>]
+    member __.testDoubleMediumLong2InlineWithAmp() =
+        // mixed long and short inline sequences tagged for amplification other way around
+        runOne
+            "testDoubleMediumInlineWithAmp" 
+            [ linkerAlice; oBar ; longInlineAmp ; mediumInlineAmp; oBar ; linkerDoug]
+            "DGDGDGDGD"
+            [ linkerAlice; oBar ; fuse ; longInlineAmp ; fuse; mediumInlineAmp; fuse ; oBar; linkerDoug]
+
+    [<Test>]
+    member __.testDoubleSmallNoAmpLong1InlineLinkerFlanked() =
+        // mixed long and short inline sequences with medium sequence NOT tagged for amp
+        // but linkers adjacent to both slices
+        // FAILING
+        runOne
+            "testDoubleSmallNiAmpLong1InlineLinkerFlanked" 
+            [ linkerAlice; smallInlineFuse; longInlineAmp ; linkerDoug]
+            "DGDGD"
+            [ linkerAlice; smallInlineFuse; fuse; longInlineAmp; linkerDoug]
+
+    [<Test>]
+    member __.testDoubleMediumNoAmpLong1InlineWithAmp() =
+        // mixed long and short inline sequences with medium sequence NOT tagged for amp
+        // FAILING
+        runOne
+            "testDoubleMediumNoAmpInlineWithAmp" 
+            [ linkerAlice; oBar ; linkerBob ; mediumInlineFuse; longInlineAmpFuse ; oBar ; linkerDoug]
+            "DGDGDGDGD"
+            [ linkerAlice; oBar ; linkerBob ; mediumInlineFuse; fuse; longInlineAmp; fuse ; oBar; linkerDoug]
+
     [<Test>]
     member __.testRabitEnd() =
-        let dpps,slices = 
-            doProcAssembly 
-                "testRabitEnd" 
-                [ linkerAlice; uFoo ; shortInlineWithRabitEnd ; linkerCharlie ; dFoo ; linkerDoug]
-        checkPattern "DGSDGD" dpps
-        checkSequence [ linkerAlice; uFoo ; shortInlineWithRabitEnd ; linkerCharlie ; dFoo ; linkerDoug] slices
+        runOne
+            "testRabitEnd" 
+            [ linkerAlice; uFoo ; shortInlineWithRabitEnd ; linkerCharlie ; dFoo ; linkerDoug]
+            "DGSDGD"
+            [ linkerAlice; uFoo ; shortInlineWithRabitEnd ; linkerCharlie ; dFoo ; linkerDoug]
 
     [<Test>]
     member __.testRabitEndPostMarker() =
-        let dpps,slices = 
-            doProcAssembly 
-                "testRabitEndPostMarker" 
-                [ linkerAlice; uFoo ; linkerBob ;  marker ; shortInlineWithRabitEnd ; linkerCharlie ; dFoo ; linkerDoug]
-        checkPattern "DGDGSDGD" dpps
-        checkSequence [ linkerAlice; uFoo ; linkerBob ;  marker; shortInlineWithRabitEnd ; linkerCharlie ; dFoo ; linkerDoug] slices
+        runOne
+            "testRabitEndPostMarker" 
+            [ linkerAlice; uFoo ; linkerBob ;  marker ; shortInlineWithRabitEnd ; linkerCharlie ; dFoo ; linkerDoug]
+            "DGDGSDGD"
+            [ linkerAlice; uFoo ; linkerBob ;  marker; shortInlineWithRabitEnd ; linkerCharlie ; dFoo ; linkerDoug]
 
     [<Test>]
     member __.testRabitEndPostMarkerExtraSlice() =
-        let dpps,slices = 
-            doProcAssembly 
-                "testRabitEndPostMarkerExtraSlice" 
-                [ linkerAlice; uFoo ; linkerBob ;  marker ; shortInlineWithRabitEnd ; linkerCharlie ; oBar ; dFoo ; linkerDoug]
-        checkPattern "DGDGSDGDGD" dpps
-        checkSequence [ linkerAlice; uFoo ; linkerBob ;  marker; shortInlineWithRabitEnd ; linkerCharlie ; oBar; fuse ; dFoo ; linkerDoug] slices
+        runOne
+            "testRabitEndPostMarkerExtraSlice" 
+            [ linkerAlice; uFoo ; linkerBob ;  marker ; shortInlineWithRabitEnd ; linkerCharlie ; oBar ; dFoo ; linkerDoug]
+            "DGDGSDGDGD"
+            [ linkerAlice; uFoo ; linkerBob ;  marker; shortInlineWithRabitEnd ; linkerCharlie ; oBar; fuse ; dFoo ; linkerDoug]

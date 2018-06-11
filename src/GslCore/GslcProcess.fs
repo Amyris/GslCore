@@ -99,27 +99,31 @@ let materializeDna (s:ConfigurationState) (assem:seq<Assembly>) =
         |> ok
     )
 
+
+/// Promote long slices to regular rabits to avoid trying to build
+/// impossibly long things with oligos.
+let cleanLongSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice list) =
+    l |> List.map (fun s ->
+        if (s.sliceType = INLINEST &&
+            s.dna.Length > 30 &&
+            not (s.pragmas.ContainsKey("inline")))
+        then
+            {s with
+                sliceType = REGULAR;
+                dnaSource =
+                    match s.pragmas.TryGetOne("dnasrc") with
+                    | Some(x) -> x
+                    | None ->
+                        match p.TryGetOne("refgenome") with
+                        | None -> "synthetic"
+                        | Some(x) -> x
+            }
+        else s)
+
 /// Promote long slices to regular rabits to avoid trying to build
 /// impossibly long things with oligos.
 let cleanLongSlices _ (a:DnaAssembly) =
-    let cleanedParts =
-        a.dnaParts |> List.map (fun s ->
-            if (s.sliceType = INLINEST &&
-                s.dna.Length > 30 &&
-                not (s.pragmas.ContainsKey("inline")))
-            then
-                {s with
-                    sliceType = REGULAR;
-                    dnaSource =
-                        match s.pragmas.TryGetOne("dnasrc") with
-                        | Some(x) -> x
-                        | None ->
-                            match a.pragmas.TryGetOne("refgenome") with
-                            | None -> "synthetic"
-                            | Some(x) -> x
-                }
-            else s)
-    ok {a with dnaParts = cleanedParts}
+    ok {a with dnaParts = cleanLongSlicesInPartsList a.pragmas a.dnaParts}
 
 
 /// we run into trouble during primer generation if a virtual part (fuse) gets between two parts that
