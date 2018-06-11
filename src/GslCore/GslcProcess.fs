@@ -117,6 +117,17 @@ let cleanLongSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice list
                         match p.TryGetOne("refgenome") with
                         | None -> "synthetic"
                         | Some(x) -> x
+                // add in an amp tag on this guy too, since we are now comitting to
+                // not placing it inline using primers
+                pragmas = match s.pragmas.TryFind("amp") with
+                            | Some _ -> s.pragmas // already there
+                            | None -> 
+                                match s.pragmas.Add("amp") with
+                                | Result.Ok(result,_) -> result
+                                | Bad messages -> 
+                                    // has to be a cleaner way of converting result to
+                                    // exn if necessary
+                                    failwithf "%s" (String.Join(";",messages))
             }
         else s)
 
