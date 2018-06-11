@@ -75,6 +75,18 @@ uADH1; dADH1
 uADH1; dADH1
 """ 
 
+    /// Three tags on same construct on different lines then single on next construct
+    let mixedTags = """#refgenome cenpk
+#platform stitch
+
+#tag flavor:vanilla
+#tag temp:hot
+#tag condiment:ketchup
+uADH1; dADH1
+
+#tag id:1234
+uADH2; dADH2
+""" 
     let runAndExtractTags code =
             code
             |> compileOne
@@ -153,7 +165,6 @@ uADH1; dADH1
             match pragmas1 with
             | [p] ->
                 // should match the entered text - with both pragmas together
-                printfn "YYY=%A" p
                 Assert.AreEqual(["flavor:vanilla";"temp:hot"],p.args)
 
             | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
@@ -171,12 +182,38 @@ uADH1; dADH1
 
         match results with
         | [_assembly1,pragmas1 ] ->
-            // should be two pragmas on this assembly
+            // should be one pragma on this assembly with two parts
             match pragmas1 with
             | [p] ->
-                // should match the two pragmas but combined
-                printfn "XXX=%A" p
-                Assert.IsTrue(p.hasVal "flavor:vanilla temp:hot")
+                // should match the entered text - with both pragmas together
+                Assert.AreEqual(["flavor:vanilla";"temp:hot"],p.args)
+
+            | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
+
+        | x -> failwithf "bad assembly pattern %A in TwoParallelTags" x
+
+    [<Test>]
+    member __.MixedTags() =
+        let results = mixedTags |> runAndExtractTags
+
+        // should be two assemblies
+        Assert.AreEqual(2,results.Length)
+
+        match results with
+        | [_assembly1,pragmas1 ; _assembly2,pragmas2] ->
+            // should be one pragma on assembly1 with 3 parts
+            match pragmas1 with
+            | [p] ->
+                // should match the entered text - with both pragmas together
+                Assert.AreEqual(["flavor:vanilla";"temp:hot" ; "condiment:ketchup"],p.args)
+
+            | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
+
+            // should be one pragma on assembly2 with 1 part
+            match pragmas2 with
+            | [p] ->
+                // should match the entered text - with both pragmas together
+                Assert.AreEqual(["id:1234"],p.args)
 
             | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
 
