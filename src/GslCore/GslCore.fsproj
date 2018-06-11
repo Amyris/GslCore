@@ -101,6 +101,7 @@
     <Compile Include="ProcessCmdLineArgs.fs" />
     <Compile Include="LexAndParse.fs" />
     <Compile Include="AstExpansion.fs" />
+    <Compile Include="TaggingProvider.fs" />
     <Compile Include="GslcProcess.fs" />
     <Compile Include="SeamlessPlugin.fs" />
     <Compile Include="Gslc.fs" />

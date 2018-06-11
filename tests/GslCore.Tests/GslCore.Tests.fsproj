@@ -85,6 +85,7 @@
     <Compile Include="TestSliceAnnotations.fs" />
     <Compile Include="TestSeamlessPrimers.fs" />
     <Compile Include="TestDnaAssemblyTransformation.fs" />
+    <Compile Include="TestTagging.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
