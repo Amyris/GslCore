@@ -135,7 +135,7 @@ knockout()"
 
     [<Test>]
     [<Ignore>] // See issue #15
-    member __.TestNestedFunctionExpansionHasThreeSources() =
+    member __.TestNestedFunctionExpansionHasFourLineNumbers() =
 
         let assemblies = compileOne tripleNestedCallExample 
 
