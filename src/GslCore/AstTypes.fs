@@ -34,6 +34,10 @@ type SourcePosition =
                 yield sprintf "%s^" (pad p.Column)
     }
 
+/// Expand possibly multiple levels of source positions into a formatted string
+let formatSourcePositionList (positions:SourcePosition list) =
+    String.Join("; ",positions |> List.map (fun p ->p.Format()))
+
 /// Interface type to allow generic retrieval of a source code position.
 type ISourcePosition =
     abstract member OptionalSourcePosition : SourcePosition list with get
