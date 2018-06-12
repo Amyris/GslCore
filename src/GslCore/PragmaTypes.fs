@@ -286,10 +286,6 @@ type Pragma = {
     args: string list}
     with
     member x.name = x.definition.name
-    member x.isTransientCumulative =
-        match x.definition.scope with
-        | BlockOnly(TransientCumulative) | BlockOrPart(TransientCumulative) -> true
-        | _ -> false
     member x.isTransient =
         match x.definition.scope with
         | BlockOnly(Persistent) | BlockOrPart(Persistent) -> false
