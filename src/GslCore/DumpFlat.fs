@@ -45,6 +45,8 @@ let dumpFlat (outFile:string) (assembliesIn : DnaAssembly list) =
         sprintf "##### Assembly %s #######" aId |> w
         sprintf "A# %s" aId |> w
         sprintf "NA %s" a.name |> w
+        if not a.tags.IsEmpty then
+            sprintf "TA %s" (String.Join(" ",a.tags)) |> w
         match a.uri with Some(u) -> sprintf "NU %s" u |> w | None -> ()
         sprintf "NP %d" (a.dnaParts.Length) |> w
         sprintf "AS %s" (a.Sequence().str) |> w
