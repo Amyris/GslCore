@@ -42,13 +42,13 @@ let tagPragmaDef =
      invertsTo = None; validate = validateTag} 
 
 /// Take previous #tag namespace:tagvalue  lines and fold into the assembly structure
-let foldInTags (_at:ATContext) (a:DnaAssembly) =
+let foldInTags (cmdlineTags:AssemblyTag list) (_at:ATContext) (a:DnaAssembly) =
     match a.pragmas.TryFind("tag") with
     | None -> ok a
     | Some pragma ->
         match parseTags pragma.args with
         | Ok(newTags,_) ->
-            ok {a with tags = newTags |> List.fold (fun tags tag -> tags.Add(tag)) a.tags}
+            ok {a with tags = cmdlineTags@newTags |> List.fold (fun tags tag -> tags.Add(tag)) a.tags}
         | Bad msg -> fail {msg = String.Join(";",msg) ; kind = ATError ; assembly = a ; stackTrace = None ; fromException = None}
         
 type TaggingProvider = {
@@ -74,7 +74,7 @@ type TaggingProvider = {
         member x.ConfigureFromOptions(_opts) =
             x :> IAssemblyTransform
         member x.TransformAssembly context assembly =
-            foldInTags context assembly
+            foldInTags x.cmdlineTags context assembly
 
 /// Produce an instance of the seamless assembly plugin with the provided extra argument processor.
 let createTaggingPlugin extraArgProcessor =
