@@ -16,14 +16,14 @@ open PluginTypes
 // ================================================================================================
 // Slice manipulation routines for getting from gene notation down to specific genomics coordinates
 // ================================================================================================
-let validateMods errorRef (where: AstTypes.SourcePosition) (mods: Mod list) =
+let validateMods errorRef (where: AstTypes.SourcePosition list) (mods: Mod list) =
     for m in mods do
         match m with
         | SLICE(s) ->
             if s.left.relTo = s.right.relTo && s.left.x > s.right.x then
                 // TODO: better to report coordinates of slice text rather than gene
                 failwithf "slice left %A greater than right %A %O in %s"
-                    s.left.x s.right.x where errorRef
+                    s.left.x s.right.x (AstTypes.formatSourcePositionList where) errorRef
         | _ -> () // No checks for now TODO
 
 /// Given a feature and a relative position, find the zero based physical

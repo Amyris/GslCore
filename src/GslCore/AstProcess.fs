@@ -332,25 +332,24 @@ let private inlineFunctionCall (s: FunctionInliningState) (node: AstNode) =
     | FunctionCall(fcw) when s.insideDefDepth = 0 -> // only do inlining if we're not inside a def
         let fc = fcw.x
 
-        match fcw.Pos with
-        | None ->
-            error (InternalError(TypeError)) "Expected function call to have a source position" node
-        | Some newPos ->
-            match s.defs.TryFind(fc.name) with
-            | Some(fd) ->
-                // Helper function to add new position to an AST node
-                let addPos node = 
-                    ok (pushPos newPos node)
+        match s.defs.TryFind(fc.name) with
+        | Some(fd) ->
+            // Helper function to add new position to an AST node
+            let addPositions node = 
+                ok (fcw.positions 
+                    |> List.rev
+                    |> List.fold (fun node position -> pushPos position node) node
+                    )
+                
+            // inline the args into the function call block
+            // this new block replaces the function call
+            checkArgs fd fc node
+            >>= inlinePassedArgs s.vars
+            |> lift AstTreeHead // needed to adapt to the map function
+            >>= map Serial TopDown addPositions
+            |> lift (fun treeHead -> treeHead.wrappedNode)
 
-                // inline the args into the function call block
-                // this new block replaces the function call
-                checkArgs fd fc node
-                >>= inlinePassedArgs s.vars
-                |> lift AstTreeHead // needed to adapt to the map function
-                >>= map Serial TopDown addPos
-                |> lift (fun treeHead -> treeHead.wrappedNode)
-
-            | None -> error UnresolvedFunction fc.name node
+        | None -> error UnresolvedFunction fc.name node
     | _ -> ok node
 
 let inlineFunctionCalls = foldmap Serial TopDown updateFunctionInliningState initialInliningState inlineFunctionCall

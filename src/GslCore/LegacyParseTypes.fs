@@ -52,7 +52,7 @@ type Mod =
 
 type PartIdLegacy = {id:string; mods:Mod list}
    
-type GenePart = {gene:string; mods:Mod list; where: SourcePosition}
+type GenePart = {gene:string; mods:Mod list; where: SourcePosition list}
 
 type GenePartWithLinker = {part:GenePart; linker:Linker option}
 type Part =
@@ -189,8 +189,7 @@ let private createLegacyPart part =
     | Gene(gw) ->
         convertMods part.x.mods
         >>= (fun mods ->
-            let where = match gw.positions with | hd::_tl -> hd | [] -> emptySourcePosition
-            let genePart = {gene = gw.x.gene; mods = mods; where = where}
+            let genePart = {gene = gw.x.gene; mods = mods; where = gw.positions}
             ok (GENEPART({part=genePart; linker=gw.x.linker})))
     | Marker(_) -> ok MARKERPART
     | InlineDna(s) -> ok (INLINEDNA(Dna(s.x, true, AllowAmbiguousBases)))

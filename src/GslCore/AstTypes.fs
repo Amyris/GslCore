@@ -34,6 +34,10 @@ type SourcePosition =
                 yield sprintf "%s^" (pad p.Column)
     }
 
+/// Expand possibly multiple levels of source positions into a formatted string
+let formatSourcePositionList (positions:SourcePosition list) =
+    String.Join("; ",positions |> List.map (fun p ->p.Format()))
+
 /// Interface type to allow generic retrieval of a source code position.
 type ISourcePosition =
     abstract member OptionalSourcePosition : SourcePosition list with get
@@ -94,11 +98,6 @@ let posBracketTokens left right : SourcePosition = {s = left.pos.s; e = right.po
 [<CustomEquality>][<NoComparison>]
 type Node<'T when 'T: equality> = {x: 'T; positions: SourcePosition list}
     with
-    member x.Pos = 
-        match x.positions with
-        | [] -> None
-        | hd::_ -> Some hd
-
     /// Override equality to ignore source code position.  We just care about semantic comparison.
     /// This is mostly to aid in testing.  We shouldn't need to be comparing generic AST nodes during parsing.
     override this.Equals other =
@@ -228,46 +227,8 @@ and AstNode =
     // to explode them into their outer contexts.
     | Splice of AstNode []
     with
-    /// Add a new position to this node.  This occurs during function expansion when an instance
-    /// of a function is created via a function call generating a new source position.
-    /// Get the line number for the AstNode.  Where multiple line numbers from function expansion
-    /// return the highest level call.
-    member x.pos =
-        match x with
-        | Int(nw) -> nw.Pos
-        | Float(nw) -> nw.Pos
-        | String(nw) -> nw.Pos
-        | Docstring(nw) -> nw.Pos
-        | TypedVariable(nw) -> nw.Pos
-        | TypedValue(nw) -> nw.Pos
-        | VariableBinding(nw) -> nw.Pos
-        | BinaryOperation(nw) -> nw.Pos
-        | Negation(nw) -> nw.Pos
-        | ParseRelPos(nw) -> nw.Pos
-        | RelPos(nw) -> nw.Pos
-        | Slice(nw) -> nw.Pos
-        | Mutation(nw) -> nw.Pos
-        | DotMod(nw) -> nw.Pos
-        | Part(nw) -> nw.Pos
-        | Marker(nw) -> nw.Pos
-        | PartId(nw) -> nw.Pos
-        | InlineDna(nw) -> nw.Pos
-        | InlineProtein(nw) -> nw.Pos
-        | HetBlock(nw) -> nw.Pos
-        | Gene(nw) -> nw.Pos
-        | L2Id(nw) -> nw.Pos
-        | L2Element(nw) -> nw.Pos
-        | L2Expression(nw) -> nw.Pos
-        | Roughage(nw) -> nw.Pos
-        | ParsePragma(nw) -> nw.Pos
-        | Pragma(nw) -> nw.Pos
-        | Block(nw) -> nw.Pos
-        | FunctionDef(nw) -> nw.Pos
-        | FunctionLocals(nw) -> nw.Pos
-        | FunctionCall(nw) -> nw.Pos
-        | Assembly(nw) -> nw.Pos
-        | ParseError(nw) -> nw.Pos
-        | Splice(_) -> None
+    /// Get most recent position (highest level in nested function expansion) for node.
+    member x.pos = x.positions |> List.tryHead
     /// Return list of all line numbers for the AstNode.  Where multiple line numbers due to function expansion
     /// the highest level call is first and lowest last.
     member x.positions =
@@ -648,7 +609,7 @@ let createMutation (s: PString) mutType =
 
 /// Create a top-level part.
 let createPart mods pragmas basePart =
-    Part({x = {basePart = basePart; mods = mods; pragmas = pragmas; fwd = true}; positions = basePart.pos |> Option.toList})
+    Part({x = {basePart = basePart; mods = mods; pragmas = pragmas; fwd = true}; positions = basePart.positions})
 
 /// Create a top-level part with empty collections and default values from a base part.
 let createPartWithBase = createPart [] []
