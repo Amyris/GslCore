@@ -134,7 +134,6 @@ knockout()"
         checkPosition a3.pos (19,9,19,22)
 
     [<Test>]
-    [<Ignore>] // See issue #15
     member __.TestNestedFunctionExpansionHasFourLineNumbers() =
 
         let assemblies = compileOne tripleNestedCallExample 
@@ -156,4 +155,12 @@ knockout()"
         printfn "coordinates for triple nested example:%A" coordsFormatted
         // Expect assembly 3 to have coordinates on line 19, 15, 8 and 4 (4 sets)
         // Due to bug/missing feature, it currently returns only 19 and 4, and test is marked ignore
-        Assert.AreEqual(4,assembly3.positions.Length)
+        match assembly3.positions with
+        | [ p1 ; p2 ; p3 ; p4 ] ->
+            checkPosition (Some p1) (19,9,19,22)
+            checkPosition (Some p2) (15,1,15,7)
+            checkPosition (Some p3) (8,0,8,4)
+            checkPosition (Some p4) (4,0,4,11)
+
+        | x ->
+            Assert.Fail (sprintf "expected 4 positions but got %d :\n %A" x.Length x)

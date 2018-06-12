@@ -94,11 +94,6 @@ let posBracketTokens left right : SourcePosition = {s = left.pos.s; e = right.po
 [<CustomEquality>][<NoComparison>]
 type Node<'T when 'T: equality> = {x: 'T; positions: SourcePosition list}
     with
-    member x.Pos = 
-        match x.positions with
-        | [] -> None
-        | hd::_ -> Some hd
-
     /// Override equality to ignore source code position.  We just care about semantic comparison.
     /// This is mostly to aid in testing.  We shouldn't need to be comparing generic AST nodes during parsing.
     override this.Equals other =
@@ -228,10 +223,7 @@ and AstNode =
     // to explode them into their outer contexts.
     | Splice of AstNode []
     with
-    /// Add a new position to this node.  This occurs during function expansion when an instance
-    /// of a function is created via a function call generating a new source position.
-    /// Get the line number for the AstNode.  Where multiple line numbers from function expansion
-    /// return the highest level call.
+    /// Get most recent position (highest level in nested function expansion) for node.
     member x.pos = x.positions |> List.tryHead
     /// Return list of all line numbers for the AstNode.  Where multiple line numbers due to function expansion
     /// the highest level call is first and lowest last.
