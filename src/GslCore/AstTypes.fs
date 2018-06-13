@@ -110,8 +110,8 @@ type Node<'T when 'T: equality> = {x: 'T; positions: SourcePosition list}
 
 /// Push a new source position onto stack of positions during function expansion
 /// with first (most recently pushed) value being highest level function call
-let pushPosNode (p:SourcePosition) (x:Node<'T>) =
-        {x with positions = p::x.positions}
+let prependPositionsNode (newPositions: SourcePosition list) (node: Node<'T>) =
+    {node with positions=newPositions@node.positions}
 
 /// Wrap a value in a NodeWrapper without source position.
 let nodeWrap x = {x = x; positions = []}
@@ -369,41 +369,41 @@ and Roughage = {locus: Node<L2Id> option; marker: Node<string> option; parts: No
 
 /// Helper function for pushing new source code positions onto stack during function expansion
 /// Most recently (first) postition refers to highest level function invocation.
-let pushPos (newPos:SourcePosition) (x:AstNode) =
+let prependPositionsAstNode (newPos:SourcePosition list) (x:AstNode) =
     match x with
-    | Int(nw) -> Int(pushPosNode newPos nw)
-    | Float(nw) -> Float(pushPosNode newPos nw)
-    | String(nw) -> String(pushPosNode newPos nw)
-    | Docstring(nw) -> Docstring(pushPosNode newPos nw)
-    | TypedVariable(nw) -> TypedVariable(pushPosNode newPos nw)
-    | TypedValue(nw) -> TypedValue(pushPosNode newPos nw)
-    | VariableBinding(nw) -> VariableBinding(pushPosNode newPos nw)
-    | BinaryOperation(nw) -> BinaryOperation(pushPosNode newPos nw)
-    | Negation(nw) -> Negation(pushPosNode newPos nw)
-    | ParseRelPos(nw) -> ParseRelPos(pushPosNode newPos nw)
-    | RelPos(nw) -> RelPos(pushPosNode newPos nw) 
-    | Slice(nw) -> Slice(pushPosNode newPos nw)
-    | Mutation(nw) -> Mutation(pushPosNode newPos nw)
-    | DotMod(nw) -> DotMod(pushPosNode newPos nw)
-    | Part(nw) -> Part(pushPosNode newPos nw)
-    | Marker(nw) -> Marker(pushPosNode newPos nw)
-    | PartId(nw) -> PartId(pushPosNode newPos nw)
-    | InlineDna(nw) -> InlineDna(pushPosNode newPos nw)
-    | InlineProtein(nw) -> InlineProtein(pushPosNode newPos nw)
-    | HetBlock(nw) -> HetBlock(pushPosNode newPos nw)
-    | Gene(nw) -> Gene(pushPosNode newPos nw)
-    | L2Id(nw) -> L2Id(pushPosNode newPos nw)
-    | L2Element(nw) -> L2Element(pushPosNode newPos nw)
-    | L2Expression(nw) -> L2Expression(pushPosNode newPos nw)
-    | Roughage(nw) -> Roughage(pushPosNode newPos nw)
-    | ParsePragma(nw) -> ParsePragma(pushPosNode newPos nw)
-    | Pragma(nw) -> Pragma(pushPosNode newPos nw)
-    | Block(nw) -> Block(pushPosNode newPos nw)
-    | FunctionDef(nw) -> FunctionDef(pushPosNode newPos nw)
-    | FunctionLocals(nw) -> FunctionLocals(pushPosNode newPos nw)
-    | FunctionCall(nw) -> FunctionCall(pushPosNode newPos nw)
-    | Assembly(nw) -> Assembly(pushPosNode newPos nw)
-    | ParseError(nw) -> ParseError(pushPosNode newPos nw)
+    | Int(nw) -> Int(prependPositionsNode newPos nw)
+    | Float(nw) -> Float(prependPositionsNode newPos nw)
+    | String(nw) -> String(prependPositionsNode newPos nw)
+    | Docstring(nw) -> Docstring(prependPositionsNode newPos nw)
+    | TypedVariable(nw) -> TypedVariable(prependPositionsNode newPos nw)
+    | TypedValue(nw) -> TypedValue(prependPositionsNode newPos nw)
+    | VariableBinding(nw) -> VariableBinding(prependPositionsNode newPos nw)
+    | BinaryOperation(nw) -> BinaryOperation(prependPositionsNode newPos nw)
+    | Negation(nw) -> Negation(prependPositionsNode newPos nw)
+    | ParseRelPos(nw) -> ParseRelPos(prependPositionsNode newPos nw)
+    | RelPos(nw) -> RelPos(prependPositionsNode newPos nw) 
+    | Slice(nw) -> Slice(prependPositionsNode newPos nw)
+    | Mutation(nw) -> Mutation(prependPositionsNode newPos nw)
+    | DotMod(nw) -> DotMod(prependPositionsNode newPos nw)
+    | Part(nw) -> Part(prependPositionsNode newPos nw)
+    | Marker(nw) -> Marker(prependPositionsNode newPos nw)
+    | PartId(nw) -> PartId(prependPositionsNode newPos nw)
+    | InlineDna(nw) -> InlineDna(prependPositionsNode newPos nw)
+    | InlineProtein(nw) -> InlineProtein(prependPositionsNode newPos nw)
+    | HetBlock(nw) -> HetBlock(prependPositionsNode newPos nw)
+    | Gene(nw) -> Gene(prependPositionsNode newPos nw)
+    | L2Id(nw) -> L2Id(prependPositionsNode newPos nw)
+    | L2Element(nw) -> L2Element(prependPositionsNode newPos nw)
+    | L2Expression(nw) -> L2Expression(prependPositionsNode newPos nw)
+    | Roughage(nw) -> Roughage(prependPositionsNode newPos nw)
+    | ParsePragma(nw) -> ParsePragma(prependPositionsNode newPos nw)
+    | Pragma(nw) -> Pragma(prependPositionsNode newPos nw)
+    | Block(nw) -> Block(prependPositionsNode newPos nw)
+    | FunctionDef(nw) -> FunctionDef(prependPositionsNode newPos nw)
+    | FunctionLocals(nw) -> FunctionLocals(prependPositionsNode newPos nw)
+    | FunctionCall(nw) -> FunctionCall(prependPositionsNode newPos nw)
+    | Assembly(nw) -> Assembly(prependPositionsNode newPos nw)
+    | ParseError(nw) -> ParseError(prependPositionsNode newPos nw)
     | Splice(_)  as x -> x // Slices are defined to have no position so don't try to update (see .pos below) 
 
 // ------ Active patterns on the AST of general interest ------

@@ -335,12 +335,8 @@ let private inlineFunctionCall (s: FunctionInliningState) (node: AstNode) =
         match s.defs.TryFind(fc.name) with
         | Some(fd) ->
             // Helper function to add new position to an AST node
-            let addPositions node = 
-                ok (fcw.positions 
-                    |> List.rev
-                    |> List.fold (fun node position -> pushPos position node) node
-                    )
-                
+            let addPositions (node:AstNode) = ok (prependPositionsAstNode fcw.positions node)
+
             // inline the args into the function call block
             // this new block replaces the function call
             checkArgs fd fc node
