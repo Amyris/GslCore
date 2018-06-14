@@ -7,6 +7,7 @@ open System.Reflection
 [<assembly: AssemblyDescriptionAttribute("Core library and basic plug-ins for the GSL compiler.")>]
 [<assembly: AssemblyVersionAttribute("0.4.33")>]
 [<assembly: AssemblyFileVersionAttribute("0.4.33")>]
+
 do ()
 
 module internal AssemblyVersionInformation =
