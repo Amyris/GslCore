@@ -1,3 +1,6 @@
+#### 0.4.36 - June 13th 2018
+* Demetrix production release for function line number tracking and tagging
+
 #### 0.4.35 - June 7th 2018
 * Demetrix production release for double slice bug fix and improved line numbers
 

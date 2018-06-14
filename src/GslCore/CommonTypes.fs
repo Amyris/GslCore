@@ -218,7 +218,9 @@ type DnaAssembly =
     pragmas: PragmaCollection;
     designParams: DesignParams;
     docStrings: string list;
-    materializedFrom: Assembly}
+    materializedFrom: Assembly
+    tags:Set<AssemblyTag>
+    }
     with
     member x.Sequence() =
         x.dnaParts

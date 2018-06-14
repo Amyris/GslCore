@@ -61,6 +61,7 @@ type Test() =
         designParams = DesignParams.initialDesignParams
         docStrings = []
         materializedFrom = emptyAssembly
+        tags=Set.empty
     }
 
     let runTest assembly expectedSource =

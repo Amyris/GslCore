@@ -584,4 +584,5 @@ let expandAssembly
      pragmas = a.pragmas;
      designParams = a.designParams;
      docStrings = a.docStrings;
-     materializedFrom = a}
+     materializedFrom = a
+     tags = Set.empty}
