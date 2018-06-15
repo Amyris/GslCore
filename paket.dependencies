@@ -8,7 +8,7 @@ nuget FsLexYacc
 nuget FsLexYacc.Runtime
 nuget FParsec
 nuget MathNet.Numerics
-nuget FSharp.Collections.ParallelSeq >= 1.1.0
+nuget FSharp.Collections.ParallelSeq
 
 group Build
   source https://nuget.org/api/v2
