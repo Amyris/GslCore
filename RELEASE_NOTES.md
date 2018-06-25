@@ -1,6 +1,12 @@
 #### 0.4.39 - June 25th 2018
 * Demetrix production release - patch for missing dna source fields
 
+### 0.4.38 - June 15th 2018
+* Demetrix production release to use MinimumFromLockFile = true to build Nuget package 
+
+### 0.4.37 - June 15th 2018
+* Demetrix production release to fix FSharp.Collections.ParallelSeq dependency version
+
 #### 0.4.36 - June 13th 2018
 * Demetrix production release for function line number tracking and tagging
 

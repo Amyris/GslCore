@@ -176,9 +176,11 @@ Target "SourceLink" (fun _ ->
 
 Target "NuGet" (fun _ ->
     Paket.Pack(fun p ->
+        printfn "\n\nNuGet target defaults: %A\n\n" p
         { p with
             OutputPath = "bin"
             Version = release.NugetVersion
+            MinimumFromLockFile = true
             ReleaseNotes = toLines release.Notes})
 )
 
