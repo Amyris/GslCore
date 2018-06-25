@@ -202,7 +202,7 @@ let rec countRyseLinkersNeeded printVerbose total (l:DNASlice list) =
 let mapRyseLinkers
         (opts:ParsedOptions)
         (hutchAncillary : Map<int,HutchRabit>)
-        (ryseLinkers:Map<string,RYSELinker>)
+        (getLinker: string -> RYSELinker)
         (aIn : DnaAssembly) =
 
     let printVerbose msg =
