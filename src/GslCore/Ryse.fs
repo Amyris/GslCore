@@ -71,7 +71,7 @@ let loadThumperRef (f:string) =
             None)
     |> Seq.map (fun hr -> (hr.id,hr) ) |> Map.ofSeq
 
-
+// FIXME: this needs to be injected; moreover, none of the Thumper support belongs in GslCore.
 let thumper = "http://thumper.amyris.local"
 
 // FIXME: this cache is global and mutable and can become stale when GSLC is embedded in a long-
