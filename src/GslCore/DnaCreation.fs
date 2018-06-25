@@ -261,13 +261,20 @@ let expandGenePart
     (rgs:GenomeDefs)
     (library: SequenceLibrary)
     (a:Assembly)
-    dnaSource
+    specifiedDnaSource
     (ppp:PPP)
     (gp:GenePartWithLinker) =
 
     match gp.linker with
     | None -> () // No linkers were present
     | Some(l) -> checkLinker l // Test the linkers
+
+    // If the dna source is empty, then we are going to pull the DNA
+    // part from the default reference genome, so we should make the
+    // dnaSource field reflect this
+    let dnaSource = 
+        if specifiedDnaSource = "" then defaultRefGenome
+        else specifiedDnaSource
 
     // Check the genes are legal
     //let prefix = gp.part.gene.[0]
