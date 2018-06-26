@@ -84,7 +84,7 @@ let checkParseError node =
 
 let validatePart op node =
     match node with
-    | Part({x=pp; pos=_}) -> op pp
+    | Part({x=pp; positions=_}) -> op pp
     | _ -> good
 
 // FIXME: this may be either a step too far, or just on example of something we need a lot more of
@@ -305,7 +305,7 @@ let private localVarFromTypedValueAndName (vb: VariableBindings) (name, node) =
         AstTreeHead(v)
         |> map Serial TopDown (resolveVariable Strict vb)
         >>= (fun (AstTreeHead(newVal)) ->
-            ok (VariableBinding({x={name=name; varType = varType; value = newVal}; pos=tvw.pos})))
+            ok (VariableBinding({x={name=name; varType = varType; value = newVal}; positions=tvw.positions})))
     | x -> internalTypeMismatch (Some "function call") "typed value" x
 
 
@@ -326,18 +326,25 @@ let private inlinePassedArgs (vb: VariableBindings) (fd, fc: FunctionCall) =
         | _ -> error (InternalError(TypeError)) "No function locals node found in function defintion block." fd.body
     | x -> internalTypeMismatch (Some "function body") "Block" x
 
-
 /// Replace a function call with the contents of a function definition.
 let private inlineFunctionCall (s: FunctionInliningState) (node: AstNode) =
     match node with
     | FunctionCall(fcw) when s.insideDefDepth = 0 -> // only do inlining if we're not inside a def
         let fc = fcw.x
+
         match s.defs.TryFind(fc.name) with
         | Some(fd) ->
+            // Helper function to add new position to an AST node
+            let addPositions (node:AstNode) = ok (prependPositionsAstNode fcw.positions node)
+
             // inline the args into the function call block
             // this new block replaces the function call
             checkArgs fd fc node
             >>= inlinePassedArgs s.vars
+            |> lift AstTreeHead // needed to adapt to the map function
+            >>= map Serial TopDown addPositions
+            |> lift (fun treeHead -> treeHead.wrappedNode)
+
         | None -> error UnresolvedFunction fc.name node
     | _ -> ok node
 
@@ -362,7 +369,7 @@ let private reduceMathExpression node =
     let negationErrMsg = wrongTypeErrorMsg "negation"
 
     match node with
-    | BinaryOperation({x=bo; pos=pos}) ->
+    | BinaryOperation({x=bo; positions=pos}) ->
         match bo.left, bo.right with
         | Int(l), Int(r) ->
             // two concrete integers, we can operate on them
@@ -372,7 +379,7 @@ let private reduceMathExpression node =
                 | Subtract -> l.x - r.x
                 | Multiply -> l.x * r.x
                 | Divide -> l.x / r.x
-            ok (Int({x=result; pos=pos}))
+            ok (Int({x=result; positions=pos}))
         // If we don't have two ints (because one or both are still variables), we can't reduce but
         // this is an OK state of affairs.
         | AllowedInMathExpression _, AllowedInMathExpression _ -> ok node
@@ -384,14 +391,14 @@ let private reduceMathExpression node =
         | x, y ->
             error TypeError (binOpErrMsg x) x
             |> mergeMessages [errorMessage TypeError (binOpErrMsg y) y]
-    | Negation({x=inner; pos=pos}) ->
+    | Negation({x=inner; positions=pos}) ->
         match inner with
-        | Int({x=i; pos=_}) ->
+        | Int({x=i; positions=_}) ->
             let v = -1 * i
-            ok (Int({x=v; pos=pos}))
-        | Float({x=i; pos=_}) ->
+            ok (Int({x=v; positions=pos}))
+        | Float({x=i; positions=_}) ->
             let v = -1.0 * i
-            ok (Float({x=v; pos=pos}))
+            ok (Float({x=v; positions=pos}))
         // If we have a variable, it should be numeric.  If so, we're ok
         | IntVariable _ | FloatVariable _ -> ok node
         // Non-numeric variable.  We're in trouble.
@@ -413,11 +420,11 @@ let private buildRelativePosition node =
     | ParseRelPos(rpw) ->
         let prp = rpw.x
 
-        let buildNode i e = ok (RelPos({x={x=i; relTo=e}; pos=rpw.pos}))
+        let buildNode i e = ok (RelPos({x={x=i; relTo=e}; positions=rpw.positions}))
 
         // make sure we have a real value to work with
         match prp.i with
-        | Int({x=i; pos=_}) -> ok i
+        | Int({x=i; positions=_}) -> ok i
         | x -> internalTypeMismatch (Some "relative position building") "Int" x
         >>= (fun i ->
             match prp.qualifier with
@@ -506,7 +513,7 @@ let private compilePragma (legalCapas: Capabilities) context node =
         | String(sw) -> ok sw.x
         | Int(iw) -> ok (iw.x.ToString())
         | Float(fw) -> ok (fw.x.ToString())
-        | TypedVariable({x=(name, _); pos=_}) ->
+        | TypedVariable({x=(name, _); positions=_}) ->
             errorf (InternalError(UnresolvedVariable)) "Unresolved variable in pragma: '%s'" name a
         | x -> internalTypeMismatch (Some "pragma value") "String, Int, or Float" x
 
@@ -527,7 +534,7 @@ let private compilePragma (legalCapas: Capabilities) context node =
         >>= checkDeprecated
         >>= checkScope
         >>= checkCapa
-        >>= (fun builtPragma -> ok (Pragma({x=builtPragma; pos=pw.pos})))
+        >>= (fun builtPragma -> ok (Pragma({x=builtPragma; positions=pw.positions})))
     | _ -> ok node
             
 /// Build genuine pragmas from reduced parsed pragmas.
@@ -963,7 +970,7 @@ let private expandRoughage (rw: Node<Roughage>) =
     // For roughage, if no marker is specified, it defaults to ura3
     let marker = match r.HasMarker with | None -> "ura3" | Some(x) -> markerMapping x
 
-    let markerPragma = Pragma({x = {definition = markersetPragmaDef; args = [marker]}; pos = rw.pos})
+    let markerPragma = Pragma({x = {definition = markersetPragmaDef; args = [marker]}; positions = rw.positions})
 
     let l2Elements =
         [for p in r.parts do
@@ -977,7 +984,7 @@ let private expandRoughage (rw: Node<Roughage>) =
     let l2Expression = createL2Expression l2Locus l2Elements
 
     // wrap the marker pragma and the L2 line up in a block
-    Block({x=[markerPragma; l2Expression]; pos=None})
+    Block({x=[markerPragma; l2Expression]; positions=[]})
 
 let private expandRoughageLine node =
     match node with

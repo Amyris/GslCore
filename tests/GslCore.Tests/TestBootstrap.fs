@@ -33,7 +33,7 @@ type TestBootstrapping() =
     let testAssembly source =
         let source = GslSourceCode source
         source
-        |> bootstrapPhase1NoCapas None
+        |> bootstrapPhase1NoCapas []
         |> lift bootstrapToTree
         |> failIfBad (Some(source))
         |> returnOrFail

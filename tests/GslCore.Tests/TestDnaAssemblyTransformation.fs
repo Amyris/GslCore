@@ -22,7 +22,7 @@ type Test() =
         designParams = DesignParams.initialDesignParams
         capabilities = Set.empty
         docStrings = []
-        sourcePosition = None
+        sourcePosition = []
     }
 
     let testSlice pragmas = {
