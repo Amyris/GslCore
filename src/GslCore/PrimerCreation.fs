@@ -906,17 +906,32 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
             if slice.dna.Length-1-n<0 then
                 failwithf "in cutRight dna slice %s length is %d, cut is %d"
                     slice.description  slice.dna.Length n
-            {slice with
-                   sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
-                   dna = slice.dna.[0..slice.dna.Length-1-n]}
+            // work out which end of the original source coordinate to adjust based on orientation of the
+            // part.  cut 'right' refers to right end of part as placed.
+            if slice.destFwd then
+                {slice with
+                       sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
+                       dna = slice.dna.[0..slice.dna.Length-1-n]}
+            else
+                {slice with
+                       sourceFr = slice.sourceFr - (n*1<ZeroOffset>);
+                       dna = slice.dna.[0..slice.dna.Length-1-n]}
 
         let cutLeft (slice:DNASlice) n =
             if slice.dna.Length-1-n<0 then
                 failwithf "in cutLeft dna slice %s length is %d, cut is %d"
                     slice.description  slice.dna.Length n
-            {slice with
-                   sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
-                   dna = slice.dna.[n..slice.dna.Length-1]}
+
+            // work out which end of the original source coordinate to adjust based on orientation of the
+            // part.  cut 'left' refers to left end of part as placed.
+            if slice.destFwd then
+                {slice with
+                       sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
+                       dna = slice.dna.[n..slice.dna.Length-1]}
+            else
+                {slice with
+                       sourceTo = slice.sourceTo + (n*1<ZeroOffset>);
+                       dna = slice.dna.[n..slice.dna.Length-1]}
 
         match l with
         | [] ->
