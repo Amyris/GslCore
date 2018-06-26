@@ -1,3 +1,6 @@
+#### 0.4.40 - June 25th 2018
+* Demetrix production release - fix for wrong destFr/destTo coords in rev parts with variable ends
+
 #### 0.4.39 - June 25th 2018
 * Demetrix production release - patch for missing dna source fields
 
