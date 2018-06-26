@@ -899,17 +899,32 @@ let cutRight (slice:DNASlice) n =
     if slice.dna.Length-1-n<0 then
         failwithf "in cutRight dna slice %s length is %d, cut is %d"
             slice.description  slice.dna.Length n
-    {slice with
-           sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
-           dna = slice.dna.[0..slice.dna.Length-1-n]}
+    // work out which end of the original source coordinate to adjust based on orientation of the
+    // part.  cut 'right' refers to right end of part as placed.
+    if slice.destFwd then
+        {slice with
+               sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
+               dna = slice.dna.[0..slice.dna.Length-1-n]}
+    else
+        {slice with
+               sourceFr = slice.sourceFr - (n*1<ZeroOffset>);
+               dna = slice.dna.[0..slice.dna.Length-1-n]}
 
 let cutLeft (slice:DNASlice) n =
     if slice.dna.Length-1-n<0 then
         failwithf "in cutLeft dna slice %s length is %d, cut is %d"
             slice.description  slice.dna.Length n
-    {slice with
-           sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
-           dna = slice.dna.[n..slice.dna.Length-1]}
+
+    // work out which end of the original source coordinate to adjust based on orientation of the
+    // part.  cut 'left' refers to left end of part as placed.
+    if slice.destFwd then
+        {slice with
+               sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
+               dna = slice.dna.[n..slice.dna.Length-1]}
+    else
+        {slice with
+               sourceTo = slice.sourceTo + (n*1<ZeroOffset>);
+               dna = slice.dna.[n..slice.dna.Length-1]}
 
 /// Recursively process an assembly, tracking the previous and remaining DNA slices
 /// emitting an output set of DNA slices and a diverged primer pair list
@@ -1474,7 +1489,7 @@ let rec procAssembly
                 // to handle this case.
                 // Assume it's a stand-alone inline sequence that could be made with a pair of primers
                 printfn "procAssembly:  final sliceOut' prev empty branch"
-                if sliceOut = [] then // Assume it's a stand-alone inline sequence that could be made with a pair of primers
+                if List.isEmpty sliceOut then // Assume it's a stand-alone inline sequence that could be made with a pair of primers
                     [last] // Fake slice for now.. TODO TODO
                 else failwith "expected preceding linker adjacent to terminal inline sequence"
             | p::_ -> 
