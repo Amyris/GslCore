@@ -893,37 +893,55 @@ let nameFromSlice (s:DNASlice) =
         else
             s.description
 
+let checkSliceCoods(slice:DNASlice) n =
+    if slice.dna.Length-1-n<0 then
+        failwithf "in cutX dna slice %s length is %d, cut is %d"
+            slice.description  slice.dna.Length n
+
+    if slice.sourceFr > slice.sourceTo then
+        failwithf "slice %s has sourceFwd=Y sliceFr=%d sliceTo=%d.  sliceFr should be less than sliceTo" 
+            slice.description 
+            slice.sourceFr 
+            slice.sourceTo
+
 // Two functions for cutting left or right into a slice, used when those slice ends were approximate
 // and primer design ended up chopping into them.
-let cutRight (slice:DNASlice) n =
-    if slice.dna.Length-1-n<0 then
-        failwithf "in cutRight dna slice %s length is %d, cut is %d"
-            slice.description  slice.dna.Length n
+let cutRight verbose (slice:DNASlice) n =
+    checkSliceCoods slice n
     // work out which end of the original source coordinate to adjust based on orientation of the
     // part.  cut 'right' refers to right end of part as placed.
-    if slice.destFwd then
+    if verbose then
+        printfn "procAssembly: cutRight moving sourceTo for %s left by %d sourceFwd=%s destFwd=%s" 
+            slice.description n (if slice.sourceFwd then "Y" else "N") (if slice.destFwd then "Y" else "N")
+    if (slice.sourceFwd && slice.destFwd) ||
+        ((not slice.sourceFwd) && (not slice.destFwd))
+    then
         {slice with
                sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
                dna = slice.dna.[0..slice.dna.Length-1-n]}
     else
         {slice with
-               sourceFr = slice.sourceFr - (n*1<ZeroOffset>);
+               sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
                dna = slice.dna.[0..slice.dna.Length-1-n]}
 
-let cutLeft (slice:DNASlice) n =
-    if slice.dna.Length-1-n<0 then
-        failwithf "in cutLeft dna slice %s length is %d, cut is %d"
-            slice.description  slice.dna.Length n
+let cutLeft verbose (slice:DNASlice) n =
+    checkSliceCoods slice n
 
     // work out which end of the original source coordinate to adjust based on orientation of the
-    // part.  cut 'left' refers to left end of part as placed.
-    if slice.destFwd then
+    // part in the genome.  cut 'left' refers to left end of part as placed.
+    // sourceFr and sourceTo are the 5' and 3' ends of the gene
+
+    if verbose then
+        printfn "procAssembly: cutLeft moving sourceFr for %s right by %d sourceFwd=%s destFwd=%s" 
+            slice.description n (if slice.sourceFwd then "Y" else "N") (if slice.destFwd then "Y" else "N")
+    if (slice.sourceFwd && slice.destFwd) ||
+       ((not slice.sourceFwd) && (not slice.destFwd)) then
         {slice with
                sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
                dna = slice.dna.[n..slice.dna.Length-1]}
     else
         {slice with
-               sourceTo = slice.sourceTo + (n*1<ZeroOffset>);
+               sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
                dna = slice.dna.[n..slice.dna.Length-1]}
 
 /// Recursively process an assembly, tracking the previous and remaining DNA slices
@@ -980,7 +998,7 @@ let rec procAssembly
         // If we stitched fwd/rev off of linker hd then the previous and next elements (prev) and next
         // might need to be modified (chopped) if the ends were flexible
         if verbose then printfn "procAssembly: fusion slice, cutting offsetF=%d offsetR=%d" offsetF offsetR
-        let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight p offsetR)::sliceOut
+        let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight verbose p offsetR)::sliceOut
 
         procAssembly
             verbose
@@ -989,7 +1007,7 @@ let rec procAssembly
             (hd::prev)
             sliceOut'
             (DPP({fwd = primerF ; rev = primerR ; name = next.sliceName})::primersOut)
-            ((cutLeft next offsetF)::tl) // Remove bases from the next slice if we moved the primer
+            ((cutLeft verbose next offsetF)::tl) // Remove bases from the next slice if we moved the primer
     // linker::next   or non-rabitend-inline::next
     | hd::next::tl when
         (hd.sliceType = LINKER) ||
@@ -1086,7 +1104,7 @@ let rec procAssembly
 
             if verbose then printfn "short inline case, cutting offsetR=%d" offsetR
 
-            let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight p offsetR)::(List.tail sliceOut)
+            let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight verbose p offsetR)::(List.tail sliceOut)
 
             assert(primerF'.lenLE(dp.pp.maxLength))
             assert(primerR'.lenLE(dp.pp.maxLength))
@@ -1098,7 +1116,7 @@ let rec procAssembly
                 (hd::prev)
                 (hd::sliceOut')
                 (DPP({fwd = primerF'; rev = primerR'; name = "shortinline"+hd.sliceName})::primersOut)
-                ((cutLeft next offsetF)::tl) // Remove bases from the next slice if we moved the primer
+                ((cutLeft verbose next offsetF)::tl) // Remove bases from the next slice if we moved the primer
         else
             if verbose then
                 printfn "procAssembly: ... longcase (DPP)"
@@ -1366,16 +1384,17 @@ let rec procAssembly
 
                     // new sliceout starts with p1, the small skipped inline slice, then p2 cut to reflect the primer adjusted boundary
                     // finally we include the remainder of the slice out
-                    p1::(cutRight p2 offsetR)::tl 
+                    p1::(cutRight verbose p2 offsetR)::tl 
                 | p::_ -> // simple prev case, cut to any offset we generated
                     if verbose then printfn "cutRight p=%s offsetR=%d" p.description offsetR
                     //(cutRight p offsetR)::sliceOut
-                    (cutRight p offsetR)::(List.tail sliceOut)
+                    (cutRight verbose p offsetR)::(List.tail sliceOut)
 
-            let choppedD =  // The next nice might have a flexible end in which case we need to respect where the primer chopped it
-                            let chopped = cutLeft d offsetF
+            let choppedD =  // The next slice might have a flexible end in which case we need to respect where the primer chopped it
+                            let chopped = cutLeft verbose d offsetF
                             if verbose then 
-                                printfn "chop d to %d\ndpre=%s\ndPost=%s" 
+                                printfn "chop d %s to %d\ndpre=%s\ndPost=%s" 
+                                    d.description
                                     offsetF
                                     d.dna.str
                                     chopped.dna.str
@@ -1499,7 +1518,7 @@ let rec procAssembly
                 // 4) reverse list to get natural forward order since we pushed results on successively
                 if verbose then
                     printfn "procAssembly:  potentially trimming p=%s last=%s" p.description last.description
-                last::(cutRight p offsetR)::(List.tail sliceOut)  
+                last::(cutRight verbose p offsetR)::(List.tail sliceOut)  
                 |> List.rev // Finally reverse the slice out list since we pushed it as we created it
 
         if verbose then
@@ -1606,7 +1625,7 @@ let rec procAssembly
 
             // If we stitched fwd/rev off of linker hd then the previous and next elements (prev) and next
             // might need to be modified (chopped) if the ends were flexible
-            let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight p offsetR)::(List.tail sliceOut)
+            let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight verbose p offsetR)::(List.tail sliceOut)
 
             let fusionSlice = {     
                 id = None
