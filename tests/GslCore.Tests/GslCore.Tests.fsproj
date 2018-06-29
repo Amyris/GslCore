@@ -14,6 +14,7 @@
     <Compile Include="TestParsing.fs" />
     <Compile Include="TestPragmas.fs" />
     <Compile Include="TestL2Expansion.fs" />
+    <Compile Include="AssemblyTestSupport.fs" />
     <Compile Include="TestLineNumbers.fs" />
     <Compile Include="TestAst.fs" />
     <Compile Include="TestBootstrap.fs" />
@@ -23,6 +24,7 @@
     <Compile Include="TestDnaAssemblyTransformation.fs" />
     <Compile Include="TestTagging.fs" />
     <Compile Include="TestProcAssembly.fs" />
+    <Compile Include="TestDnaMaterialization.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\GslCore\GslCore.fsproj" />
