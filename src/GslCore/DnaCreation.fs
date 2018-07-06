@@ -406,29 +406,32 @@ let expandGenePart
         // FinalSliceWithApprox is a gene relative coordinate system, but we
         // need genomic coordinates for the gene
 
-        // Left is the genomic left end of the element
-        let left = adjustToPhysical feat finalSliceWithApprox.left
-        // Right is the genomic right end of the element
-        let right = adjustToPhysical feat finalSliceWithApprox.right
+        /// fivePrime is the genomic start of the element (can be > stop)
+        let fivePrime = adjustToPhysical feat finalSliceWithApprox.left 
+        /// threePrime is the genomic end of the element
+        let threePrime = adjustToPhysical feat finalSliceWithApprox.right 
+
+        assert((feat.fwd&&fivePrime<=threePrime) || (not feat.fwd && fivePrime>=threePrime))
 
         if verbose then
             printf "log: gene: %s %d %d %s\n"
                 feat.gene feat.l feat.r (if feat.fwd then "fwd" else "rev")
-            printf "log: prefinal: %s %A %A\n" feat.gene left right
+            printf "log: prefinal: %s %A %A\n" feat.gene fivePrime threePrime
 
         // One final adjustment needed.  We have defined left and right relative
         // to the gene, but if the gene is on the crick strand, we need to both
         // flip the coordinates and reverse complement the resulting DNA to keep
         // it oriented with the construction orientation.
 
-        if (left > right && feat.fwd) || (right>left && (not feat.fwd)) then
+        if (fivePrime > threePrime && feat.fwd) || (threePrime>fivePrime && (not feat.fwd)) then
             failwithf
                 "slice results in negatively lengthed DNA piece for %s\n"
                 (gp.part.gene + (printSlice finalSlice))
 
-        /// left' is the genomic coordinate of the start of the element (i.e gene upstream)
-        let left', right' = if feat.fwd then left, right else right, left
+        /// left' is the genomic coordinate of the genomic left
+        let left', right' = if feat.fwd then fivePrime, threePrime else threePrime, fivePrime 
         if verbose then printf "log: final: %s %A %A\n" feat.gene left' right'
+        assert(left' <= right')
 
         // TOO BLUNT gp.part.gene = "gURA3"
         // TODO: hard coded detection of split marker
@@ -494,8 +497,10 @@ let expandGenePart
          uri = getUri ppp;
          dna = dna;
          sourceChr = feat.chr |> string;
-         sourceFr = (if ppp.fwd then left' else right'); // 5' end of gene element in the genome
-         sourceTo = (if ppp.fwd then right' else left'); // 3' end of gene element in the genome
+         /// NB: sourceFr is the origin of the left hand end of the placed part in final part orientation
+         sourceFr = left'
+         /// NB: sourceTo is the origin of the right hand end of the placed part in final part orientation
+         sourceTo = right'
          sourceFwd = feat.fwd;
          amplified = true;
          template = Some dna; // This is what we are expecting to amplify from genome
@@ -520,7 +525,6 @@ let expandGenePart
          breed = breed;
          materializedFrom = Some(ppp);
          annotations = [Orf(orfAnnotation)]}
-
 /// Take a parsed assembly definition and translate it
 /// to underlying DNA pieces, checking the structure in the process.
 /// Raises an exception on error.

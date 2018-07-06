@@ -1,3 +1,3 @@
 id	type	qualifier	systematic	gene	aliases	chromname	?	chrom#	from	to	strand				Notes
-ABC1234	gene	?	ABC1234	ABC1	FOO,BAR	chromosome 1		1	500	799	C				Made up gene that's on reverse strand
+ABC1234	gene	?	ABC1234	ABC1	FOO,BAR	chromosome 1		1	600	899	C				Made up gene that's on reverse strand
 YOL086C	gene	?	YOL086C	ADH1	ADH1,ADC1,alcohol dehydrogenase ADH1	chromosome 1		1	1000	2046	W				Alcohol dehydrogenase; fermentative isozyme active as homo- or heterotetramers; required for the reduction of acetaldehyde to ethanol, the last step in the glycolytic pathway; ADH1 has a paralog, ADH5, that arose from the whole genome duplication

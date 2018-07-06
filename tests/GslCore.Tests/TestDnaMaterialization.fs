@@ -6,13 +6,14 @@ open Amyris.Bio.biolib
 open gslcProcess
 open LegacyParseTypes
 open commonTypes
-open LexAndParse
+open AstTypes
 open pragmaTypes
 open Amyris.Dna
 open Amyris.ErrorHandling
 open constants
 open DesignParams
 open RefGenome
+open AssemblyTestSupport
 
 
 
@@ -70,7 +71,7 @@ type DnaMaterialization() =
         |> snd
 
     /// retrieve one part and check the coordinates match the DNA returned independently
-    let checkOne gp part ppp =
+    let checkOne gp ppp flip =
         let dna =
             DnaCreation.expandGenePart 
                 verbose
@@ -81,8 +82,11 @@ type DnaMaterialization() =
                 ppp
                 gp
 
-        let fromDna = testGenome2Chrom1.[dna.sourceFr/1<ZeroOffset>..dna.sourceTo/1<ZeroOffset>]
-        Assert.AreEqual(fromDna,dna.dna.str)
+        let left = min dna.sourceFr dna.sourceTo
+        let right = max dna.sourceFr dna.sourceTo
+
+        let fromDna = testGenome2Chrom1.[left/1<ZeroOffset>..right/1<ZeroOffset>]
+        Assert.AreEqual(fromDna,(if flip then dna.dna.RevComp() else dna.dna).str)
 
     [<SetUp>]
     member __.setupPragmas() =
@@ -91,10 +95,51 @@ type DnaMaterialization() =
         pragmaTypes.finalizePragmas []
 
     [<Test>]
-    member __.CheckFromCoords() =
+    /// fwd gene in genome used in fwd orientation
+    member __.CheckFromCoordsFwdGeneFwd() =
 
         let gp:GenePartWithLinker = {part = tADH1; linker = None}
-        let part = GENEPART gp
-        let ppp:PPP = { part = part; pr = PragmaCollection(Map.empty); fwd = true}
+        let ppp:PPP = { part = GENEPART gp; pr = PragmaCollection(Map.empty); fwd = true}
 
-        checkOne gp part ppp
+        checkOne gp ppp false
+
+    [<Test>]
+    /// rev gene in genome used in fwd orientation
+    member __.CheckFromCoordsRevGeneFwd() =
+
+        let gp:GenePartWithLinker = {part = tABC1; linker = None}
+        let ppp:PPP = { part = GENEPART gp; pr = PragmaCollection(Map.empty); fwd = true}
+
+        checkOne gp ppp true
+
+    [<Test>]
+    /// fwd gene in genome used in rev orientation
+    member __.CheckFromCoordsFwdGeneRev() =
+
+        let gp:GenePartWithLinker = {part = tADH1; linker = None}
+        let ppp:PPP = { part = GENEPART gp; pr = PragmaCollection(Map.empty); fwd = false} // reverse usage
+
+        checkOne gp ppp true
+
+    [<Test>]
+    /// rev gene in genome used in rev orientation
+    member __.CheckFromCoordsRevGeneRev() =
+
+        let gp:GenePartWithLinker = {part = tABC1; linker = None}
+        let ppp:PPP = { part = GENEPART gp; pr = PragmaCollection(Map.empty); fwd = false} // reverse usage
+
+        checkOne gp ppp false
+
+
+    [<Test>]
+    member __.CheckFromCoordsProcAssembly() =
+        let assembly =
+            compileOne "#refgenome TestGenome2
+tADH1"
+            |> List.head
+
+        match assembly with
+        | Assembly nodes ->
+            printfn "XXX: %A" nodes
+            ()
+        | _ -> failwithf "expected assembly node"
