@@ -52,63 +52,58 @@ let adjustToPhysical (feat:sgd.Feature) (f:RelPos) =
 /// Transform all non gXXX forms of gene into gXX forms.
 let translateGenePrefix (pragmas:PragmaCollection) (gd : GenomeDef) (gPart : StandardSlice) =
     match gPart with
-    | PROMOTER ->   
-        { left = { x = match pragmas.TryFind "promlen"  with
-                        | None -> -gd.getPromLen() 
-                        | Some p -> p.args.[0] |> int |> (*)-1<OneOffset> ;  
-                   relTo = FivePrime
-                 };
+    | PROMOTER ->
+        let leftPos =
+            match pragmas.TryGetOne "promlen" with
+            | None -> -gd.getPromLen() 
+            | Some p -> (int p) * -1<OneOffset> 
+        {left = {x = leftPos; relTo = FivePrime};
          lApprox = true;
          rApprox = false;
-         right = { x = -1<OneOffset>; relTo = FivePrime } 
-        }
+         right = {x = -1<OneOffset>; relTo = FivePrime}}
     | UPSTREAM ->
-        {left = {x = -gd.getFlank(); relTo = FivePrime};
-         lApprox = true;
-         rApprox = false;
-         right = { x = -1<OneOffset>; relTo = FivePrime } }
+       {left = {x = -gd.getFlank(); relTo = FivePrime};
+        lApprox = true;
+        rApprox = false;
+        right = {x = -1<OneOffset>; relTo = FivePrime}}
     | TERMINATOR ->
+        let rightPos =
+            match pragmas.TryGetOne "termlen" with
+            | None -> gd.getTermLen() 
+            | Some p -> (int p) * 1<OneOffset> 
         {left = {x = 1<OneOffset>; relTo = ThreePrime};
          lApprox = false;
          rApprox = true;
-         right = { x = match pragmas.TryFind "termlen"  with
-                        | None -> gd.getTermLen() 
-                        | Some p -> p.args.[0] |> int |> (*)1<OneOffset> ; 
-                   relTo = ThreePrime 
-                  }
-        }
+         right = {x = rightPos; relTo = ThreePrime}}
     | DOWNSTREAM ->
         {left = {x = 1<OneOffset>; relTo = ThreePrime};
          lApprox = false;
          rApprox = true;
-         right = { x = gd.getFlank(); relTo = ThreePrime } }
+         right = {x = gd.getFlank(); relTo = ThreePrime}}
     | FUSABLEORF ->
         {left = {x = 1<OneOffset>; relTo = FivePrime};
          lApprox = false;
          rApprox = false;
-         right = { x = -4<OneOffset>; relTo = ThreePrime } }
+         right = {x = -4<OneOffset>; relTo = ThreePrime}}
     | ORF ->
         {left = {x = 1<OneOffset>; relTo = FivePrime};
          lApprox = false;
          rApprox = false;
-         right = { x = -1<OneOffset>; relTo = ThreePrime } }
+         right = {x = -1<OneOffset>; relTo = ThreePrime}}
     | GENE ->
         {left = {x = 1<OneOffset>; relTo = FivePrime};
          lApprox = false;
          rApprox = false;
-         right = { x = -1<OneOffset>; relTo = ThreePrime } }
+         right = {x = -1<OneOffset>; relTo = ThreePrime}}
     | MRNA ->
+        let rightPos =
+            match pragmas.TryGetOne "termlenmrna"  with
+            | None -> gd.getTermLenMRNA() 
+            | Some p -> (int p) * 1<OneOffset>
         {left = {x = 1<OneOffset>; relTo = FivePrime};
          lApprox = false;
          rApprox = true;
-         right = { x = 
-                    match pragmas.TryFind "termlenmrna"  with
-                    | None -> gd.getTermLenMRNA() 
-                    | Some p -> p.args.[0] |> int |> (*)1<OneOffset>
-                 ; relTo = ThreePrime 
-                 } 
-        }
-
+         right = {x = rightPos; relTo = ThreePrime}}
 
 /// Translate gene part label.  Raises an exception for errors.
 let lookupGenePart errorDescription prefix (modList:Mod list) =
@@ -519,8 +514,6 @@ let expandAssembly
         seq {
             // NOTE: have access to part.pragmas to the extent they influence generation
             for ppp in pppList do
-                //let sliceName = getSliceName ppp
-
                 let dnaSource =
                     match ppp.pr.TryGetOne("dnasrc") with
                     | Some(d) -> d
@@ -538,12 +531,11 @@ let expandAssembly
                 | MARKERPART ->
                     // Choose provider
                     let providers =
-                        markerProviders |>
-                            List.choose (fun provider ->
-                                                    match provider.ScoreJob a.capabilities with
-                                                        | None -> None
-                                                        | Some(score) -> Some (score,provider)
-                                        )
+                        markerProviders
+                        |> List.choose (fun provider ->
+                            match provider.ScoreJob a.capabilities with
+                            | None -> None
+                            | Some(score) -> Some (score,provider))
                     if providers = [] then failwithf "MARKERPART substitution, no marker provider available"
                     let _,markerProvider = providers |> List.maxBy (fst)
 
@@ -557,7 +549,7 @@ let expandAssembly
                                 else x'
                             | None -> "default"
                     let task = { dnaSource = dnaSource ; ppp = ppp ; markerSet = markerSet}
-                    yield markerProvider.CreateDna(task) // expandMarkerPart library dnaSource ppp
+                    yield markerProvider.CreateDna(task)
 
                 | PARTID(partId) ->
                     yield resolveExtPart.fetchSequence verbose library ppp partId

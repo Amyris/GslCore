@@ -95,22 +95,17 @@ type AlleleSwapProvider = { jobScorer:AlleleSwapJobAccept ; provider:AlleleSwapD
 // Marker handler for converting ### into sequence
 // ==================================================
 
-type MarkerProviderJobAccept = Capabilities->float<PluginScore> option
-
 /// Information provided when a marker materialization happens
 type MarkerMaterializationTask = { markerSet : string ; dnaSource : string ; ppp:PPP}
 
 type IMarkerProvider =
     /// Allow marker providers to add command line args and be configurable.
     inherit IConfigurable<IMarkerProvider>
-
-    /// Marker providers the pragma environment to configure themselves locally.
-    abstract member Setup : PragmaCollection -> IMarkerProvider
     /// When is comes time to convert a marker into a concrete DNA sequence (whole marker), this gets called
     abstract member CreateDna : MarkerMaterializationTask -> commonTypes.DNASlice
     abstract member IsLegal : string -> bool
     abstract member ListMarkers : unit -> string list
-    abstract member ScoreJob : MarkerProviderJobAccept
+    abstract member ScoreJob : Capabilities -> float<PluginScore> option
 
 // =======================
 // plugin behavior definition for l2 expansion
