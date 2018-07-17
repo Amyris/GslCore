@@ -45,8 +45,7 @@ type TestPromTermLen() =
 
     [<Test>]
     member __.TestPragmasExist() =
-        let checkPragmaExists name =
-            Assert.DoesNotThrow (fun () -> returnOrFail (buildPragma name ["250"]) |> ignore) |> ignore
+        let checkPragmaExists name = buildPragma name ["250"] |> returnOrFail |> ignore
 
         checkPragmaExists "promlen"
         checkPragmaExists "termlen"
