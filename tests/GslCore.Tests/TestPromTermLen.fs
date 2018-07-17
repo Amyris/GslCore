@@ -1,28 +1,18 @@
-﻿module testPromTermLen
-/// Test #promoterlen #terminatorlen work
+﻿/// Test #promoterlen #terminatorlen work
+module testPromTermLen
 
 open NUnit.Framework
 open constants
 open commonTypes
 open pragmaTypes
 open Amyris.ErrorHandling
-
-/// location of test gslc_lib fixtures (depends on .net tooling version)
-let testLibDirs = [@"../../../../TestGslcLib"; @"../../../../../TestGslcLib"]
+open TestGslcLib
 
 [<TestFixture>]
 type TestPromTermLen() = 
     do
         // initialize pragmas
         pragmaTypes.finalizePragmas []
-
-    let testLibDir =
-        testLibDirs
-        |> List.filter System.IO.Directory.Exists
-        |> function
-            | [testDir] -> testDir
-            | [] -> failwith "Test directory not found."
-            | x -> failwithf "Too many test directories found: %O" x
 
     let checkOneGenome pragmas name promLen termLen termLenMRNA =
         let gd = new RefGenome.GenomeDef(testLibDir,name)
