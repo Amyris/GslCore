@@ -101,7 +101,7 @@ type MarkerMaterializationTask = { markerSet : string ; dnaSource : string ; ppp
 type IMarkerProvider =
     /// Allow marker providers to add command line args and be configurable.
     inherit IConfigurable<IMarkerProvider>
-    /// When is comes time to convert a marker into a concrete DNA sequence (whole marker), this gets called
+    /// Emit a materialized DNA sequence for the requested marker and part.
     abstract member CreateDna : MarkerMaterializationTask -> commonTypes.DNASlice
     abstract member IsLegal : string -> bool
     abstract member ListMarkers : unit -> string list
@@ -237,8 +237,8 @@ let configureBehavior arg b =
     | OutputFormat(f) -> {b with behavior = OutputFormat(f.Configure(arg))}
     | AssemblyTransform(a) -> {b with behavior = AssemblyTransform(a.Configure(arg))}
     | CodonProvider(c) -> {b with behavior = CodonProvider(c.Configure(arg))}
+    | MarkerProvider(m) -> {b with behavior = MarkerProvider(m.Configure(arg))}
     | AlleleSwapAA _
-    | MarkerProvider _
     | L2KOTitration _ -> b
 
 let configureBehaviorFromOpts opts b =
