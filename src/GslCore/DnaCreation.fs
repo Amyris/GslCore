@@ -499,6 +499,34 @@ let expandGenePart
          materializedFrom = Some(ppp);
          annotations = [Orf(orfAnnotation)]}
 
+/// Choose the most appropriate marker provider based on capabilities and availability.
+let private chooseMarkerProvider capabilities (providers: IMarkerProvider list) markerSet =
+    /// Get all providers that are in play based on capabilities and sort by score.
+    let sortedProviders =
+        providers
+        |> Seq.choose (fun provider ->
+            match provider.ScoreJob(capabilities) with
+            | None -> None
+            | Some(score) -> Some (provider, score))
+        |> Seq.sortByDescending snd
+        |> Seq.map fst
+        |> List.ofSeq
+
+    /// Filter down to just the providers that can handle the specified marker set.
+    let legalProviders = sortedProviders |> List.filter (fun provider -> provider.IsLegal(markerSet))
+
+    match List.tryHead legalProviders with
+    | Some(provider) -> ok provider
+    | None when sortedProviders.IsEmpty ->
+        fail (sprintf "No marker providers available for capas %O." capabilities)
+    | None ->
+        sortedProviders
+        |> List.map (fun provider -> provider.ListMarkers())
+        |> List.concat
+        |> String.concat ", "
+        |> sprintf "Unknown marker set %s, expected one of %s" markerSet
+        |> fail
+
 /// Take a parsed assembly definition and translate it
 /// to underlying DNA pieces, checking the structure in the process.
 /// Raises an exception on error.
@@ -529,25 +557,15 @@ let expandAssembly
 
                 match ppp.part with
                 | MARKERPART ->
-                    // Choose provider
-                    let providers =
-                        markerProviders
-                        |> List.choose (fun provider ->
-                            match provider.ScoreJob a.capabilities with
-                            | None -> None
-                            | Some(score) -> Some (score,provider))
-                    if providers = [] then failwithf "MARKERPART substitution, no marker provider available"
-                    let _,markerProvider = providers |> List.maxBy (fst)
-
                     let markerSet =
-                        match a.pragmas.TryGetOne("markerset") with
-                            | Some(x) ->
-                                let x' = x.ToLower()
-                                if not (markerProvider.IsLegal x') then
-                                    failwithf "ERROR: unknown marker set %s, expected one of %s\n"
-                                        x' (String.Join(",",markerProvider.ListMarkers()))
-                                else x'
-                            | None -> "default"
+                        a.pragmas.TryGetOne("markerset")
+                        |> Option.map (fun m -> m.ToLower())
+                        |> Option.defaultValue "default"
+
+                    let markerProvider =
+                        chooseMarkerProvider a.capabilities markerProviders markerSet
+                        |> returnOrFail
+
                     let task = { dnaSource = dnaSource ; ppp = ppp ; markerSet = markerSet}
                     yield markerProvider.CreateDna(task)
 
