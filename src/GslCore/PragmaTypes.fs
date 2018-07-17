@@ -23,7 +23,7 @@ type PragmaArgShape =
 
 type PragmaValidationResult = Result<unit,string>
 
-type PragmaPersistence = | Persistent | Transient
+type PragmaPersistence = | Persistent | Transient | TransientCumulative
 ///<summary>
 /// Pragmas are scoped within a GSL document.  Some pragmas
 /// are somewhat "scope-polymorphic" and have different
@@ -423,7 +423,22 @@ type PragmaCollection = PragmaCollection of Map<string,Pragma>
     with
     member x.pmap = match x with PragmaCollection(pc) -> pc
     /// Add a Pragma to this collection.
-    member x.Add(p:Pragma) = PragmaCollection (x.pmap.Add(p.name, p))
+    member x.Add(p:Pragma) = 
+        PragmaCollection (
+            match p.definition.scope with 
+            | BlockOnly(TransientCumulative) 
+            | BlockOrPart(TransientCumulative) ->
+                match x.pmap.TryFind(p.name) with
+                | None -> x.pmap.Add(p.name, p)
+                | Some(existing) -> 
+                    let newArgs = existing.args@p.args // new args go on the end
+                    match buildPragmaFromDef existing.definition  newArgs with
+                    | Ok (newPragma,_messages) ->
+                        x.pmap.Add(p.name, newPragma)
+                    | Bad messages -> failwithf "%s" (String.Join(";",messages))
+            | _ -> 
+                x.pmap.Add(p.name, p)
+        )
     /// Add a pragma to this collection using string name.
     member x.Add(pName:string) = x.Add(pName, [])
     /// Add a pragma to this collection using string name and single value.
