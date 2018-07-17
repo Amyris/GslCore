@@ -8,43 +8,45 @@ open pragmaTypes
 open Amyris.ErrorHandling
 
 /// location of test gslc_lib fixtures (depends on .net tooling version)
-let testLibDir1 = @"../../../../TestGslcLib"
-let testLibDir2 = @"../../../../../TestGslcLib"
+let testLibDirs = [@"../../../../TestGslcLib"; @"../../../../../TestGslcLib"]
 
 [<TestFixture>]
 type TestPromTermLen() = 
-    let emptyPragmas = PragmaCollection(Map.empty)
     do
         // initialize pragmas
         pragmaTypes.finalizePragmas []
 
-    let testLibDir = 
-        if System.IO.Directory.Exists testLibDir1 then testLibDir1  
-            else testLibDir2
-
-    let same context expected actual =
-        if expected<>actual then 
-            failwithf "%s: expected= %d and actual=%d not equal" context expected actual
+    let testLibDir =
+        testLibDirs
+        |> List.filter System.IO.Directory.Exists
+        |> function
+            | [testDir] -> testDir
+            | [] -> failwith "Test directory not found."
+            | x -> failwithf "Too many test directories found: %O" x
 
     let checkOneGenome pragmas name promLen termLen termLenMRNA =
         let gd = new RefGenome.GenomeDef(testLibDir,name)
         gd.Load()
         let part = DnaCreation.translateGenePrefix pragmas gd TERMINATOR
-        same "terminator length test" termLen ((part.right.x-part.left.x+1<OneOffset>)/1<OneOffset>) // +1 since ends are inclusive
+        Assert.AreEqual(
+            termLen,
+            ((part.right.x-part.left.x+1<OneOffset>)/1<OneOffset>)) // +1 since ends are inclusive
 
         let part = DnaCreation.translateGenePrefix pragmas gd PROMOTER
-        same "promoter length test" promLen ((part.right.x-part.left.x+1<OneOffset>)/1<OneOffset>)  // +1 since ends are inclusive
+        Assert.AreEqual(
+            promLen,
+            ((part.right.x-part.left.x+1<OneOffset>)/1<OneOffset>))  // +1 since ends are inclusive
 
         let mRNA = DnaCreation.translateGenePrefix pragmas gd MRNA
-        same "termmrna length test" termLenMRNA (((mRNA.right.x-1<OneOffset>)+1<OneOffset>)/1<OneOffset>) // Use 1 (rel to 3' end as the start of the terminator region
+        Assert.AreEqual(
+            termLenMRNA,
+            (((mRNA.right.x-1<OneOffset>)+1<OneOffset>)/1<OneOffset>)) // Use 1 (rel to 3' end as the start of the terminator region
 
     let testPragma name value refGenome expProm expTerm expTermMRNA =
-        match buildPragma name [value] with
-        | Ok (p,[]) ->
-            let map = [ p.name,p] |> Map.ofList |> PragmaCollection
-            checkOneGenome map refGenome expProm expTerm expTermMRNA 
-        | _ -> failwith "building promlen pragma"
-        
+        let p = buildPragma name [value] |> returnOrFail
+        let map = EmptyPragmas.Add(p)
+        checkOneGenome map refGenome expProm expTerm expTermMRNA 
+                
     [<Test>]
     member __.TestGenomesLoadable() =
         let gd = new RefGenome.GenomeDef(testLibDir,"TestGenome")
@@ -62,15 +64,11 @@ type TestPromTermLen() =
 
     [<Test>]
     member __.TestDefaultTerminatorLen() =
-        checkOneGenome emptyPragmas "TestGenome" promLenDefault termLenDefault termLenMRNADefault
+        checkOneGenome EmptyPragmas "TestGenome" promLenDefault termLenDefault termLenMRNADefault
 
     [<Test>]
     member __.TestCustomTerminatorLen() =
-        let testFolderExists1 = System.IO.Directory.Exists testLibDir1
-        let testFolderExists2 = System.IO.Directory.Exists testLibDir2
-        Assert.IsTrue (testFolderExists1 || testFolderExists2)
-
-        checkOneGenome emptyPragmas "TestGenome2" 750 250 300
+        checkOneGenome EmptyPragmas "TestGenome2" 750 250 300
 
     [<Test>]
     member __.TestPromLenPragma() =
