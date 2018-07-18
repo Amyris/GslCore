@@ -6,26 +6,10 @@ open AstTypes
 open AstAssertions
 open AstExpansion
 open constants
+open AssemblyTestSupport
 
 [<TestFixture>]
 type TestLineNumbers() = 
-    let rec extractAssemblies (n:AstNode) : AstNode list =
-        [
-            match n with
-            | Block b -> 
-                let result = b.x |> List.collect extractAssemblies
-                yield! result
-            | Splice s -> 
-                let result = s |> List.ofArray |> List.collect extractAssemblies
-                yield! result
-            | Part p -> 
-                match p.x.basePart with
-                | Assembly a as x -> yield x
-                | _ -> ()
-            | Assembly a as x -> yield x
-            | _ -> ()
-        ]
-
     /// NB: note lines are numbered from zero internally, and columns.
     /// The parser typically reports one character past the end of the identifier
     let checkPosition (pos:SourcePosition option) (startLine, startCol, endLine, endCol) =
@@ -38,14 +22,6 @@ type TestLineNumbers() =
             Assert.AreEqual(startCol,startP.Column)
             Assert.AreEqual(endLine,endP.Line)
             Assert.AreEqual(endCol,endP.Column)
-
-    /// compile one GSL source example and extract assemblies
-    let compileOne source =
-        source 
-        |> GslSourceCode
-        |> compile (phase1 Set.empty) 
-        |> returnOrFail
-        |> fun x -> extractAssemblies x.wrappedNode
 
     let tripleNestedCallExample = """#refgenome cenpk
 #platform stitch

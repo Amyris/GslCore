@@ -900,23 +900,59 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                             find (bLen-1) tLen
             find p.body.Length p.tail.Length
 
+        let checkSliceCoods(slice:DNASlice) n =
+            if slice.dna.Length-1-n<0 then
+                failwithf "in cutX dna slice %s length is %d, cut is %d"
+                    slice.description  slice.dna.Length n
+
+            if slice.sourceFr > slice.sourceTo then
+                failwithf "slice %s has sourceFwd=Y sliceFr=%d sliceTo=%d.  sliceFr should be less than sliceTo" 
+                    slice.description 
+                    slice.sourceFr 
+                    slice.sourceTo
+
+
         // Two functions for cutting left or right into a slice, used when those slice ends were approximate
         // and primer design ended up chopping into them.
-        let cutRight (slice:DNASlice) n =
-            if slice.dna.Length-1-n<0 then
-                failwithf "in cutRight dna slice %s length is %d, cut is %d"
-                    slice.description  slice.dna.Length n
-            {slice with
-                   sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
-                   dna = slice.dna.[0..slice.dna.Length-1-n]}
+        let cutRight verbose (slice:DNASlice) n =
+            checkSliceCoods slice n
+            // work out which end of the original source coordinate to adjust based on orientation of the
+            // part.  cut 'right' refers to right end of part as placed.
+            if verbose then
+                printfn "procAssembly: cutRight moving sourceTo for %s left by %d sourceFwd=%s destFwd=%s" 
+                    slice.description n (if slice.sourceFwd then "Y" else "N") (if slice.destFwd then "Y" else "N")
+            if (slice.sourceFwd && slice.destFwd) ||
+                ((not slice.sourceFwd) && (not slice.destFwd))
+            then
+                {slice with
+                       sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
+                       dna = slice.dna.[0..slice.dna.Length-1-n]}
+            else
+                {slice with
+                       sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
+                       dna = slice.dna.[0..slice.dna.Length-1-n]}
 
-        let cutLeft (slice:DNASlice) n =
-            if slice.dna.Length-1-n<0 then
-                failwithf "in cutLeft dna slice %s length is %d, cut is %d"
-                    slice.description  slice.dna.Length n
-            {slice with
-                   sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
-                   dna = slice.dna.[n..slice.dna.Length-1]}
+        let cutLeft verbose (slice:DNASlice) n =
+            checkSliceCoods slice n
+
+            // work out which end of the original source coordinate to adjust based on orientation of the
+            // part in the genome.  cut 'left' refers to left end of part as placed.
+            // sourceFr and sourceTo are the 5' and 3' ends of the gene
+
+            if verbose then
+                printfn "procAssembly: cutLeft moving sourceFr for %s right by %d sourceFwd=%s destFwd=%s" 
+                    slice.description n (if slice.sourceFwd then "Y" else "N") (if slice.destFwd then "Y" else "N")
+            if (slice.sourceFwd && slice.destFwd) ||
+               ((not slice.sourceFwd) && (not slice.destFwd)) then
+                {slice with
+                       sourceFr = slice.sourceFr + (n*1<ZeroOffset>);
+                       dna = slice.dna.[n..slice.dna.Length-1]}
+            else
+                {slice with
+                       sourceTo = slice.sourceTo - (n*1<ZeroOffset>);
+                       dna = slice.dna.[n..slice.dna.Length-1]}
+                // Two functions for cutting left or right into a slice, used when those slice ends were approximate
+                // and primer design ended up chopping into them.
 
         match l with
         | [] ->
@@ -942,7 +978,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
             // If we stitched fwd/rev off of linker hd then the previous and next elements (prev) and next
             // might need to be modified (chopped) if the ends were flexible
             if opts.verbose then printfn "fusion slice, cutting offsetF=%d offsetR=%d" offsetF offsetR
-            let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight p offsetR)::sliceOut
+            let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight verbose p offsetR)::sliceOut
 
             procAssembly
                 dp
@@ -950,7 +986,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                 (hd::prev)
                 sliceOut'
                 (DPP({fwd = primerF ; rev = primerR ; name = errorName})::primersOut)
-                ((cutLeft next offsetF)::tl) // Remove bases from the next slice if we moved the primer
+                ((cutLeft verbose next offsetF)::tl) // Remove bases from the next slice if we moved the primer
         // linker::next   or non-rabitend-inline::next
         | hd::next::tl when
             (hd.sliceType = LINKER) ||
@@ -1048,7 +1084,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
 
                 if opts.verbose then printfn "short inline case, cutting offsetR=%d" offsetR
 
-                let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight p offsetR)::sliceOut
+                let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight verbose p offsetR)::sliceOut
 
                 assert(primerF'.lenLE(dp.pp.maxLength))
                 assert(primerR'.lenLE(dp.pp.maxLength))
@@ -1059,7 +1095,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     (hd::prev)
                     sliceOut'
                     (DPP({fwd = primerF'; rev = primerR'; name = errorName})::primersOut)
-                    ((cutLeft next offsetF)::tl) // Remove bases from the next slice if we moved the primer
+                    ((cutLeft verbose next offsetF)::tl) // Remove bases from the next slice if we moved the primer
             else
                 if verbose then
                     printfn "procAssembly: ... longcase (DPP)"
@@ -1300,10 +1336,10 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                         if opts.verbose then
                             printfn "cutRight p1=%s p2=%s offsetR=%d sliceOut=%A"
                                 p1.description p2.description offsetR sliceOut
-                        p1::(cutRight p2 offsetR)::(List.tail sliceOut) // messy, undo previously pushed out slice in penultimate pos
+                        p1::(cutRight verbose p2 offsetR)::(List.tail sliceOut) // messy, undo previously pushed out slice in penultimate pos
                     | p::_ ->
                         if opts.verbose then printfn "cutRight p=%s offsetR=%d" p.description offsetR
-                        (cutRight p offsetR)::sliceOut
+                        (cutRight verbose p offsetR)::sliceOut
 
                 // --------------         new prev
                 procAssembly
@@ -1313,7 +1349,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                     sliceOut'
                     (DPP({fwd = primerF; rev = primerR; name = errorName})::primersOut)
                     // Remove bases from the next slice if we moved the primer
-                    ((match sandwichF with | None -> [] | Some(t) -> [t])@[(cutLeft d offsetF)]@e)
+                    ((match sandwichF with | None -> [] | Some(t) -> [t])@[(cutLeft verbose d offsetF)]@e)
         // technically shouldn't end on a non linker (unless non ryse design) but..
         | [last] when (last.sliceType = LINKER || last.sliceType = INLINEST) ->
             if verbose then
@@ -1395,7 +1431,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                             *)
                         [last] // Fake slice for now.. TODO TODO
                     else failwith "expected preceding linker adjacent to terminal inline sequence"
-                | p::_ -> last::(cutRight p offsetR)::sliceOut  |> List.rev
+                | p::_ -> last::(cutRight verbose p offsetR)::sliceOut  |> List.rev
 
             (DPP({fwd = {body=Dna(""); tail =Dna(""); annotation = []}; rev = primerR; name = errorName})::primersOut |> List.rev,
              sliceOut') // Last linker

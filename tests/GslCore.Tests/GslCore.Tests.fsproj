@@ -80,11 +80,13 @@
     <Compile Include="TestParsing.fs" />
     <Compile Include="TestPragmas.fs" />
     <Compile Include="TestL2Expansion.fs" />
+    <Compile Include="AssemblyTestSupport.fs" />
     <Compile Include="TestLineNumbers.fs" />
     <Compile Include="TestAst.fs" />
     <Compile Include="TestBootstrap.fs" />
     <Compile Include="TestSliceAnnotations.fs" />
     <Compile Include="TestSeamlessPrimers.fs" />
+    <Compile Include="TestDnaMaterialization.fs" />
     <Compile Include="TestDnaAssemblyTransformation.fs" />
   </ItemGroup>
   <ItemGroup>
