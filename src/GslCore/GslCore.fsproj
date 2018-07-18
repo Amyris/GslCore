@@ -96,6 +96,7 @@
     <Compile Include="ApplySlices.fs" />
     <Compile Include="ResolveExtPart.fs" />
     <Compile Include="DnaCreation.fs" />
+    <Compile Include="BasicMarkerProvider.fs" />
     <Compile Include="CoreOutputProviders.fs" />
     <Compile Include="JsonAssembly.fs" />
     <Compile Include="ProcessCmdLineArgs.fs" />

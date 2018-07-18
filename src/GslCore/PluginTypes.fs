@@ -1,5 +1,6 @@
 ﻿/// Definitions of plug-in types and interfaces.
 module PluginTypes
+open System
 open Amyris.ErrorHandling
 open commonTypes
 open commandConfig
@@ -87,6 +88,24 @@ type AlleleSwapDesignParams = {
 }
 
 type AlleleSwapProvider = { jobScorer:AlleleSwapJobAccept ; provider:AlleleSwapDesignParams -> GslSourceCode }
+
+
+
+// ==================================================
+// Marker handler for converting ### into sequence
+// ==================================================
+
+/// Information provided when a marker materialization happens
+type MarkerMaterializationTask = { markerSet : string ; dnaSource : string ; ppp:PPP}
+
+type IMarkerProvider =
+    /// Allow marker providers to add command line args and be configurable.
+    inherit IConfigurable<IMarkerProvider>
+    /// Emit a materialized DNA sequence for the requested marker and part.
+    abstract member CreateDna : MarkerMaterializationTask -> commonTypes.DNASlice
+    abstract member IsLegal : string -> bool
+    abstract member ListMarkers : unit -> string list
+    abstract member ScoreJob : Capabilities -> float<PluginScore> option
 
 // =======================
 // plugin behavior definition for l2 expansion
@@ -190,6 +209,7 @@ type PluginBehavior =
     | OutputFormat of IOutputFormat
     | AssemblyTransform of IAssemblyTransform
     | CodonProvider of ICodonProvider
+    | MarkerProvider of IMarkerProvider
     with
     member b.ProvidedArgs() =
         match b with
@@ -217,6 +237,7 @@ let configureBehavior arg b =
     | OutputFormat(f) -> {b with behavior = OutputFormat(f.Configure(arg))}
     | AssemblyTransform(a) -> {b with behavior = AssemblyTransform(a.Configure(arg))}
     | CodonProvider(c) -> {b with behavior = CodonProvider(c.Configure(arg))}
+    | MarkerProvider(m) -> {b with behavior = MarkerProvider(m.Configure(arg))}
     | AlleleSwapAA _
     | L2KOTitration _ -> b
 
@@ -225,6 +246,7 @@ let configureBehaviorFromOpts opts b =
     | OutputFormat(f) -> {b with behavior = OutputFormat(f.ConfigureFromOptions(opts))}
     | AssemblyTransform(a) -> {b with behavior = AssemblyTransform(a.ConfigureFromOptions(opts))}
     | CodonProvider(c) -> {b with behavior = CodonProvider(c.ConfigureFromOptions(opts))}
+    | MarkerProvider(c) -> {b with behavior = MarkerProvider(c.ConfigureFromOptions(opts))}
     | AlleleSwapAA _
     | L2KOTitration _ -> b
 
@@ -288,6 +310,11 @@ type Plugin =
                 for a in args do yield! (printCmdLineArg a)
             
         } |> String.concat "\n"
+
+/// Get all of the marker providers from a plugin.
+let getMarkerProviders (plugin: Plugin) =
+    plugin.behaviors
+    |> List.choose (fun b -> match b.behavior with | MarkerProvider(m) -> Some(m) | _ -> None)
 
 
 /// Get all of the allele swap providers from a plugin.

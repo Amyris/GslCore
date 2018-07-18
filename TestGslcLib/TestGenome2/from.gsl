@@ -1,0 +1,5 @@
+#refgenome TestGenome
+// used to generate test case from S288C
+gADH1[-1000:1000E]
+// test of test
+oADH1

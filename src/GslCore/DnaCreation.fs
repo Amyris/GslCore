@@ -11,6 +11,7 @@ open Amyris.Bio
 open Amyris.ErrorHandling
 open Amyris.Dna
 open ryse
+open PluginTypes
 
 // ================================================================================================
 // Slice manipulation routines for getting from gene notation down to specific genomics coordinates
@@ -49,49 +50,60 @@ let adjustToPhysical (feat:sgd.Feature) (f:RelPos) =
 /// these are relative to the gene, not the genome for now.  We transform
 /// to genomic coordinates below.
 /// Transform all non gXXX forms of gene into gXX forms.
-let translateGenePrefix (gd : GenomeDef) (gPart : StandardSlice) =
+let translateGenePrefix (pragmas:PragmaCollection) (gd : GenomeDef) (gPart : StandardSlice) =
     match gPart with
     | PROMOTER ->
-        {left = {x = -500<OneOffset>; relTo = FivePrime};
+        let leftPos =
+            match pragmas.TryGetOne "promlen" with
+            | None -> -gd.getPromLen() 
+            | Some p -> (int p) * -1<OneOffset> 
+        {left = {x = leftPos; relTo = FivePrime};
          lApprox = true;
          rApprox = false;
-         right = { x = -1<OneOffset>; relTo = FivePrime } }
+         right = {x = -1<OneOffset>; relTo = FivePrime}}
     | UPSTREAM ->
-        {left = {x = -gd.getFlank(); relTo = FivePrime};
-         lApprox = true;
-         rApprox = false;
-         right = { x = -1<OneOffset>; relTo = FivePrime } }
+       {left = {x = -gd.getFlank(); relTo = FivePrime};
+        lApprox = true;
+        rApprox = false;
+        right = {x = -1<OneOffset>; relTo = FivePrime}}
     | TERMINATOR ->
+        let rightPos =
+            match pragmas.TryGetOne "termlen" with
+            | None -> gd.getTermLen() 
+            | Some p -> (int p) * 1<OneOffset> 
         {left = {x = 1<OneOffset>; relTo = ThreePrime};
          lApprox = false;
          rApprox = true;
-         right = { x = 500<OneOffset>; relTo = ThreePrime } }
+         right = {x = rightPos; relTo = ThreePrime}}
     | DOWNSTREAM ->
         {left = {x = 1<OneOffset>; relTo = ThreePrime};
          lApprox = false;
          rApprox = true;
-         right = { x = gd.getFlank(); relTo = ThreePrime } }
+         right = {x = gd.getFlank(); relTo = ThreePrime}}
     | FUSABLEORF ->
         {left = {x = 1<OneOffset>; relTo = FivePrime};
          lApprox = false;
          rApprox = false;
-         right = { x = -4<OneOffset>; relTo = ThreePrime } }
+         right = {x = -4<OneOffset>; relTo = ThreePrime}}
     | ORF ->
         {left = {x = 1<OneOffset>; relTo = FivePrime};
          lApprox = false;
          rApprox = false;
-         right = { x = -1<OneOffset>; relTo = ThreePrime } }
+         right = {x = -1<OneOffset>; relTo = ThreePrime}}
     | GENE ->
         {left = {x = 1<OneOffset>; relTo = FivePrime};
          lApprox = false;
          rApprox = false;
-         right = { x = -1<OneOffset>; relTo = ThreePrime } }
+         right = {x = -1<OneOffset>; relTo = ThreePrime}}
     | MRNA ->
+        let rightPos =
+            match pragmas.TryGetOne "termlenmrna"  with
+            | None -> gd.getTermLenMRNA() 
+            | Some p -> (int p) * 1<OneOffset>
         {left = {x = 1<OneOffset>; relTo = FivePrime};
          lApprox = false;
          rApprox = true;
-         right = { x = 200<OneOffset> ; relTo = ThreePrime } }
-
+         right = {x = rightPos; relTo = ThreePrime}}
 
 /// Translate gene part label.  Raises an exception for errors.
 let lookupGenePart errorDescription prefix (modList:Mod list) =
@@ -141,7 +153,7 @@ let getRG (a:Assembly) (rgs:GenomeDefs) (pr:PragmaCollection) =
     | Bad(msgs) -> failwith msgs.[0]
 
 /// Take a genepart and slices and get the actual DNA sequence.
-let realizeSequence verbose fwd (rg:GenomeDef) (gp:GenePartWithLinker) =
+let realizeSequence verbose  (pragmas:PragmaCollection) fwd (rg:GenomeDef) (gp:GenePartWithLinker) =
 
     if verbose then
         printf "realizeSequence:  fetch fwd=%s %s\n"
@@ -156,7 +168,7 @@ let realizeSequence verbose fwd (rg:GenomeDef) (gp:GenePartWithLinker) =
     let feat = rg.get(gp.part.gene.[1..])
 
     // Come up with an initial slice based on the gene prefix type
-    let s = translateGenePrefix rg genePart
+    let s = translateGenePrefix pragmas rg genePart
 
     let finalSlice = applySlices verbose gp.part.mods s
     let left = adjustToPhysical feat finalSlice.left
@@ -188,40 +200,6 @@ let getUri (ppp:PPP) = ppp.pr.TryGetOne("uri")
 
 /// Expand a marker part into DNA pieces.
 /// Exception on failure.
-let expandMarkerPart
-    (library: SequenceLibrary)
-    dnaSource
-    (ppp:PPP) =
-
-    if not (library.ContainsKey("URA3")) then
-        failwithf "lib.fa does not contain URA3 marker part\n"
-
-    let dna = library.["URA3"]
-    {id = None;
-     extId = None;
-     sliceName = getSliceName ppp;
-     uri = getUri ppp; // TODO: should this marker have a static URI we always assign here?
-     dna = dna;
-     sourceChr = "library";
-     sourceFr = 0<ZeroOffset>;
-     sourceTo = (dna.Length-1)*1<ZeroOffset>;
-     sourceFwd = true;
-     sourceFrApprox = false;
-     sourceToApprox = false;
-     // Don't assign coordinates to pieces until later when we
-     // decide how they are getting joined up
-     template = Some dna;
-     amplified = false;
-     destFr = 0<ZeroOffset>;
-     destTo = 0<ZeroOffset>;
-     destFwd = ppp.fwd;
-     description = "URA3 marker";
-     sliceType = MARKER;
-     dnaSource = dnaSource;
-     pragmas = ppp.pr;
-     breed = B_MARKER;
-     materializedFrom = Some(ppp);
-     annotations = []}
 
 let expandInlineDna
     dnaSource
@@ -295,7 +273,7 @@ let expandGenePart
             // Come up with an initial slice based on the gene prefix type
 
             // Get standard slice range for a gene
-            let s = translateGenePrefix rg' GENE
+            let s = translateGenePrefix a.pragmas rg' GENE
             let finalSlice = applySlices verbose gp.part.mods s
 
             // Ban approx slices to stay sane for now
@@ -378,7 +356,7 @@ let expandGenePart
 
         validateMods errorRef gp.part.where gp.part.mods
         // Come up with an initial slice based on the gene prefix type
-        let s = translateGenePrefix rg' genePart
+        let s = translateGenePrefix a.pragmas rg' genePart
         if verbose then printf "log: processing %A\n" a
 
         // finalSlice is the consolidated gene relative coordinate of desired piece
@@ -528,11 +506,40 @@ let expandGenePart
          materializedFrom = Some(ppp);
          annotations = [Orf(orfAnnotation)]}
 
+/// Choose the most appropriate marker provider based on capabilities and availability.
+let private chooseMarkerProvider capabilities (providers: IMarkerProvider list) markerSet =
+    /// Get all providers that are in play based on capabilities and sort by score.
+    let sortedProviders =
+        providers
+        |> Seq.choose (fun provider ->
+            match provider.ScoreJob(capabilities) with
+            | None -> None
+            | Some(score) -> Some (provider, score))
+        |> Seq.sortByDescending snd
+        |> Seq.map fst
+        |> List.ofSeq
+
+    /// Filter down to just the providers that can handle the specified marker set.
+    let legalProviders = sortedProviders |> List.filter (fun provider -> provider.IsLegal(markerSet))
+
+    match List.tryHead legalProviders with
+    | Some(provider) -> ok provider
+    | None when sortedProviders.IsEmpty ->
+        fail (sprintf "No marker providers available for capas %O." capabilities)
+    | None ->
+        sortedProviders
+        |> List.map (fun provider -> provider.ListMarkers())
+        |> List.concat
+        |> String.concat ", "
+        |> sprintf "Unknown marker set %s, expected one of %s" markerSet
+        |> fail
+
 /// Take a parsed assembly definition and translate it
 /// to underlying DNA pieces, checking the structure in the process.
 /// Raises an exception on error.
 let expandAssembly
     verbose
+    (markerProviders:IMarkerProvider list)
     (rgs:GenomeDefs)
     (library: SequenceLibrary)
     index
@@ -542,8 +549,6 @@ let expandAssembly
         seq {
             // NOTE: have access to part.pragmas to the extent they influence generation
             for ppp in pppList do
-                //let sliceName = getSliceName ppp
-
                 let dnaSource =
                     match ppp.pr.TryGetOne("dnasrc") with
                     | Some(d) -> d
@@ -559,7 +564,18 @@ let expandAssembly
 
                 match ppp.part with
                 | MARKERPART ->
-                    yield expandMarkerPart library dnaSource ppp
+                    let markerSet =
+                        a.pragmas.TryGetOne("markerset")
+                        |> Option.map (fun m -> m.ToLower())
+                        |> Option.defaultValue "default"
+
+                    let markerProvider =
+                        chooseMarkerProvider a.capabilities markerProviders markerSet
+                        |> returnOrFail
+
+                    let task = { dnaSource = dnaSource ; ppp = ppp ; markerSet = markerSet}
+                    yield markerProvider.CreateDna(task)
+
                 | PARTID(partId) ->
                     yield resolveExtPart.fetchSequence verbose library ppp partId
                 | INLINEDNA(dna) ->

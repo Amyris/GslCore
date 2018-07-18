@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -70,6 +69,7 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="TestGslcLib.fs" />
     <Compile Include="AstFixtures.fs" />
     <Compile Include="AstAssertions.fs" />
     <Compile Include="testUri.fs" />
@@ -85,6 +85,7 @@
     <Compile Include="TestBootstrap.fs" />
     <Compile Include="TestSliceAnnotations.fs" />
     <Compile Include="TestSeamlessPrimers.fs" />
+    <Compile Include="TestPromTermLen.fs" />
     <Compile Include="TestDnaAssemblyTransformation.fs" />
   </ItemGroup>
   <ItemGroup>

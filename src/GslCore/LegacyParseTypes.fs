@@ -65,7 +65,7 @@ type Part =
     | PARTID of PartIdLegacy
 
 /// Part plus a Pragma
-and PPP = { part : Part ; pr : PragmaCollection ; fwd: bool}
+type PPP = { part : Part ; pr : PragmaCollection ; fwd: bool}
 
 type Assembly =
    {parts: PPP list; 

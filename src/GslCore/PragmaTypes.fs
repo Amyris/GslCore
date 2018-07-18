@@ -229,6 +229,15 @@ let pragmaDefsStatic : PragmaDef list =
      {name = "swapend"; argShape = One; scope = PartOnly;
      desc = "State an end preference for an allele swap. Arg should be '3' or '5'.";
      invertsTo = None; validate = parseInt};
+     {name = "promlen"; argShape = One; scope = BlockOnly(Persistent);
+     desc = "preferred promoter length - overrides genome or system default.";
+     invertsTo = None; validate = parseInt};
+     {name = "termlen"; argShape = One; scope = BlockOnly(Persistent);
+     desc = "preferred terminator length - overrides genome or system default.";
+     invertsTo = None; validate = parseInt};
+     {name = "termlenmrna"; argShape = One; scope = BlockOnly(Persistent);
+     desc = "preferred terminator region length when part of mRNA part- overrides genome or system default.";
+     invertsTo = None; validate = parseInt};
     ]
 
 /// Legal/Valid pragma names and defintions for lookup by name
