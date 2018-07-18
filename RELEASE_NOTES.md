@@ -1,3 +1,6 @@
+#### 0.5.1 - July 18 2018
+* Rebuild of latest release.
+
 #### 0.5.0 - July 18 2018
 * Replace hardcoded URA3 marker materialization with marker provider plugin.
 * Add pragmas for promoter, terminator, etc. length.
