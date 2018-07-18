@@ -1,3 +1,8 @@
+#### 0.5.0 - July 18 2018
+* Replace hardcoded URA3 marker materialization with marker provider plugin.
+* Add pragmas for promoter, terminator, etc. length.
+* Fix blank dnaSource field when default reference genome is in use.
+
 #### 0.4.34 - June 29 2018
 * Incorporate improved multi-location error line number reporting.
 * Refactor RYSE linker lookup to be an injected function rather than a map.
