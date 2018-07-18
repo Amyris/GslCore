@@ -1,3 +1,7 @@
+#### 0.4.34 - June 29 2018
+* Incorporate improved multi-location error line number reporting.
+* Refactor RYSE linker lookup to be an injected function rather than a map.
+
 #### 0.4.32 - March 1 2018
 * Fix parallelism failure on single-core machines.
 * Improve primer naming in snapgene output.

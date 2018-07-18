@@ -71,7 +71,7 @@ let loadThumperRef (f:string) =
             None)
     |> Seq.map (fun hr -> (hr.id,hr) ) |> Map.ofSeq
 
-
+// FIXME: this needs to be injected; moreover, none of the Thumper support belongs in GslCore.
 let thumper = "http://thumper.amyris.local"
 
 // FIXME: this cache is global and mutable and can become stale when GSLC is embedded in a long-
@@ -202,7 +202,7 @@ let rec countRyseLinkersNeeded printVerbose total (l:DNASlice list) =
 let mapRyseLinkers
         (opts:ParsedOptions)
         (hutchAncillary : Map<int,HutchRabit>)
-        (ryseLinkers:Map<string,RYSELinker>)
+        (getLinker: string -> RYSELinker)
         (aIn : DnaAssembly) =
 
     let printVerbose msg =
@@ -229,10 +229,8 @@ let mapRyseLinkers
     /// Assign RYSE linkers to junctions that need them
     let rec assign startLinkers (phase:bool) (l:DNASlice list) (linkers: string list) res =
         let prepLinker (n:string) =
-            let linker = match ryseLinkers.TryFind n with
-                            | Some x -> x
-                            | None ->
-                                    failwithf "ERROR: unexpected error not found looking up linker '%s'" n
+            let linker = getLinker n
+
             // DNA for the linker
             let dna = linker.dna |> fun x -> if phase then x else x.RevComp()
             // Build the linker entry

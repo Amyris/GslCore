@@ -65,10 +65,7 @@ type Part =
     | PARTID of PartIdLegacy
 
 /// Part plus a Pragma
-and PPP = { part : Part ; pr : PragmaCollection ; fwd: bool}
-
-/// Namespace bounded tag for an assembly (Used in Assembly)
-type AssemblyTag = {nameSpace:string ; tag : string}
+type PPP = { part : Part ; pr : PragmaCollection ; fwd: bool}
 
 type Assembly =
    {parts: PPP list; 
