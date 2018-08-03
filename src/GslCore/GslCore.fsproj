@@ -60,7 +60,6 @@
       <OtherFlags>--unicode</OtherFlags>
     </FsLex>
     <Compile Include="Constants.fs" />
-    <Compile Include="Markers.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="PcrParamParse.fs" />
     <Compile Include="PragmaTypes.fs" />
