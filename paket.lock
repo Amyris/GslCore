@@ -28,7 +28,7 @@ NUGET
       System.Threading.ThreadPool (>= 4.0.10) - restriction: || (>= net463) (>= netstandard1.6)
       System.Threading.Timer (>= 4.0.1) - restriction: || (>= net463) (>= netstandard1.6)
     FSharp.Data (2.3.3)
-      Zlib.Portable (>= 1.11) - restriction: || (>= portable-net45+win8+sl5) (>= portable-net45+win8+wp8+wpa81)
+      Zlib.Portable (>= 1.11) - restriction: || (>= portable-net45+sl5+win8) (>= portable-net45+win8+wp8+wpa81)
     FsLexYacc (6.1)
       FsLexYacc.Runtime (>= 6.1)
     FsLexYacc.Runtime (6.1)
@@ -664,7 +664,7 @@ NUGET
       System.Threading (>= 4.3) - restriction: >= netstandard1.3
       System.Xml.ReaderWriter (>= 4.3) - restriction: >= netstandard1.3
     TaskParallelLibrary (1.0.2856) - restriction: == net35
-    Zlib.Portable (1.11) - restriction: || (>= portable-net45+win8+sl5) (>= portable-net45+win8+wp8+wpa81)
+    Zlib.Portable (1.11) - restriction: || (>= portable-net45+sl5+win8) (>= portable-net45+win8+wp8+wpa81)
 
 GROUP Build
 NUGET
