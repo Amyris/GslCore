@@ -50,27 +50,6 @@ let checkLinker (l:Linker) =
     if not (legalLinkers.Contains(l.l2)) then
         failwithf "ERROR: linker %s not a legal linker" l.l2
 
-
-/// Get auxillary cached information about key rabits for thumper rabits
-let loadThumperRef (f:string) =
-    if not (File.Exists f) then
-        failwithf "could not locate thumper reference file%s" f
-    eachLineIn f |> Seq.skip 1 |> Seq.map (tabSplit)
-    |> Seq.choose (fun cols ->
-        match cols with
-        | [| id ; name; five ; three ;  orient ; breed |] ->
-            Some({id = int id;
-                  name = name;
-                  five = five;
-                  three = three;
-                  orient = if orient.[0] = '0' then FWD else REV;
-                  breed = breed;
-                  dnaSource = sprintf "R%s" id})
-        | x ->
-            printf "WARNING: bad hutch line %A\n" x
-            None)
-    |> Seq.map (fun hr -> (hr.id,hr) ) |> Map.ofSeq
-
 // FIXME: this needs to be injected; moreover, none of the Thumper support belongs in GslCore.
 let thumper = "http://thumper.amyris.local"
 
@@ -201,7 +180,6 @@ let rec countRyseLinkersNeeded printVerbose total (l:DNASlice list) =
 /// Assign ryse linkers to the design.
 let mapRyseLinkers
         (opts:ParsedOptions)
-        (hutchAncillary : Map<int,HutchRabit>)
         (getLinker: string -> RYSELinker)
         (aIn : DnaAssembly) =
 
@@ -412,10 +390,7 @@ let mapRyseLinkers
                     match hd.extId with
                     | Some(x) -> //when x.[0] = 'R' || x.[0] = 'r' ->
                         let rabitId = int(x)
-                        let h =
-                            if (hutchAncillary.ContainsKey(rabitId)) then hutchAncillary.[rabitId]
-                            else
-                                getHutchInfoViaWeb rabitId
+                        let h = getHutchInfoViaWeb rabitId
 
                         let hFive = sprintf "%s" h.five
                         let hThree = sprintf "%s" h.three
