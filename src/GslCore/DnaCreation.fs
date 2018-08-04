@@ -153,24 +153,24 @@ let getRG (a:Assembly) (rgs:GenomeDefs) (pr:PragmaCollection) =
     | Bad(msgs) -> failwith msgs.[0]
 
 /// Take a genepart and slices and get the actual DNA sequence.
-let realizeSequence verbose  (pragmas:PragmaCollection) fwd (rg:GenomeDef) (gp:GenePartWithLinker) =
+let realizeSequence verbose  (pragmas:PragmaCollection) fwd (rg:GenomeDef) (gp:GenePart) =
 
     if verbose then
         printf "realizeSequence:  fetch fwd=%s %s\n"
-            (if fwd then "y" else "n") gp.part.gene
+            (if fwd then "y" else "n") gp.gene
 
     // Inspect prefix of gene e.g g,t,o,p and see what type of gene part we are starting with
     // Description of part to give in case of error
-    let errorDesc = gp.part.gene
-    let genePart = lookupGenePart errorDesc (gp.part.gene.[0]) (gp.part.mods)
+    let errorDesc = gp.gene
+    let genePart = lookupGenePart errorDesc (gp.gene.[0]) (gp.mods)
 
     // Lookup gene location
-    let feat = rg.get(gp.part.gene.[1..])
+    let feat = rg.get(gp.gene.[1..])
 
     // Come up with an initial slice based on the gene prefix type
     let s = translateGenePrefix pragmas rg genePart
 
-    let finalSlice = applySlices verbose gp.part.mods s
+    let finalSlice = applySlices verbose gp.mods s
     let left = adjustToPhysical feat finalSlice.left
     let right = adjustToPhysical feat finalSlice.right
 
@@ -241,11 +241,7 @@ let expandGenePart
     (a:Assembly)
     specifiedDnaSource
     (ppp:PPP)
-    (gp:GenePartWithLinker) =
-
-    match gp.linker with
-    | None -> () // No linkers were present
-    | Some(l) -> checkLinker l // Test the linkers
+    (gp:GenePart) =
 
     // If the dna source is empty, then we are going to pull the DNA
     // part from the default reference genome, so we should make the
@@ -256,7 +252,7 @@ let expandGenePart
 
     // Check the genes are legal
     //let prefix = gp.part.gene.[0]
-    let g = gp.part.gene.[1..].ToUpper()
+    let g = gp.gene.[1..].ToUpper()
     let rg' = getRG a rgs ppp.pr
 
     if not (rg'.IsValid(g)) then
@@ -268,13 +264,13 @@ let expandGenePart
             // Need to adjust for any slicing carefully since the DNA island is small
             // Validate mods to gene
             let errorRef = match a.name with | None -> sprintf "%A" a | Some(x) -> x
-            validateMods errorRef gp.part.where gp.part.mods
+            validateMods errorRef gp.where gp.mods
 
             // Come up with an initial slice based on the gene prefix type
 
             // Get standard slice range for a gene
             let s = translateGenePrefix a.pragmas rg' GENE
-            let finalSlice = applySlices verbose gp.part.mods s
+            let finalSlice = applySlices verbose gp.mods s
 
             // Ban approx slices to stay sane for now
             if finalSlice.lApprox || finalSlice.rApprox then
@@ -282,7 +278,7 @@ let expandGenePart
                     "sorry, approximate slices of library genes not supported yet in %A\n"
                     (prettyPrintAssembly a)
 
-            let sliceContext = Library(gp.part.gene)
+            let sliceContext = Library(gp.gene)
 
             let x, y =
                 getBoundsFromSlice finalSlice dna.Length sliceContext
@@ -295,8 +291,8 @@ let expandGenePart
             let orfAnnotation = orfAnnotationFromSlice finalSlice finalDNA.Length ppp.fwd sliceContext
 
             let name1 =
-                if gp.part.mods.Length = 0 then gp.part.gene
-                else (gp.part.gene + (printSlice finalSlice))
+                if gp.mods.Length = 0 then gp.gene
+                else (gp.gene + (printSlice finalSlice))
             let name2 = if ppp.fwd then name1 else "!"+name1
 
             {id = None;
@@ -325,11 +321,11 @@ let expandGenePart
              materializedFrom = Some(ppp);
              annotations = [Orf(orfAnnotation)]}
         else // no :( - wasn't in genome or library
-            failwithf "undefined gene '%s' %O\n" g gp.part.where
+            failwithf "undefined gene '%s' %O\n" g gp.where
     else
         // Inspect prefix of gene e.g g,t,o,p and see what type of gene part we are starting with
-        let errorDesc = gp.part.gene
-        let genePart = lookupGenePart errorDesc (gp.part.gene.[0]) (gp.part.mods)
+        let errorDesc = gp.gene
+        let genePart = lookupGenePart errorDesc gp.gene.[0] gp.mods
         // Lookup gene location
         let rg' = getRG a rgs ppp.pr
 
@@ -354,13 +350,13 @@ let expandGenePart
         // Validate mods to gene
         let errorRef = match a.name with | None -> sprintf "%A" a | Some(x) -> x
 
-        validateMods errorRef gp.part.where gp.part.mods
+        validateMods errorRef gp.where gp.mods
         // Come up with an initial slice based on the gene prefix type
         let s = translateGenePrefix a.pragmas rg' genePart
         if verbose then printf "log: processing %A\n" a
 
         // finalSlice is the consolidated gene relative coordinate of desired piece
-        let finalSlice = applySlices verbose gp.part.mods s
+        let finalSlice = applySlices verbose gp.mods s
 
         // Gene relative coordinates for the gene slice we want
         let finalSliceWithApprox =
@@ -409,7 +405,7 @@ let expandGenePart
         if (left > right && feat.fwd) || (right>left && (not feat.fwd)) then
             failwithf
                 "slice results in negatively lengthed DNA piece for %s\n"
-                (gp.part.gene + (printSlice finalSlice))
+                (gp.gene + (printSlice finalSlice))
 
         /// left' is the genomic coordinate of the start of the element (i.e gene upstream)
         let left', right' = if feat.fwd then left, right else right, left
@@ -431,15 +427,15 @@ let expandGenePart
             |> DnaOps.revCompIf (not ppp.fwd)
 
         let description1 =
-            match gp.part.mods with
-            | [] -> gp.part.gene
+            match gp.mods with
+            | [] -> gp.gene
             | [DOTMOD(d)] ->
                 match d with
-                | "up" -> "u" + gp.part.gene.[1..]
-                | "down" -> "d" + gp.part.gene.[1..]
-                | "mrna" -> "m" + gp.part.gene.[1..]
+                | "up" -> "u" + gp.gene.[1..]
+                | "down" -> "d" + gp.gene.[1..]
+                | "mrna" -> "m" + gp.gene.[1..]
                 | x -> failwithf "unimplemented DOTMOD %s" x
-            | _ -> "g" + gp.part.gene.[1..] + (printSlice finalSlice)
+            | _ -> "g" + gp.gene.[1..] + (printSlice finalSlice)
         let description2 = if ppp.fwd then description1 else "!"+description1
 
         let promStart = {x = -300<OneOffset>; relTo = FivePrime}

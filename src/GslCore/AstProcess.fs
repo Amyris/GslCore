@@ -810,7 +810,7 @@ let updateDocstringEnvironment = pretransformOnly updateDocstringEnvironmentInne
 let private checkGeneName (rgs:GenomeDefs) (library: Map<string, Dna>) assemblyPragmas node =
     match node with
     | GenePart(pp, gp) ->
-        let geneName = gp.x.gene.[1..].ToUpper()
+        let geneName = gp.x.[1..].ToUpper()
         let partPragmas = getPragmas pp
         getRGNew rgs [partPragmas; assemblyPragmas]
         |> mapMessages (fun s -> errorMessage RefGenomeError s node)

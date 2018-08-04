@@ -31,11 +31,6 @@ let defaultRefGenome = "cenpk"
 
 let aaLegal = "ACDEFGHIKLMNPQRSTVWY*" |> Set.ofSeq
 
-/// List of approved linker abbreviations.
-let legalLinkers =
-    [ '0' .. '9' ] @ [ 'A'..'E']
-    |> List.map (fun c -> sprintf "%c" c) |> Set.ofSeq
-
 [<Measure>] type OneOffset
 [<Measure>] type ZeroOffset
 

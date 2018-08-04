@@ -44,13 +44,6 @@ let extractLinker (s:string ) =
     if s.StartsWith("Linker_") then s.[7..]
     else failwithf "ERROR: unable to parse linker name '%s'" s
 
-let checkLinker (l:Linker) =
-    if not (legalLinkers.Contains(l.l1)) then
-        failwithf "ERROR: linker %s not a legal linker" l.l1
-    if not (legalLinkers.Contains(l.l2)) then
-        failwithf "ERROR: linker %s not a legal linker" l.l2
-
-
 /// Get auxillary cached information about key rabits for thumper rabits
 let loadThumperRef (f:string) =
     if not (File.Exists f) then

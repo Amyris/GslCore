@@ -54,9 +54,8 @@ type PartIdLegacy = {id:string; mods:Mod list}
    
 type GenePart = {gene:string; mods:Mod list; where: SourcePosition list}
 
-type GenePartWithLinker = {part:GenePart; linker:Linker option}
 type Part =
-    | GENEPART of GenePartWithLinker 
+    | GENEPART of GenePart
     | MARKERPART
     | INLINEDNA of Dna 
     | INLINEPROT of string 
@@ -134,18 +133,8 @@ let rec printPPP ppp =
         | MARKERPART -> "### "
         | PARTID(p) -> sprintf "@%s" p.id + (expandMods p.mods)
         | SOURCE_CODE(s) -> s.String // Part that was already expanded into a string
-        | GENEPART(gp) ->
-            let lOut =
-                match gp.linker with
-                    | None -> ""
-                    | Some(l) ->
-                        sprintf "%s-%s-%s-" l.l1 l.l2 l.orient // Emit linker
-            let p = gp.part
-                            
-            let gOut = p.gene
-            let modOut = expandMods p.mods
-                                
-            lOut + gOut + modOut // String.Join("",Array.ofSeq modOut)   
+        | GENEPART(gp) -> gp.gene + (expandMods gp.mods)
+
     // Now add in any inline pragma part with braces, ; separated etc
     let prOut = 
         if ppp.pr.pmap.Count=0 then "" 
@@ -188,9 +177,7 @@ let private createLegacyPart part =
     match part.x.basePart with
     | Gene(gw) ->
         convertMods part.x.mods
-        >>= (fun mods ->
-            let genePart = {gene = gw.x.gene; mods = mods; where = gw.positions}
-            ok (GENEPART({part=genePart; linker=gw.x.linker})))
+        >>= (fun mods -> ok (GENEPART({gene = gw.x; mods = mods; where = gw.positions})))
     | Marker(_) -> ok MARKERPART
     | InlineDna(s) -> ok (INLINEDNA(Dna(s.x, true, AllowAmbiguousBases)))
     | InlineProtein(s) -> ok (INLINEPROT s.x)

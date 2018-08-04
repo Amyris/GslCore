@@ -461,13 +461,13 @@ let private expandMut
             // Does it contain a mutation modification?
             // Make sure we have only one if so.
             // TODO: this restriction may not be necessary
-            match gp.part.mods |> List.choose modIsMutation with
+            match gp.mods |> List.choose modIsMutation with
             | [] -> p
             | [mutMod] ->
-                if (not (gp.part.gene.[0] = 'G' || gp.part.gene.[0] = 'g')) then
+                if (not (gp.gene.[0] = 'G' || gp.gene.[0] = 'g')) then
                     failwithf
                         "Allele swap gene must be g-type  e.g gABC1$x1234y.  '%c' is not a legal prefix for %s"
-                        (gp.part.gene.[0]) gp.part.gene
+                        (gp.gene.[0]) gp.gene
                 let rg' = getRG a rgs p.pr
 
                 // FIXME: unclear if this was the right behavior, as the rg is selected from both
@@ -492,9 +492,9 @@ let private expandMut
                          | CTERM -> "Cterm"
                          | NONETERM -> "No end preference")
 
-                if not (rg'.IsValid(gp.part.gene.[1..])) then
+                if not (rg'.IsValid(gp.gene.[1..])) then
                     failwithf "Undefined gene '%s' %O\n"
-                        (gp.part.gene.[1..]) (gp.part.where)
+                        (gp.gene.[1..]) (gp.where)
 
                 let asAACheck =
                     match a.pragmas.TryFind("warnoff") with
@@ -520,7 +520,7 @@ let private expandMut
                         verbose
                         rg'
                         codonUsage
-                        gp.part.gene
+                        gp.gene
                         mutMod
                         endPref
                         a.capabilities
@@ -724,10 +724,10 @@ let private expandHB
             // but that's embedded down in the mod list
 
             // Assume they must be using a gene part next to a het block.  Bad?
-            if (not (gp.part.gene.StartsWith("g"))) then
-                failwithf "Heterology block must be adjacent to g part, %s not allowed" gp.part.gene
+            if (not (gp.gene.StartsWith("g"))) then
+                failwithf "Heterology block must be adjacent to g part, %s not allowed" gp.gene
             let s = translateGenePrefix a.pragmas rg' GENE // Start with standard slice
-            let startSlice = applySlices verbose gp.part.mods s // Apply modifiers
+            let startSlice = applySlices verbose gp.mods s // Apply modifiers
             let newSlice =
                 {startSlice with
                     left =
@@ -739,12 +739,12 @@ let private expandHB
             // putting in new consolidated slice.
             let newMods =
                 SLICE(newSlice)
-                ::(gp.part.mods |> List.filter modIsNotSlice)
+                ::(gp.mods |> List.filter modIsNotSlice)
 
             // Prepend backwards as we will flip list at end - watch out, pragmas are reversed as well
             scan
                 a
-                ((GENEPART({gp with part = {gp.part with mods = newMods}}),pr3,fwd3)
+                ((GENEPART({gp with mods = newMods}),pr3,fwd3)
                  ::(INLINEDNA(alt), returnOrFail (pr2.Add("inline")), fwd2)
                  ::(GENEPART(gpUp),pr1,fwd1)
                  ::res)
@@ -778,13 +778,13 @@ let private expandHB
             // but that's embedded down in the mod list
 
             // Assume they must be using a gene part next to a het block.  Bad?
-            if not (gp.part.gene.[0] = 'g') then
+            if not (gp.gene.[0] = 'g') then
                 failwithf
                     "Slices adjacent to het block elements ~ must be gene slices - %s has '%c' gene part"
-                    gp.part.gene gp.part.gene.[0]
+                    gp.gene gp.gene.[0]
 
             let s = translateGenePrefix a.pragmas rg'' GENE // Start with standard slice
-            let startSlice = applySlices verbose gp.part.mods s // Apply modifiers
+            let startSlice = applySlices verbose gp.mods s // Apply modifiers
             let newSlice =
                 {startSlice with
                     left =
@@ -796,12 +796,12 @@ let private expandHB
             // Assemble new mod list by getting rid of existing slice mods and putting in new consolidated slice.
             let newMods =
                 SLICE(newSlice)
-                ::(gp.part.mods |> List.filter modIsNotSlice)
+                ::(gp.mods |> List.filter modIsNotSlice)
             // Prepend backwards as we will flip list at end
             // Note - currently destroy any pragmas attached to the heterology block itself
             scan
                 a
-                ((GENEPART({ gp with part = {gp.part with mods = newMods}} ),pr4,fwd4)
+                ((GENEPART({gp with mods = newMods}), pr4, fwd4)
                  ::(INLINEDNA(newInline), returnOrFail (pr2.Add("inline")),fwd2)
                  ::(GENEPART(gpUp),pr1,fwd1)
                  ::res)
@@ -831,11 +831,11 @@ let private expandHB
             // but that's embedded down in the mod list
 
             // Assume they must be using a gene part next to a het block.  Bad?
-            assert(gp.part.gene.[0] = 'g')
+            assert(gp.gene.[0] = 'g')
 
             // now build up the slice again and apply from scratch to the gene
             let s = translateGenePrefix a.pragmas rg' GENE // Start with standard slice
-            let startSlice = applySlices verbose gp.part.mods s // Apply modifiers
+            let startSlice = applySlices verbose gp.mods s // Apply modifiers
 
             // modify slice to take into account the bit we chopped off
             let newSlice =
@@ -860,14 +860,14 @@ let private expandHB
             // putting in new consolidated slice.
             let newMods =
                 SLICE(newSlice)
-                ::(gp.part.mods |> List.filter modIsNotSlice)
+                ::(gp.mods |> List.filter modIsNotSlice)
             // Prepend backwards as we will flip list at end
             // Note - currently destroy pr2 pragmas associated with the hetblock
             scan
                 a
                 ((GENEPART(gpDown),pr4,fwd4)
                  ::(INLINEDNA(newInline), returnOrFail (pr3.Add("inline")),fwd3)
-                 ::(GENEPART({gp with part = {gp.part with mods = newMods}}),pr1,fwd1)
+                 ::(GENEPART({gp with mods = newMods}), pr1, fwd1)
                  ::res)
                 tl
 
