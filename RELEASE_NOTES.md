@@ -1,3 +1,7 @@
+#### 0.5.2 - August 6 2018
+* Remove hutch ancillary mechanism.
+* Remove unimplemented inline linker specification syntax.
+
 #### 0.5.1 - July 18 2018
 * Rebuild of latest release.
 
