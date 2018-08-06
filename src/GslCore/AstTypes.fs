@@ -141,8 +141,6 @@ type Mutation = {f:char; t:char; loc:int; mType:MType}
 
 type Linker = {l1:string; l2:string; orient:string}
 
-type ParseGene = {gene: string; linker:Linker option}
-
 /// Supported binary operations on nodes.
 type BinaryOperator = | Add | Subtract | Multiply | Divide
 
@@ -201,7 +199,7 @@ and AstNode =
     | InlineDna of Node<string>
     | InlineProtein of Node<string>
     | HetBlock of Node<unit>
-    | Gene of Node<ParseGene>
+    | Gene of Node<string>
     | Assembly of Node<AstNode list>
     // AST nodes for Level 2 syntax support
     | L2Id of Node<L2Id>
@@ -613,11 +611,6 @@ let createPart mods pragmas basePart =
 
 /// Create a top-level part with empty collections and default values from a base part.
 let createPartWithBase = createPart [] []
-
-/// Create a top-level part given a gene ID.
-let createGenePart (gene: PString) (linker: Linker option) =
-    // The base part for this part will be a Gene AST node.
-    createPartWithBase (Gene({x = {gene = gene.i; linker = linker}; positions = [gene.pos]}))
 
 /// Capture a list of parsed mods and stuff them into their associated part.
 let stuffModsIntoPart astPart mods =

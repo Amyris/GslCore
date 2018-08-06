@@ -44,12 +44,6 @@ let extractLinker (s:string ) =
     if s.StartsWith("Linker_") then s.[7..]
     else failwithf "ERROR: unable to parse linker name '%s'" s
 
-let checkLinker (l:Linker) =
-    if not (legalLinkers.Contains(l.l1)) then
-        failwithf "ERROR: linker %s not a legal linker" l.l1
-    if not (legalLinkers.Contains(l.l2)) then
-        failwithf "ERROR: linker %s not a legal linker" l.l2
-
 // FIXME: this needs to be injected; moreover, none of the Thumper support belongs in GslCore.
 let thumper = "http://thumper.amyris.local"
 

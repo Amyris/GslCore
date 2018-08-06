@@ -53,8 +53,8 @@ let fooEqual1 = variableize "foo" (wrapInt 1)
 
 let namePragmaFoo = ParsePragma(nodeWrap {name = "name"; values = [String(nodeWrap "foo")]})
 
+let createGenePart name = nodeWrap name |> Gene
 
-let createGenePart name = Gene(nodeWrap {gene = name; linker = None})
 // fixtures and helper functions for parts
 let fooGene = createGenePart "gFOO"
 

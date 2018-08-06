@@ -190,18 +190,10 @@ IntExp:
 // parts
 // ==================
 
-// FIXME: should push this to the AST
-Linker: LINKER  { match $1.i.Split([| '-' |]) with
-                  | [| a;b;c |] -> {l1 = a ; l2 = b; orient = c}
-                  | _ -> failwithf "bad linker format '%s'" ($1.i)
-                }
-
 Part:
     | LPAREN AssemblyPart RPAREN    { $2 }
-    // gene part with a linker
-    | Linker HYPHEN ID              { createGenePart $3 (Some($1)) }
-    // gene part without a linker
-    | ID                            { createGenePart $1 None }
+    // gene part
+    | ID                            { createPartWithBase (Gene(tokenAsNode $1)) }
     | MARKER                        { createPartWithBase (Marker(tokenAsNode $1)) }
     // Inline DNA sequence  / gatca /
     | SLASH ID SLASH                { createPartWithBase (InlineDna(tokenAsNodeAfter uppercase $2)) }

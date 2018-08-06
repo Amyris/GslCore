@@ -94,11 +94,7 @@ let decompile tree =
         | InlineDna({x=dna; positions=_}) -> appendf "/%s/" dna
         | InlineProtein({x=pseq; positions=_}) -> appendf "/$%s/" pseq
         | HetBlock(_) -> append "~"
-        | Gene({x=pg; positions=_}) ->
-            match pg.linker with
-            | Some({l1=l1; l2=l2; orient=o}) ->
-                append (sprintf "%s-%s-%s-%s" l1 l2 o pg.gene)
-            | None -> append pg.gene
+        | Gene({x=gene; positions=_}) -> append gene
         // part mods
         | ParseRelPos({x=rp; positions=_}) ->
             _print rp.i state
