@@ -212,6 +212,17 @@ type TestProcAssembly() =
             "DGDGDGDGD"
             [ linkerAlice; oBar ; fuse ; longInlineAmp ; fuse; mediumInlineAmp; fuse ; oBar; linkerDoug]
 
+    // Disabled - failing test - compiler can't handle medium inline sequences like this
+    // gGAL3[-750S:-83S] {#fuse} ; gGAL3[-71S:-1S]
+    //[<Test>]
+    //member __.testDoubleMediumLong2InlineNoAmp() =
+    //    // mixed long and short inline sequences tagged for amplification other way around
+    //    runOne
+    //        "testDoubleMediumInlineNoAmp" 
+    //        [ linkerAlice; mediumInline ; fuse ; longInlineAmp ; linkerDoug]
+    //        "DGDGD"
+    //        [ linkerAlice; mediumInline ; fuse; longInlineAmp ; linkerDoug]
+
     [<Test>]
     member __.testDoubleSmallNoAmpLong1InlineLinkerFlanked() =
         // mixed long and short inline sequences with medium sequence NOT tagged for amp
