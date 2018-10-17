@@ -1,3 +1,6 @@
+#### 0.5.3 - October 17 2018
+* Remove hardcoded part lookup URL from RYSE module; provide global setter.
+
 #### 0.5.2 - August 6 2018
 * Remove hutch ancillary mechanism.
 * Remove unimplemented inline linker specification syntax.
