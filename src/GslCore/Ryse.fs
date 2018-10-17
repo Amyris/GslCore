@@ -44,8 +44,16 @@ let extractLinker (s:string ) =
     if s.StartsWith("Linker_") then s.[7..]
     else failwithf "ERROR: unable to parse linker name '%s'" s
 
-// FIXME: this needs to be injected; moreover, none of the Thumper support belongs in GslCore.
-let thumper = "http://thumper.amyris.local"
+// FIXME: this should be injected rather than being a mutable global.
+let mutable private lookupUrlBase = None
+
+/// Set the global URL used for looking up parts using RYCOD.
+let setPartLookupUrlBase urlBase = lookupUrlBase <- Some urlBase
+
+let partLookupUrl route =
+    match lookupUrlBase with
+    | Some urlBase -> sprintf "%s/%s" urlBase route
+    | None -> failwith "No global url provided for part lookup."
 
 // FIXME: this cache is global and mutable and can become stale when GSLC is embedded in a long-
 // running application.
@@ -57,7 +65,9 @@ let private fetchCache = new ConcurrentDictionary<string,rycodExample.ThumperRyc
 let mutable useCache = true
 
 /// Hutch interaction: fetch part defs from RYCOd service and cache them.
-let fetch (url:string) =
+let fetch (route:string) =
+
+    let url = partLookupUrl route
 
     let lookup () =
         try
@@ -80,11 +90,11 @@ let fetch (url:string) =
     else
         lookup()
 
-let getMS msId = sprintf "%s/rycod/megastitch_spec/%d" thumper msId |> fetch
-let getStitch stitchId = sprintf "%s/rycod/stitch_spec/%d" thumper stitchId |> fetch
+let getMS msId = sprintf "rycod/megastitch_spec/%d" msId |> fetch
+let getStitch stitchId = sprintf "rycod/stitch_spec/%d" stitchId |> fetch
 
 /// Get spec for rabit from hutch given rabit id
-let getRabit rId = sprintf "%s/rycod/rabit_spec/%d" thumper rId |> fetch
+let getRabit rId = sprintf "rycod/rabit_spec/%d" rId |> fetch
 
 /// Retrieve a Rabit specifiction from local cache or by making a thumper call.
 let getHutchInfoViaWeb ri =
