@@ -65,7 +65,7 @@ let private fetchCache = new ConcurrentDictionary<string,rycodExample.ThumperRyc
 let mutable useCache = true
 
 /// Hutch interaction: fetch part defs from RYCOd service and cache them.
-let fetch (route:string) =
+let getPart (route:string) =
 
     let url = partLookupUrl route
 
@@ -91,7 +91,7 @@ let fetch (route:string) =
         lookup()
 
 /// Get spec for rabit from hutch given rabit id
-let getRabit rId = sprintf "rycod/rabit_spec/%d" rId |> fetch
+let getRabit rId = sprintf "rycod/rabit_spec/%d" rId |> getPart
 
 /// Retrieve a Rabit specifiction from local cache or by making a thumper call.
 let getHutchInfoViaWeb ri =
