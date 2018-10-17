@@ -90,9 +90,6 @@ let fetch (route:string) =
     else
         lookup()
 
-let getMS msId = sprintf "rycod/megastitch_spec/%d" msId |> fetch
-let getStitch stitchId = sprintf "rycod/stitch_spec/%d" stitchId |> fetch
-
 /// Get spec for rabit from hutch given rabit id
 let getRabit rId = sprintf "rycod/rabit_spec/%d" rId |> fetch
 
