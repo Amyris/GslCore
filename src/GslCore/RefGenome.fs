@@ -28,24 +28,6 @@ let loadEnv (p:string) =
     else
         Map.empty
 
-/// Return either the first feature in features or an ORF if one is present.
-/// Raise an exception if more than one ORF is found.
-let chooseBestFeature features =
-    match features |> Array.filter (fun f -> f.featType = "ORF") with
-    | [||] -> features.[0]
-    | [|orf|] -> orf
-    | tooMany ->
-        failwithf "Multiple ORF features found for a single feature group: %+A" tooMany
-
-
-/// Filter features down to a preferred uniquely-named subset.
-/// For each group of features keyed by systematic name, choose an ORF if that feature
-// type is present, otherwise choose whichever feature appears first.
-let filterBestFeatures features =
-    features
-    |> Array.groupBy (fun f -> f.sysName)
-    |> Array.map (snd >> chooseBestFeature)
-
 /// Init genome definition, genes etc
 type GenomeDef(libDir: string, name: string) as this = class
     let mutable fasta = None
@@ -88,16 +70,27 @@ type GenomeDef(libDir: string, name: string) as this = class
                         d.Add(kv.Key,(Dna(kv.Value, true, AllowAmbiguousBases)))
                   Some d
                   )
-        let allFeatures = sgd.loadFeatures featsPath
 
-        //let featuresByGeneName
+        // Load all features, retaining only a single entry per systematic name.
+        // TODO: improve handling to retain all features per systematic name for intron/CDS support.
+        // For now, prefer the ORF or the first entry in the feature file.
+        let filteredFeatures =
+            sgd.loadFeatures featsPath
+            |> Array.groupBy (fun f -> f.sysName)
+            |> Array.map snd
+            |> Array.map (fun featureGroup ->
+                match featureGroup |> Array.filter (fun f -> f.featType = "ORF") with
+                | [||] -> featureGroup.[0]
+                | [|orf|] -> orf
+                | tooMany ->
+                    failwithf "Multiple ORF features found for a single feature group: %+A" tooMany)
 
-        let i1 = allFeatures |> Array.map (fun f -> f.sysName, f)
-        let i2 = allFeatures |> Array.map (fun f -> f.gene, f)
+        // Index the features by systematic name and common name.
+        let bySysName = filteredFeatures |> Array.choose (fun f -> if f.sysName <> "" then Some (f.sysName, f) else None)
+        let byGeneName = filteredFeatures |> Array.choose (fun f -> if f.gene <> "" then Some (f.gene, f) else None)
         features <-
-            Array.concat [ i1 ; i2 ]
-            |> Seq.filter (fun (x, _) -> x <> "")
-            |> Map.ofSeq
+            Array.append bySysName byGeneName
+            |> Map.ofArray
             |> Some
     
     member x.get(g:string) =
