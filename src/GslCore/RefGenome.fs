@@ -28,11 +28,28 @@ let loadEnv (p:string) =
     else
         Map.empty
 
+/// Return either the first feature in features or an ORF if one is present.
+/// Raise an exception if more than one ORF is found.
+let chooseBestFeature features =
+    match features |> Array.filter (fun f -> f.featType = "ORF") with
+    | [||] -> features.[0]
+    | [|orf|] -> orf
+    | tooMany ->
+        failwithf "Multiple ORF features found for a single feature group: %+A" tooMany
+
+
+/// Filter features down to a preferred uniquely-named subset.
+/// For each group of features keyed by systematic name, choose an ORF if that feature
+// type is present, otherwise choose whichever feature appears first.
+let filterBestFeatures features =
+    features
+    |> Array.groupBy (fun f -> f.sysName)
+    |> Array.map (snd >> chooseBestFeature)
+
 /// Init genome definition, genes etc
 type GenomeDef(libDir: string, name: string) as this = class
     let mutable fasta = None
-    let mutable feats = None
-    let mutable featIndex = None
+    let mutable features : Map<string,Feature> option = None
     let mutable suffixTreePath : string option = None
     let mutable suffixTree : SuffixTreeDisk option = None
 
@@ -71,17 +88,26 @@ type GenomeDef(libDir: string, name: string) as this = class
                         d.Add(kv.Key,(Dna(kv.Value, true, AllowAmbiguousBases)))
                   Some d
                   )
-        feats <-  Some(sgd.loadFeatures featsPath)
-        
-        let i1 = feats.Value |> Array.mapi (fun i f -> f.sysName,i)
-        let i2 = feats.Value |> Array.mapi (fun i f -> f.gene,i)
-        featIndex <- Array.concat [ i1 ; i2 ] |> Seq.filter (fun (x,_) -> x <> "") |> Map.ofSeq |> Some 
+        let allFeatures = sgd.loadFeatures featsPath
+
+        //let featuresByGeneName
+
+        let i1 = allFeatures |> Array.map (fun f -> f.sysName, f)
+        let i2 = allFeatures |> Array.map (fun f -> f.gene, f)
+        features <-
+            Array.concat [ i1 ; i2 ]
+            |> Seq.filter (fun (x, _) -> x <> "")
+            |> Map.ofSeq
+            |> Some
     
     member x.get(g:string) =
         ensureLoaded()
-        match featIndex with
+        match features with
             | None -> failwith "Access to unloaded GenomeDef"
-            | Some(fi) -> feats.Value.[fi.[g]]
+            | Some(feats) ->
+                match feats |> Map.tryFind g with
+                | Some f -> f
+                | None -> failwithf "No feature '%s' found in genome '%s'." g name
 
     /// Return a list of codons to avoid, if this reference genome has them defined.
     member x.GetCodonAvoid() =
@@ -96,8 +122,11 @@ type GenomeDef(libDir: string, name: string) as this = class
     /// Return array of all genomic features we have loaded
     member x.GetAllFeats() =
         ensureLoaded()
-        let distinctIndices = [ for kv in featIndex.Value -> kv.Value ] |> List.distinct
-        [| for i in distinctIndices -> feats.Value.[i] |]
+        features.Value
+        |> Map.toSeq
+        |> Seq.map snd
+        |> Seq.distinct
+        |> Array.ofSeq
 
     member x.Dna(errorContext:string,chr:string,l':int<ZeroOffset>,r':int<ZeroOffset>) =
             ensureLoaded()
@@ -136,10 +165,11 @@ ERROR: location:
                                   else failwithf "ERROR: loading suffix tree, unable to find file %s" suffixTreePath.Value           
     member x.IsValid(f:string) =
         ensureLoaded()
-        
-        match featIndex with
-            | None -> failwith "Uninitialized GenomeDef instance\n"
-            | Some(fi) -> fi.ContainsKey(f)   
+
+        match features with
+        | None -> failwith "Uninitialized GenomeDef instance\n"
+        | Some(feats) -> feats.ContainsKey(f)  
+         
     interface System.IDisposable with
         member x.Dispose() = match suffixTree with | None -> () | Some(std) -> (std :> System.IDisposable).Dispose()
 
