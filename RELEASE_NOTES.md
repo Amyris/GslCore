@@ -1,3 +1,6 @@
+#### 0.5.4 - December 18 2018
+* Improve correctness of feature file loading.
+
 #### 0.5.3 - October 17 2018
 * Remove hardcoded part lookup URL from RYSE module; provide global setter.
 
