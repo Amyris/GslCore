@@ -42,11 +42,11 @@ type token =
   | PVALUE of (PString)
   | DNAMUTATION of (PString)
   | AAMUTATION of (PString)
-  | LINKER of (PString)
   | QUOTED_STRING of (PString)
   | DOCSTRING of (PString)
   | STRING of (PString)
   | INT of (PInt)
+  | GENE_ID of (PString)
   | ID of (PString)
 type tokenId = 
     | TOKEN_LPAREN
@@ -90,11 +90,11 @@ type tokenId =
     | TOKEN_PVALUE
     | TOKEN_DNAMUTATION
     | TOKEN_AAMUTATION
-    | TOKEN_LINKER
     | TOKEN_QUOTED_STRING
     | TOKEN_DOCSTRING
     | TOKEN_STRING
     | TOKEN_INT
+    | TOKEN_GENE_ID
     | TOKEN_ID
     | TOKEN_end_of_input
     | TOKEN_error

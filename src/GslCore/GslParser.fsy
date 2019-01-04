@@ -15,11 +15,11 @@ let parse_error_rich = Some(AstErrorHandling.handleParseError)
 
 %start start // parser function
 %token <PString> ID
+%token <PString> GENE_ID
 %token <PInt>    INT
 %token <PString> STRING
 %token <PString> DOCSTRING
 %token <PString> QUOTED_STRING
-%token <PString> LINKER
 %token <PString> AAMUTATION
 %token <PString> DNAMUTATION
 %token <PString> PVALUE
@@ -194,6 +194,7 @@ Part:
     | LPAREN AssemblyPart RPAREN    { $2 }
     // gene part
     | ID                            { createPartWithBase (Gene(tokenAsNode $1)) }
+    | GENE_ID                       { createPartWithBase (Gene(tokenAsNode $1)) }
     | MARKER                        { createPartWithBase (Marker(tokenAsNode $1)) }
     // Inline DNA sequence  / gatca /
     | SLASH ID SLASH                { createPartWithBase (InlineDna(tokenAsNodeAfter uppercase $2)) }
@@ -302,7 +303,7 @@ L2Locus:
 
 // pFoo>Bar
 L2ExpElement:
-    | L2Promoter GREATERTHAN L2Id		{ createL2Element $1 $3 } 
+    | L2Promoter GREATERTHAN L2Id		{ createL2Element $1 $3 }
 
 // List of semicolon separated expression elements
 L2ExpElementList:
