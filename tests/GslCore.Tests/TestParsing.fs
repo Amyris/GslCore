@@ -51,6 +51,14 @@ type TestParsing() =
         assertRoundtrip "gFOO" [assemble [fooGenePart]]
 
     [<Test>]
+    member x.TestParsePartWithHyphen() =
+        assertRoundtrip "gFOO-BAR" [assemble [createGenePart "gFOO-BAR"]]
+
+    [<Test>]
+    member x.TestParsePartWithComma() =
+        assertRoundtrip "gFOO,BAR" [assemble [createGenePart "gFOO,BAR"]]
+
+    [<Test>]
     member x.TestParsePartWithMod() =
         assertRoundtrip "gFOO[~20:~200]" [assemble [fooGeneWithSlice]]
 
