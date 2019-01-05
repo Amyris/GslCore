@@ -65,7 +65,7 @@ type token =
   | DOCSTRING of (PString)
   | STRING of (PString)
   | INT of (PInt)
-  | GENE_ID of (PString)
+  | GENE_NAME of (PString)
   | ID of (PString)
 // This type is used to give symbolic names to token indexes, useful for error messages
 type tokenId = 
@@ -114,7 +114,7 @@ type tokenId =
     | TOKEN_DOCSTRING
     | TOKEN_STRING
     | TOKEN_INT
-    | TOKEN_GENE_ID
+    | TOKEN_GENE_NAME
     | TOKEN_ID
     | TOKEN_end_of_input
     | TOKEN_error
@@ -218,7 +218,7 @@ let tagOfToken (t:token) =
   | DOCSTRING _ -> 42 
   | STRING _ -> 43 
   | INT _ -> 44 
-  | GENE_ID _ -> 45 
+  | GENE_NAME _ -> 45 
   | ID _ -> 46 
 
 // This function maps integer indexes to symbolic token ids
@@ -269,7 +269,7 @@ let tokenTagToTokenId (tokenIdx:int) =
   | 42 -> TOKEN_DOCSTRING 
   | 43 -> TOKEN_STRING 
   | 44 -> TOKEN_INT 
-  | 45 -> TOKEN_GENE_ID 
+  | 45 -> TOKEN_GENE_NAME 
   | 46 -> TOKEN_ID 
   | 49 -> TOKEN_end_of_input
   | 47 -> TOKEN_error
@@ -457,7 +457,7 @@ let token_to_string (t:token) =
   | DOCSTRING _ -> "DOCSTRING" 
   | STRING _ -> "STRING" 
   | INT _ -> "INT" 
-  | GENE_ID _ -> "GENE_ID" 
+  | GENE_NAME _ -> "GENE_NAME" 
   | ID _ -> "ID" 
 
 // This function gets the data carried by a token as an object
@@ -508,7 +508,7 @@ let _fsyacc_dataOfToken (t:token) =
   | DOCSTRING _fsyacc_x -> Microsoft.FSharp.Core.Operators.box _fsyacc_x 
   | STRING _fsyacc_x -> Microsoft.FSharp.Core.Operators.box _fsyacc_x 
   | INT _fsyacc_x -> Microsoft.FSharp.Core.Operators.box _fsyacc_x 
-  | GENE_ID _fsyacc_x -> Microsoft.FSharp.Core.Operators.box _fsyacc_x 
+  | GENE_NAME _fsyacc_x -> Microsoft.FSharp.Core.Operators.box _fsyacc_x 
   | ID _fsyacc_x -> Microsoft.FSharp.Core.Operators.box _fsyacc_x 
 let _fsyacc_gotos = [| 0us; 65535us; 1us; 65535us; 0us; 1us; 1us; 65535us; 0us; 2us; 5us; 65535us; 0us; 22us; 6us; 22us; 9us; 22us; 56us; 22us; 60us; 22us; 5us; 65535us; 0us; 3us; 6us; 7us; 9us; 10us; 56us; 57us; 60us; 61us; 5us; 65535us; 0us; 9us; 6us; 9us; 9us; 9us; 56us; 9us; 60us; 9us; 2us; 65535us; 25us; 25us; 27us; 25us; 2us; 65535us; 25us; 26us; 27us; 28us; 7us; 65535us; 0us; 18us; 6us; 18us; 9us; 18us; 29us; 29us; 31us; 29us; 56us; 18us; 60us; 18us; 2us; 65535us; 29us; 30us; 31us; 32us; 2us; 65535us; 33us; 34us; 123us; 124us; 5us; 65535us; 0us; 19us; 6us; 19us; 9us; 19us; 56us; 19us; 60us; 19us; 2us; 65535us; 51us; 52us; 53us; 54us; 5us; 65535us; 0us; 21us; 6us; 21us; 9us; 21us; 56us; 21us; 60us; 21us; 2us; 65535us; 70us; 69us; 73us; 69us; 2us; 65535us; 70us; 71us; 73us; 74us; 5us; 65535us; 0us; 20us; 6us; 20us; 9us; 20us; 56us; 20us; 60us; 20us; 16us; 65535us; 37us; 82us; 70us; 82us; 73us; 82us; 85us; 82us; 86us; 82us; 89us; 82us; 96us; 82us; 97us; 82us; 98us; 82us; 99us; 82us; 130us; 82us; 132us; 82us; 135us; 82us; 137us; 82us; 140us; 82us; 143us; 82us; 3us; 65535us; 37us; 44us; 70us; 66us; 73us; 66us; 3us; 65535us; 37us; 42us; 70us; 65us; 73us; 65us; 16us; 65535us; 37us; 40us; 70us; 64us; 73us; 64us; 85us; 87us; 86us; 87us; 89us; 90us; 96us; 91us; 97us; 92us; 98us; 93us; 99us; 94us; 130us; 95us; 132us; 95us; 135us; 95us; 137us; 95us; 140us; 95us; 143us; 95us; 14us; 65535us; 0us; 121us; 6us; 121us; 9us; 121us; 37us; 121us; 56us; 121us; 60us; 121us; 70us; 121us; 73us; 121us; 86us; 121us; 100us; 121us; 126us; 121us; 155us; 121us; 176us; 121us; 179us; 121us; 14us; 65535us; 0us; 123us; 6us; 123us; 9us; 123us; 37us; 123us; 56us; 123us; 60us; 123us; 70us; 123us; 73us; 123us; 86us; 123us; 100us; 123us; 126us; 123us; 155us; 123us; 176us; 123us; 179us; 123us; 14us; 65535us; 0us; 125us; 6us; 125us; 9us; 125us; 37us; 125us; 56us; 125us; 60us; 125us; 70us; 125us; 73us; 125us; 86us; 125us; 100us; 125us; 126us; 127us; 155us; 125us; 176us; 125us; 179us; 125us; 13us; 65535us; 0us; 128us; 6us; 128us; 9us; 128us; 37us; 128us; 56us; 128us; 60us; 128us; 70us; 128us; 73us; 128us; 86us; 128us; 100us; 128us; 155us; 128us; 176us; 128us; 179us; 128us; 13us; 65535us; 0us; 154us; 6us; 154us; 9us; 154us; 37us; 46us; 56us; 154us; 60us; 154us; 70us; 67us; 73us; 67us; 86us; 153us; 100us; 153us; 155us; 153us; 176us; 169us; 179us; 169us; 6us; 65535us; 130us; 131us; 132us; 133us; 135us; 136us; 137us; 138us; 140us; 141us; 143us; 144us; 2us; 65535us; 121us; 148us; 122us; 148us; 2us; 65535us; 121us; 151us; 122us; 152us; 1us; 65535us; 121us; 122us; 11us; 65535us; 0us; 157us; 6us; 157us; 9us; 157us; 37us; 157us; 56us; 157us; 60us; 157us; 70us; 157us; 73us; 157us; 86us; 157us; 100us; 157us; 155us; 156us; 10us; 65535us; 0us; 12us; 6us; 12us; 9us; 12us; 37us; 48us; 56us; 12us; 60us; 12us; 70us; 68us; 73us; 68us; 86us; 101us; 100us; 101us; 7us; 65535us; 0us; 161us; 6us; 161us; 9us; 161us; 56us; 161us; 60us; 161us; 162us; 163us; 173us; 161us; 6us; 65535us; 0us; 170us; 6us; 170us; 9us; 170us; 56us; 170us; 60us; 170us; 173us; 174us; 7us; 65535us; 0us; 172us; 6us; 172us; 9us; 172us; 56us; 172us; 60us; 172us; 176us; 172us; 179us; 172us; 5us; 65535us; 0us; 178us; 6us; 178us; 9us; 178us; 56us; 178us; 60us; 178us; 7us; 65535us; 0us; 175us; 6us; 175us; 9us; 175us; 56us; 175us; 60us; 175us; 176us; 175us; 179us; 175us; 7us; 65535us; 0us; 181us; 6us; 181us; 9us; 181us; 56us; 181us; 60us; 181us; 176us; 177us; 179us; 180us; 5us; 65535us; 0us; 14us; 6us; 14us; 9us; 14us; 56us; 14us; 60us; 14us; 8us; 65535us; 15us; 191us; 192us; 193us; 194us; 195us; 199us; 189us; 204us; 190us; 210us; 190us; 213us; 191us; 214us; 191us; 3us; 65535us; 196us; 188us; 200us; 188us; 206us; 207us; 2us; 65535us; 196us; 197us; 200us; 201us; 6us; 65535us; 15us; 196us; 199us; 200us; 204us; 196us; 210us; 196us; 213us; 196us; 214us; 196us; 5us; 65535us; 15us; 198us; 204us; 198us; 210us; 198us; 213us; 198us; 214us; 198us; 5us; 65535us; 15us; 202us; 204us; 202us; 210us; 202us; 213us; 202us; 214us; 202us; 5us; 65535us; 15us; 212us; 204us; 205us; 210us; 211us; 213us; 212us; 214us; 212us; 3us; 65535us; 15us; 208us; 213us; 208us; 214us; 208us; 3us; 65535us; 15us; 213us; 213us; 213us; 214us; 213us; 3us; 65535us; 15us; 16us; 213us; 216us; 214us; 215us; |]
 let _fsyacc_sparseGotoTableRowOffsets = [|0us; 1us; 3us; 5us; 11us; 17us; 23us; 26us; 29us; 37us; 40us; 43us; 49us; 52us; 58us; 61us; 64us; 70us; 87us; 91us; 95us; 112us; 127us; 142us; 157us; 171us; 185us; 192us; 195us; 198us; 200us; 212us; 223us; 231us; 238us; 246us; 252us; 260us; 268us; 274us; 283us; 287us; 290us; 297us; 303us; 309us; 315us; 319us; 323us; |]

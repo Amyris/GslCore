@@ -51,12 +51,8 @@ type TestParsing() =
         assertRoundtrip "gFOO" [assemble [fooGenePart]]
 
     [<Test>]
-    member x.TestParsePartWithHyphen() =
-        assertRoundtrip "gFOO-BAR" [assemble [createGenePart "gFOO-BAR"]]
-
-    [<Test>]
-    member x.TestParsePartWithComma() =
-        assertRoundtrip "gFOO,BAR" [assemble [createGenePart "gFOO,BAR"]]
+    member x.TestParseEscapedPart() =
+        assertRoundtrip "`gFOO-BAR,(WEIRD),-`" [assemble [createGenePart "gFOO-BAR,(WEIRD),-" |> basePartWrap]]
 
     [<Test>]
     member x.TestParsePartWithMod() =
@@ -128,13 +124,14 @@ end
 
     [<Test>]
     member x.TestFunctionCallManyArgs() =
-        let source = "foo(1, 1.000000, \"hello\", gFOO, (gFOO))"
+        let source = "foo(1, 1.000000, \"hello\", gFOO, (gFOO), `gFOO-BAR`)"
         let args = [
             typedValue IntType (wrapInt 1);
             typedValue FloatType (wrapFloat 1.0);
             typedValue StringType (wrapString "hello");
             typedValue PartType (fooGenePart);
             typedValue PartType (assemble [fooGenePart]);
+            typedValue PartType (createGenePart "gFOO-BAR" |> basePartWrap);
             ]
     
         let fCall = FunctionCall(nodeWrap {name="foo"; args=args})

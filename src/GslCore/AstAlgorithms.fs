@@ -26,6 +26,13 @@ type PrintState =
     insideAssembly: bool;
     quoteStrings: bool}
 
+/// Characters that appear in gene names that we need to escape with backticks
+/// when decompiling.
+let weirdGeneNameChars = [|'-'; ','; '('; ')'|]
+
+/// Return true if we need to escape this gene name with backticks.
+let shouldEscapeGeneName = String.exists (fun c -> Array.contains c weirdGeneNameChars)
+
 /// Decompile an AST back into GSL source code.
 let decompile tree =
     let indentSize = 4
@@ -94,7 +101,13 @@ let decompile tree =
         | InlineDna({x=dna; positions=_}) -> appendf "/%s/" dna
         | InlineProtein({x=pseq; positions=_}) -> appendf "/$%s/" pseq
         | HetBlock(_) -> append "~"
-        | Gene({x=gene; positions=_}) -> append gene
+        | Gene({x=gene; positions=_}) ->
+            if shouldEscapeGeneName gene then
+                append "`"
+                append gene
+                append "`"
+            else
+                append gene
         // part mods
         | ParseRelPos({x=rp; positions=_}) ->
             _print rp.i state
@@ -197,10 +210,10 @@ let decompile tree =
             | None -> ()
             printSemicolonSeparatedList lw.x.parts
         | Roughage({x=rLine; positions=_}) ->
-            // decompile lines of rougage as individual blocks 
+            // decompile lines of rougage as individual blocks
             append "<@ "
 
-            let header = 
+            let header =
                 match rLine.locus, rLine.marker with
                 | Some(lw), Some(mw) -> [sprintf "%s^[%s]" lw.x.String mw.x]
                 | Some(lw), None -> [sprintf "%s^" lw.x.String]
@@ -323,7 +336,7 @@ type FoldMapDirection = | TopDown | BottomUp
 /// node and the incoming state, and they can operate again on pre-transformation node and the
 /// state resulting from the pre-transformation update.  Virtually all transformations should be
 /// exclusively PreTransform with no PostTransform mode, as the behavior of foldmap in this mode
-/// ensures that natual block scoping rules apply.  However, transient pragmas have challenging 
+/// ensures that natual block scoping rules apply.  However, transient pragmas have challenging
 /// semantics and require special treatment, so the pragma collection function requires both of
 /// these modes to ensure that blocks capture the transient pragma state, leaving a clean slate
 /// in the outer scope.  Note that state updates ALWAYS operate on the pre-transformation node
@@ -442,7 +455,7 @@ let foldmap
 
             let nCores = System.Environment.ProcessorCount
             // leave one for the OS, make sure at least 1!
-            let useNCores = nCores - 1 |> max 1 
+            let useNCores = nCores - 1 |> max 1
 
             Array.zip statesForNodes nodeArray
             |> PSeq.map (fun (inputState, n) ->
@@ -460,11 +473,11 @@ let foldmap
             | VariableBinding(b) ->
                 foldDropState b.x.value
                 >>= (fun newInner -> ok (VariableBinding({b with x = {b.x with value = newInner}})))
-            | TypedValue(tv) -> 
+            | TypedValue(tv) ->
                 let t, v = tv.x
                 foldDropState v
                 >>= (fun newInner -> ok (TypedValue({tv with x = (t, newInner)})))
-            | BinaryOperation(bow) -> 
+            | BinaryOperation(bow) ->
                 tupleResults (foldDropState bow.x.left) (foldDropState bow.x.right)
                 >>= (fun (newLeft, newRight) ->
                     ok (BinaryOperation({bow with x={bow.x with left = newLeft; right = newRight}})))
@@ -503,7 +516,7 @@ let foldmap
                 collect (List.map foldDropState aw.x)
                 >>= (fun newParts -> ok (Assembly({aw with x = newParts})))
             | x -> nonExhaustiveError x
-        
+
         // depending on the direction switch, either first transform the node and then its children,
         // or transform the children first and then the current node.  This is the difference between
         // rebuilding the tree top-down and bottom-up.

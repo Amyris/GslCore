@@ -105,12 +105,12 @@ let private tokenIdToString t =
     | TOKEN_PVALUE-> "pragma value"
     | TOKEN_DNAMUTATION-> "dna mutation"
     | TOKEN_AAMUTATION-> "amino acid mutation"
-    | TOKEN_LINKER-> "linker"
     | TOKEN_QUOTED_STRING-> "quoted string"
     | TOKEN_DOCSTRING-> "docstring"
     | TOKEN_STRING-> "string"
     | TOKEN_INT-> "int"
     | TOKEN_ID-> "identifier"
+    | TOKEN_GENE_ID-> "gene identifier"
     | TOKEN_end_of_input -> "EOF"
     | TOKEN_error -> "error token"
 

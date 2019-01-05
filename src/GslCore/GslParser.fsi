@@ -46,7 +46,7 @@ type token =
   | DOCSTRING of (PString)
   | STRING of (PString)
   | INT of (PInt)
-  | GENE_ID of (PString)
+  | GENE_NAME of (PString)
   | ID of (PString)
 type tokenId = 
     | TOKEN_LPAREN
@@ -94,7 +94,7 @@ type tokenId =
     | TOKEN_DOCSTRING
     | TOKEN_STRING
     | TOKEN_INT
-    | TOKEN_GENE_ID
+    | TOKEN_GENE_NAME
     | TOKEN_ID
     | TOKEN_end_of_input
     | TOKEN_error

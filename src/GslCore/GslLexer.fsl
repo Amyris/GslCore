@@ -19,7 +19,9 @@ type GslTokenizerMode =
 let num = ['0'-'9']+
 let intNum = '-'? num
 let ident = ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
-let geneIdent = ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ',']* // Some gene names include hyphens and commas.
+
+// Use backticks to escape gene literal names with odd characters.
+let geneName = '`' ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ',' '(' ')']* '`'
 let pval = [^ ';' '#' '}' ' ' '\t' '\n' '\r'][^ ';' '}' ' ' '\t' '\n' '\r']*
 let pvalVariable = '&' ident
 let pvalAllowSemicolons = [^ '#' '}' ' ' '\t' '\n' '\r'][^ '}' ' ' '\t' '\n' '\r']*
@@ -42,7 +44,7 @@ rule main setTokenizer = parse
     | "open" { OPEN } // open external file
     | '&' ident { VARIABLE(tokenizeStringTrimFirstChar lexbuf) } // variable reference
     | ident { ID(tokenizeString lexbuf) }
-    | geneIdent { GENE_ID(tokenizeString lexbuf) }
+    | geneName { GENE_NAME(tokenizeEscapedGeneName lexbuf) }
     | '~' { TILDE(tokenizeUnit lexbuf) }
     | ':' { COLON }
     | ';' { SEMICOLON(tokenizeUnit lexbuf) }

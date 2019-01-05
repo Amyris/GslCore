@@ -84,6 +84,12 @@ let tokenizeStringTrimFirstChar lexbuf =
     let name = (lexeme lexbuf).[1..]
     {i = name; pos = getPos lexbuf}
 
+/// Tokenize a gene name that has been escaped using backticks.
+let tokenizeEscapedGeneName lexbuf =
+    let input = lexeme lexbuf
+    let name = input.[1..input.Length-2]
+    {i = name; pos = getPos lexbuf}
+
 /// Create a new position bracketed by a pair of positions.
 let posBracketTokens left right : SourcePosition = {s = left.pos.s; e = right.pos.e}
 
@@ -92,9 +98,9 @@ let posBracketTokens left right : SourcePosition = {s = left.pos.s; e = right.po
 // =============================
 
 /// Wrapper type for every AST node.
-/// This enables adding extensible metadata to the AST for tracking things such as source 
+/// This enables adding extensible metadata to the AST for tracking things such as source
 /// code position.  pos tracks position history of this node (when functions expand) with highest level call first
-/// with 
+/// with
 [<CustomEquality>][<NoComparison>]
 type Node<'T when 'T: equality> = {x: 'T; positions: SourcePosition list}
     with
@@ -104,7 +110,7 @@ type Node<'T when 'T: equality> = {x: 'T; positions: SourcePosition list}
         match other with
         | :? Node<'T> as o -> this.x = o.x
         | _ -> false
-    
+
 
 /// Generic helper functions for wrapping node payloads.
 
@@ -124,7 +130,7 @@ let tokenAsNodeAfter f (token: Positioned<_>) = {x = f (token.i); positions = [t
 
 /// Straight-up convert a Positioned token into a node.
 let tokenAsNode (token: Positioned<_>) = {x = token.i; positions = [token.pos]}
- 
+
 // ==================
 // AST type declaration
 // ==================
@@ -289,7 +295,7 @@ and FunctionCall = {name: string; args: AstNode list}
 /// Binary operation on two nodes.
 and BinaryOperation = {op: BinaryOperator; left: AstNode; right: AstNode}
 
-// ----- domain-specific nodes ------ 
+// ----- domain-specific nodes ------
 
 /// Parse type for pragmas.  Values may be variables.
 and ParsePragma = {name: string; values: AstNode list}
@@ -379,7 +385,7 @@ let prependPositionsAstNode (newPos:SourcePosition list) (x:AstNode) =
     | BinaryOperation(nw) -> BinaryOperation(prependPositionsNode newPos nw)
     | Negation(nw) -> Negation(prependPositionsNode newPos nw)
     | ParseRelPos(nw) -> ParseRelPos(prependPositionsNode newPos nw)
-    | RelPos(nw) -> RelPos(prependPositionsNode newPos nw) 
+    | RelPos(nw) -> RelPos(prependPositionsNode newPos nw)
     | Slice(nw) -> Slice(prependPositionsNode newPos nw)
     | Mutation(nw) -> Mutation(prependPositionsNode newPos nw)
     | DotMod(nw) -> DotMod(prependPositionsNode newPos nw)
@@ -402,7 +408,7 @@ let prependPositionsAstNode (newPos:SourcePosition list) (x:AstNode) =
     | FunctionCall(nw) -> FunctionCall(prependPositionsNode newPos nw)
     | Assembly(nw) -> Assembly(prependPositionsNode newPos nw)
     | ParseError(nw) -> ParseError(prependPositionsNode newPos nw)
-    | Splice(_)  as x -> x // Slices are defined to have no position so don't try to update (see .pos below) 
+    | Splice(_)  as x -> x // Slices are defined to have no position so don't try to update (see .pos below)
 
 // ------ Active patterns on the AST of general interest ------
 
@@ -449,7 +455,7 @@ let (|ValidBasePart|_|) node =
     | _ -> None
 
 /// Match all nodes which have no literal representation in source code.
-let (|BookkeepingNode|_|) node = 
+let (|BookkeepingNode|_|) node =
     match node with
     | FunctionLocals(_) -> Some node
     | _ -> None
@@ -541,7 +547,7 @@ let negate node = Negation(nodeWrapWithNodePosition node node)
 // TODO: improve positioning
 let createVariableBinding name varType value =
     VariableBinding(nodeWrapWithTokenPosition name {name=name.i; varType=varType; value=value})
-   
+
 /// Create an AST node for a typed value passed to a function argument.
 let createTypedValue t v = TypedValue(nodeWrapWithNodePosition v (t, v))
 
