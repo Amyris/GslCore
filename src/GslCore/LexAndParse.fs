@@ -109,8 +109,7 @@ let private tokenIdToString t =
     | TOKEN_DOCSTRING-> "docstring"
     | TOKEN_STRING-> "string"
     | TOKEN_INT-> "int"
-    | TOKEN_ID-> "identifier"
-    | TOKEN_GENE_ID-> "gene identifier"
+    | TOKEN_ID | TOKEN_GENE_NAME -> "identifier"
     | TOKEN_end_of_input -> "EOF"
     | TOKEN_error -> "error token"
 
