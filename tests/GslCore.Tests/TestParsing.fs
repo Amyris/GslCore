@@ -52,7 +52,7 @@ type TestParsing() =
 
     [<Test>]
     member x.TestParseEscapedPart() =
-        assertRoundtrip "`gFOO-BAR,(WEIRD),-`" [assemble [createGenePart "gFOO-BAR,(WEIRD),-" |> basePartWrap]]
+        assertRoundtrip "`gFOO-BAR,(WE'IRD),-`" [assemble [createGenePart "gFOO-BAR,(WE'IRD),-" |> basePartWrap]]
 
     [<Test>]
     member x.TestParsePartWithMod() =

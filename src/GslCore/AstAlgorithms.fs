@@ -28,7 +28,7 @@ type PrintState =
 
 /// Characters that appear in gene names that we need to escape with backticks
 /// when decompiling.
-let weirdGeneNameChars = [|'-'; ','; '('; ')'|]
+let weirdGeneNameChars = [|'-'; ','; '('; ')'; '''|]
 
 /// Return true if we need to escape this gene name with backticks.
 let shouldEscapeGeneName = String.exists (fun c -> Array.contains c weirdGeneNameChars)

@@ -21,7 +21,7 @@ let intNum = '-'? num
 let ident = ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']*
 
 // Use backticks to escape gene literal names with odd characters.
-let geneName = '`' ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ',' '(' ')']* '`'
+let geneName = '`' ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_' '-' ',' '(' ')' '\'']* '`'
 let pval = [^ ';' '#' '}' ' ' '\t' '\n' '\r'][^ ';' '}' ' ' '\t' '\n' '\r']*
 let pvalVariable = '&' ident
 let pvalAllowSemicolons = [^ '#' '}' ' ' '\t' '\n' '\r'][^ '}' ' ' '\t' '\n' '\r']*
