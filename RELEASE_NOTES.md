@@ -1,3 +1,7 @@
+#### 0.6.0 - January 7 2018
+* Add syntax for backtick-escaped gene names with special characters.
+* Remove remaining lexer/parser support for deprecated inline linker syntax.
+
 #### 0.5.4 - December 18 2018
 * Improve correctness of feature file loading.
 
