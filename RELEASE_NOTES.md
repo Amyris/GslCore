@@ -1,3 +1,6 @@
+#### 0.4.41 - June 29th 2018
+* Demerix production release - fix for cutLeft/Right coordinate bug in sourceFr/To
+
 #### 0.4.40 - June 25th 2018
 * Demetrix production release - fix for wrong destFr/destTo coords in rev parts with variable ends
 
