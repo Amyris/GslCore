@@ -14,6 +14,12 @@
         <FsLexYacc Include="GslParser.fsy"> </FsLexYacc>
   -->
   <ItemGroup>
+    <FsYacc Include=".\GslParser.fsy">
+      <OtherFlags>--module GslParser -o GslParser.fs</OtherFlags>
+    </FsYacc>
+    <FsLex Include=".\GslLexer.fsl">
+      <OtherFlags>--unicode -o GslLexer.fs</OtherFlags>
+    </FsLex>
     <Compile Include="Constants.fs" />
     <Compile Include="Markers.fs" />
     <Compile Include="Utils.fs" />
@@ -64,4 +70,5 @@
     <Compile Include="AssemblyInfo.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
+  <Import Project="..\..\packages\FsLexYacc\build\FsLexYacc.targets" />
 </Project>
