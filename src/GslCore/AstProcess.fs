@@ -6,7 +6,7 @@ open Amyris.Dna
 open AstTypes
 open AstErrorHandling
 open AstAlgorithms
-open Microsoft.FSharp.Text.Lexing
+open FSharp.Text.Lexing
 open RefGenome
 open utils
 open constants
