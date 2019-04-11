@@ -1,3 +1,6 @@
+#### 0.4.42 - April 11th 2019
+* Demerix production release - updating FsLexYacc and FsLexYacc.Runtime to 8.0.1
+
 #### 0.4.41 - June 29th 2018
 * Demerix production release - fix for cutLeft/Right coordinate bug in sourceFr/To
 
