@@ -1,7 +1,7 @@
 ﻿module AstErrorHandling
 open AstTypes
 open Amyris.ErrorHandling
-open Microsoft.FSharp.Text.Parsing
+open FSharp.Text.Parsing
 open System.Diagnostics
 open utils
 open constants

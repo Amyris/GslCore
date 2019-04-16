@@ -3,8 +3,8 @@ module LexAndParse
 open constants
 open GslParser
 open GslLexer
-open Microsoft.FSharp.Text.Lexing
-open Microsoft.FSharp.Text.Parsing
+open FSharp.Text.Lexing
+open FSharp.Text.Parsing
 open utils
 open Amyris.ErrorHandling
 open AstTypes

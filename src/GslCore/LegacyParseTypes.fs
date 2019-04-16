@@ -1,5 +1,5 @@
 ﻿module LegacyParseTypes
-open Microsoft.FSharp.Text.Lexing
+open FSharp.Text.Lexing
 open Amyris.Bio.primercore
 open Amyris.ErrorHandling
 open Amyris

@@ -4,4 +4,6 @@ FSharp.Core
 FsLexYacc.Runtime
 group Test
 NUnit
-NUnit.Runners
+Microsoft.NET.Test.Sdk
+NUnit3TestAdapter
+NUnit.ConsoleRunner
