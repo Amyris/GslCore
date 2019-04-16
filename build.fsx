@@ -4,6 +4,7 @@
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
 open Fake
+open Fake.Testing
 open Fake.Git
 open Fake.AssemblyInfoFile
 open Fake.ReleaseNotesHelper
@@ -48,7 +49,7 @@ let tags = "GSL amyris compiler'"
 let solutionFile  = "GslCore.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
-let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
+let testAssemblies = "tests/**/bin/Release/netcoreapp2.0/*Tests*.dll"
 
 // Git configuration (used for publishing documentation in gh-pages branch)
 // The profile where the project is posted
@@ -140,12 +141,13 @@ Target "Build" (fun _ ->
 // Run the unit tests using test runner
 
 Target "RunTests" (fun _ ->
-    !! testAssemblies
-    |> NUnit (fun p ->
-        { p with
-            DisableShadowCopy = true
-            TimeOut = TimeSpan.FromMinutes 20.
-            OutputFile = "TestResults.xml" })
+    DotNetCli.Test 
+        (fun p -> 
+            {p with 
+                Configuration="Release"
+                Project="tests/GslCore.Tests"
+            }
+        )
 )
 
 #if MONO
@@ -174,6 +176,7 @@ Target "NuGet" (fun _ ->
         { p with
             OutputPath = "bin"
             Version = release.NugetVersion
+            MinimumFromLockFile = true
             ReleaseNotes = toLines release.Notes})
 )
 
