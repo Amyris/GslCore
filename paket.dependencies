@@ -12,12 +12,7 @@ nuget FSharp.Collections.ParallelSeq
 
 group Build
   source https://nuget.org/api/v2
-
-  nuget SourceLink.Fake
-  nuget FAKE < 5
-  nuget FSharp.Formatting
-
-  github fsharp/FAKE modules/Octokit/Octokit.fsx
+  nuget FSharp.Formatting framework: >= netstandard2.0
 
 group Test
   source https://nuget.org/api/v2
