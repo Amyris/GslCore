@@ -116,7 +116,7 @@ Target.create "AssemblyInfo" (fun _ ->
 
     !! "src/**/*.??proj"
     |> Seq.map getProjectDetails
-    |> Seq.iter (fun (projFileName, projectName, folderName, attributes) ->
+    |> Seq.iter (fun (projFileName, _, folderName, attributes) ->
         match projFileName with
         | Fsproj -> AssemblyInfoFile.createFSharp (folderName </> "AssemblyInfo.fs") attributes
         | Csproj -> AssemblyInfoFile.createCSharp ((folderName </> "Properties") </> "AssemblyInfo.cs") attributes
@@ -226,7 +226,7 @@ let generateHelp' fail =
         buildDocumentationTarget ()
         Trace.traceImportant "Help generated"
     with
-    | e when not fail ->
+    | _ when not fail ->
         Trace.traceImportant "generating help documentation failed"
 
 let generateHelp fail =
@@ -257,7 +257,7 @@ Target.create "GenerateHelpDebug" (fun _ ->
 )
 
 Target.create "KeepRunning" (fun _ ->
-    use watcher = !! "docs/content/**/*.*" |> ChangeWatcher.run (fun changes ->
+    use watcher = !! "docs/content/**/*.*" |> ChangeWatcher.run (fun _ ->
          generateHelp' true
     )
 
