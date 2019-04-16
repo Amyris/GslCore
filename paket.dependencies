@@ -15,7 +15,7 @@ group Build
 
   nuget SourceLink.Fake
   nuget FAKE < 5
-  nuget FSharp.Formatting 2.14.4
+  nuget FSharp.Formatting
 
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
