@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -20,7 +20,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{83F16175-43B1-4C90-A1EE-8E351C33435D}"
 	ProjectSection(SolutionItems) = preProject
 		docs\tools\generate.fsx = docs\tools\generate.fsx
-		docs\tools\templates\template.cshtml = docs\tools\templates\template.cshtml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D5255-776D-4B61-85F9-73C37AA1FB9A}"
@@ -31,9 +30,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ED8079DD-2B06-4030-9F0F-DC548F98E1C4}"
 EndProject
-Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "GslCore", "src\GslCore\GslCore.fsproj", "{1031D3A4-24D9-49BB-8D20-4DDCC51840CB}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GslCore", "src\GslCore\GslCore.fsproj", "{1031D3A4-24D9-49BB-8D20-4DDCC51840CB}"
 EndProject
-Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "GslCore.Tests", "tests\GslCore.Tests\GslCore.Tests.fsproj", "{5ED77947-E3D2-48A3-A953-3F57B682617B}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "GslCore.Tests", "tests\GslCore.Tests\GslCore.Tests.fsproj", "{5ED77947-E3D2-48A3-A953-3F57B682617B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

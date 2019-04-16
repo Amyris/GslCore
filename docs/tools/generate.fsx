@@ -1,14 +1,5 @@
 #I __SOURCE_DIRECTORY__
-#I "../../packages/build/FSharp.Formatting/lib/net461"
-#r "FSharp.CodeFormat.dll"
-#r "FSharp.Literate.dll"
-#r "FSharp.Markdown.dll"
-#r "FSharp.MetadataFormat.dll"
-#r "FSharp.Formatting.Common.dll"
-#r "RazorEngine.dll"
-#r "FSharp.Formatting.Razor.dll"
-#r "System.Web.Razor.dll"
-#r "../../packages/System.ValueTuple/lib/portable-net40+sl4+win8+wp8/System.ValueTuple.dll"
+#load "../../packages/build/FSharp.Formatting/FSharp.Formatting.fsx"
 
 
 open System.IO
@@ -35,18 +26,18 @@ let rec copyRecursive dir1 dir2 =
 #if TESTING
 let website = __SOURCE_DIRECTORY__ + "../output"
 #else
-let website = "/FSharp.Formatting"
+let website = "/GSL"
 #endif
 
-let githubLink = "http://github.com/fsprojects/FSharp.Formatting"
+let githubLink = "https://github.com/demetrixbio/GslCore"
 
 // Specify more information about your project
 let info =
-  [ "project-name", "FSharp.Formatting"
-    "project-author", "Tomas Petricek"
-    "project-summary", "A package for building great F# documentation, samples and blogs"
+  [ "project-name", "GSL"
+    "project-author", "Darren Platt"
+    "project-summary", "Compiler and tools for GSL."
     "project-github", githubLink
-    "project-nuget", "http://nuget.org/packages/FSharp.Formatting" ]
+    "project-nuget", "https://www.nuget.org/packages/GslCore/" ]
 
 let referenceBinaries =
   [ "FSharp.CodeFormat.dll"; "FSharp.Literate.dll"; "FSharp.Markdown.dll"; "FSharp.MetadataFormat.dll"; "FSharp.Formatting.Common.dll" ]
