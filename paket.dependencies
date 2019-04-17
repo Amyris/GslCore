@@ -4,8 +4,7 @@ nuget FSharp.Core >= 4.1.0 redirects: force
 nuget Dmx.Amyris.Bio >= 2.0.23 framework: >= netstandard2.0
 nuget FSharp.Data
 nuget Newtonsoft.Json
-nuget FsLexYacc 8.0.1
-nuget FsLexYacc.Runtime 8.0.1
+nuget FsLexYacc
 nuget FParsec
 nuget MathNet.Numerics
 nuget FSharp.Collections.ParallelSeq
