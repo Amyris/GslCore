@@ -39,3 +39,6 @@ The `#promlen` pragma provides similar functionality but affects the promoter le
 
 The `#termlenmrna` pragma affects the length of a terminator when it is part of an mRNA part.  This is controlled independently from the stand-alone terminator part.  It defaults to 200bp.
 
+### Structure modifying pragmas
+
+The `#topology` pragma controls the structure of the output of a particular design. It can be either `circular` or `linear`. Linear is the default and to be used in most of the cases. However, if you want to design something that has circular structure, like a plasmid, use `circular` topology.
