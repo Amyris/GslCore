@@ -8,10 +8,21 @@ open Amyris.Bio.utils
 open utils
 open Amyris.Dna
 open Genbank
-        
+open pragmaTypes
+
+let topologyToString : Topology -> string =
+    function
+    | Linear -> "linear"
+    | Circular -> "circular"
+
 /// Emit Snapgene (genbank) format
 ///  outDir : string   tag: string  prefix for files  assemblies : List of AssemblyOut
-let dumpSnapgene (outDir:string) (tag:string) (assemblies : DnaAssembly list) (primers:DivergedPrimerPair list list option) =
+let dumpSnapgene
+    (outDir : string)
+    (tag : string)
+    (assemblies : DnaAssembly list)
+    (primers : DivergedPrimerPair list list option) : unit =
+    
     // pair up the primer list (if they exist) with the matching assembly
     let assemWithPrimers =  
         match primers with
@@ -37,6 +48,7 @@ let dumpSnapgene (outDir:string) (tag:string) (assemblies : DnaAssembly list) (p
         let locusName = sprintf "Exported GSL %s" tag
         let totLength = a.dnaParts |> List.map (fun p -> p.dna.Length) |> Seq.sum
         let now = DateTime.Now
+        let topology = a.topology |> topologyToString
         (* // constraints on header format per SnapGene direct correspandance
 
         1) LOCUS must contain "Exported".
@@ -45,8 +57,7 @@ let dumpSnapgene (outDir:string) (tag:string) (assemblies : DnaAssembly list) (p
             (In the past we did require it contain "Exported from SnapGene" or "Exported from SnapGene Viewer" 
             but we recently relaxed that requirement. The change is in version 4.1.)
         *)
-
-        sprintf "LOCUS       %-22s %d bp ds-DNA     linear   SYN %2d-%s-%d
+        sprintf "LOCUS       %-22s %d bp ds-DNA     %s   SYN %2d-%s-%d
 DEFINITION  .
 ACCESSION   .
 VERSION     .
@@ -67,6 +78,7 @@ FEATURES             Location/Qualifiers
                      /note=\"color: #ffffff\"
 "           locusName 
             totLength  // header line locus length
+            topology
             now.Day (mon.[now.Month-1]) now.Year  // header line date
             totLength  // length for REFERENCE line
             (mon.[now.Month-1]) now.Day now.Year  // Journal export date
