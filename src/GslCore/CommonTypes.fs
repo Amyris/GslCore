@@ -210,18 +210,18 @@ let recalcOffset (pieces: DNASlice list) =
         {p with destFr = o; destTo = o+(p.dna.Length-1)*1<ZeroOffset> } )
 
 type DnaAssembly =
-   {id: int option;
-    dnaParts: DNASlice list;
-    name: string;
-    uri: Uri option;
-    linkerHint: string;
-    pragmas: PragmaCollection;
-    designParams: DesignParams;
-    docStrings: string list;
-    materializedFrom: Assembly
-    tags:Set<AssemblyTag>
-    }
-    with
+   { id : int option
+     dnaParts : DNASlice list
+     name : string
+     uri : Uri option
+     linkerHint : string
+     pragmas : PragmaCollection
+     designParams : DesignParams
+     docStrings : string list
+     materializedFrom : Assembly
+     tags : Set<AssemblyTag>
+     topology : Topology }
+with
     member x.Sequence() =
         x.dnaParts
         |> Seq.map (fun p -> p.dna)

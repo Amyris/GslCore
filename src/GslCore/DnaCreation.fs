@@ -514,18 +514,23 @@ let expandGenePart
          materializedFrom = Some(ppp);
          annotations = [Orf(orfAnnotation)]}
 
+let private determineTopology (pragmas : PragmaCollection) : Topology =
+    match pragmas.TryFind(Topology.PragmaName) with
+    | Some(pragma) -> pragma.args |> Topology.parse |> returnOrFail
+    | None -> Linear
+
 /// Take a parsed assembly definition and translate it
 /// to underlying DNA pieces, checking the structure in the process.
 /// Raises an exception on error.
 let expandAssembly
-    verbose
-    (markerProviders:IMarkerProvider list)
-    (rgs:GenomeDefs)
-    (library: SequenceLibrary)
-    index
-    (a:Assembly) =
+    (verbose : bool)
+    (markerProviders : IMarkerProvider list)
+    (rgs : GenomeDefs)
+    (library : SequenceLibrary)
+    (index : int)
+    (a : Assembly) : DnaAssembly =
 
-    let rec expandPPPList pppList =
+    let rec expandPPPList (pppList : PPP seq) : DNASlice list =
         seq {
             // NOTE: have access to part.pragmas to the extent they influence generation
             for ppp in pppList do
@@ -585,17 +590,20 @@ let expandAssembly
         } |> List.ofSeq |> recalcOffset
 
     let materializedParts = expandPPPList a.parts
-
-    {id = Some(index)
-     dnaParts = materializedParts
-     name =
-        match a.name with
-        | None -> sprintf "A%d" index
-        | Some(s) -> s;
-     uri = a.uri;
-     linkerHint = a.linkerHint;
-     pragmas = a.pragmas;
-     designParams = a.designParams;
-     docStrings = a.docStrings;
-     materializedFrom = a
-     tags = Set.empty}
+    let assemblyName = 
+         match a.name with
+         | None -> sprintf "A%d" index
+         | Some(s) -> s
+         
+    let topology = a.pragmas |> determineTopology
+    { id = Some(index)
+      dnaParts = materializedParts
+      name = assemblyName
+      uri = a.uri
+      linkerHint = a.linkerHint
+      pragmas = a.pragmas
+      designParams = a.designParams
+      docStrings = a.docStrings
+      materializedFrom = a
+      tags = Set.empty
+      topology = topology }
