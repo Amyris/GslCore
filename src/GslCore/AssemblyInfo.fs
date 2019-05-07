@@ -5,13 +5,13 @@ open System.Reflection
 [<assembly: AssemblyTitleAttribute("Dmx.GslCore")>]
 [<assembly: AssemblyProductAttribute("Dmx.GslCore")>]
 [<assembly: AssemblyDescriptionAttribute("Core library and basic plug-ins for the GSL compiler. (Demetrix production version)")>]
-[<assembly: AssemblyVersionAttribute("0.4.42")>]
-[<assembly: AssemblyFileVersionAttribute("0.4.42")>]
+[<assembly: AssemblyVersionAttribute("0.4.43")>]
+[<assembly: AssemblyFileVersionAttribute("0.4.43")>]
 do ()
 
 module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyTitle = "Dmx.GslCore"
     let [<Literal>] AssemblyProduct = "Dmx.GslCore"
     let [<Literal>] AssemblyDescription = "Core library and basic plug-ins for the GSL compiler. (Demetrix production version)"
-    let [<Literal>] AssemblyVersion = "0.4.42"
-    let [<Literal>] AssemblyFileVersion = "0.4.42"
+    let [<Literal>] AssemblyVersion = "0.4.43"
+    let [<Literal>] AssemblyFileVersion = "0.4.43"
