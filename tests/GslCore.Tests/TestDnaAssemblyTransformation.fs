@@ -62,6 +62,7 @@ type Test() =
         docStrings = []
         materializedFrom = emptyAssembly
         tags=Set.empty
+        topology = Linear
     }
 
     let runTest assembly expectedSource =
