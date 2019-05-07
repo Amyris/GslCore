@@ -69,6 +69,6 @@
     <Compile Include="Gslc.fs" />
     <Compile Include="AssemblyInfo.fs" />
   </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
   <Import Project="..\..\packages\FsLexYacc\build\FsLexYacc.targets" />
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
