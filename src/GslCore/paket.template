@@ -12,10 +12,10 @@ licenseUrl
 requireLicenseAcceptance
     false
 copyright
-    Copyright 2016
+    Copyright 2019
 tags
     GSL compiler amyris yeast F# demetrix
 summary
     Core library for GSL compiler (Demetrix production version)
 description
-    Core library and plugin defintions for the Amyris Genotype Specification Language (GSL) compiler. (demetrix version)
+    Core library and plugin definitions for the Amyris Genotype Specification Language (GSL) compiler. (Demetrix version)
