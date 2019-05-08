@@ -1,21 +1,26 @@
 source https://nuget.org/api/v2
-
+framework: >= netstandard2.0
+storage none
 nuget FSharp.Core >= 4.1.0 redirects: force
-nuget Dmx.Amyris.Bio >= 2.0.23 framework: >= netstandard2.0
+nuget Dmx.Amyris.Bio >= 2.0.23 
 nuget FSharp.Data
 nuget Newtonsoft.Json
-nuget FsLexYacc
+nuget FsLexYacc storage: packages
 nuget FParsec
 nuget MathNet.Numerics
 nuget FSharp.Collections.ParallelSeq
 
 group Build
   source https://nuget.org/api/v2
-  nuget FSharp.Formatting framework: >= netstandard2.0
+  framework: >= netstandard2.0
+  
+  nuget FSharp.Formatting
 
 group Test
   source https://nuget.org/api/v2
-
+  framework: >= netstandard2.0
+  storage none
+  
   nuget NUnit ~> 3
   nuget NUnit.ConsoleRunner ~> 3
   nuget Microsoft.NET.Test.Sdk

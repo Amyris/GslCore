@@ -104,6 +104,7 @@ Target.create "AssemblyInfo" (fun _ ->
           AssemblyInfo.Product project
           AssemblyInfo.Description summary
           AssemblyInfo.Version release.AssemblyVersion
+          AssemblyInfo.InformationalVersion (Git.Information.getCurrentHash())
           AssemblyInfo.FileVersion release.AssemblyVersion ]
 
     let getProjectDetails projectPath =
@@ -139,22 +140,27 @@ Target.create "CopyBinaries" (fun _ ->
 // Clean build results
 
 Target.create "Clean" (fun _ ->
-    !! solutionFile |> MSBuild.runRelease id "" "Clean" |> ignore
-    Shell.cleanDirs ["bin"; "temp"; "docs/output"]
+    Shell.cleanDirs
+        [ "bin"
+          "temp"
+          "docs/output"
+          "src/GslCore/bin"
+          "tests/GslCore.Tests/bin" ]
 )
 
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
 Target.create "Build" (fun _ ->
-    !! solutionFile
-#if MONO
-    |> MSBuildReleaseExt "" [ ("DefineConstants","MONO") ] "Build"
-#else
-    |> MSBuild.runRelease id "" "Build"
-#endif
-    |> ignore
-)
+    !! "src/**/*.??proj"
+    ++ "tests/**/*.??proj"
+    |> Array.ofSeq
+    |> Array.iter (fun project ->
+        project
+        |> DotNet.build (fun buildOptions ->
+            { buildOptions with
+                Configuration = DotNet.BuildConfiguration.Release })))
+
 
 // --------------------------------------------------------------------------------------
 // Run the unit tests using test runner
