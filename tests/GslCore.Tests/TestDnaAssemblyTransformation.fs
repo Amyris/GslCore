@@ -61,6 +61,7 @@ type Test() =
         designParams = DesignParams.initialDesignParams
         docStrings = []
         materializedFrom = emptyAssembly
+        topology = Linear
     }
 
     let runTest assembly expectedSource =

@@ -102,144 +102,284 @@ let parsePlatform (args: string list) =
     // a different error.
     | x -> fail (sprintf "platform expected one argument but got %d" x.Length)
 
+/// Represents topology information about contructs
+type Topology =
+    | Linear
+    | Circular
+
+module Topology =
+    [<Literal>]
+    let LinearValue = "linear"
+    
+    [<Literal>]
+    let CircularValue = "circular"
+    
+    [<Literal>]
+    let PragmaName = "topology"
+    
+    let parse : string list -> Result<Topology, string> =
+        function
+        | [arg] ->
+            match arg with
+            | LinearValue -> ok Linear
+            | CircularValue -> ok Circular
+            | _ -> fail (sprintf "Invalid topology '%s'.  Options are 'linear' and 'circular'." arg)
+        | x -> fail (sprintf "topology expected one argument but got %d" x.Length)
+
 /// Pass-through placeholder validator.
 let noValidate _ = ok ()
 
 // Pragma defs that are used internally by the compiler.
 
 let warningPragmaDef =
-    {name = "warn"; argShape = AtLeast(1); scope = BlockOrPart(Transient);
-     desc = "Print a warning message.";
-     invertsTo = None; validate = noValidate}
+    { name = "warn"
+      argShape = AtLeast(1)
+      scope = BlockOrPart(Transient)
+      desc = "Print a warning message."
+      invertsTo = None
+      validate = noValidate }
 
 let warnoffPragmaDef =
-    {name = "warnoff"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Turn off specific warnings.";
-     invertsTo = None; validate = noValidate} // TODO parse function here
+    { name = "warnoff"
+      argShape = One
+      scope = BlockOnly(Persistent)
+      desc = "Turn off specific warnings."
+      invertsTo = None
+      validate = noValidate } // TODO parse function here
 
 let capaPragmaDef =
-    {name = "capa"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Enables particular compiler capabilities.";
-     invertsTo = None; validate = noValidate}
+    { name = "capa"
+      argShape = One
+      scope = BlockOnly(Persistent)
+      desc = "Enables particular compiler capabilities."
+      invertsTo = None
+      validate = noValidate }
 
 let platformPragmaDef =
-    {name = "platform"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Specify an assembly platform to target, current options: 'stitch', 'megastitch'.";
-     invertsTo = None; validate = parsePlatform >> (lift ignore)}
+    { name = "platform"
+      argShape = One
+      scope = BlockOnly(Persistent)
+      desc = "Specify an assembly platform to target, current options: 'stitch', 'megastitch'."
+      invertsTo = None
+      validate = parsePlatform >> (lift ignore) }
 
 let markersetPragmaDef =
-    {name = "markerset"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Set the default marker set for a ### part.";
-     invertsTo = None; validate = noValidate}
+    { name = "markerset"
+      argShape = One
+      scope = BlockOnly(Persistent)
+      desc = "Set the default marker set for a ### part."
+      invertsTo = None
+      validate = noValidate }
 
 let namePragmaDef =
-    {name = "name"; argShape = One; scope = BlockOrPart(Transient);
-     desc = "Override name for a assembly or part.";
-     invertsTo = None; validate = noValidate}
+    { name = "name"
+      argShape = One
+      scope = BlockOrPart(Transient)
+      desc = "Override name for a assembly or part."
+      invertsTo = None
+      validate = noValidate }
 
 let fusePragmaDef =
-    {name = "fuse"; argShape = Zero; scope = PartOnly;
-     desc = "Create a seamless junction with the next part.";
-     invertsTo = None; validate = noValidate}
+    { name = "fuse"
+      argShape = Zero
+      scope = PartOnly
+      desc = "Create a seamless junction with the next part."
+      invertsTo = None
+      validate = noValidate }
+
+let topologyPragmaDef =
+    { name = Topology.PragmaName
+      argShape = One
+      scope = BlockOnly(Persistent)
+      desc = "The design has either linear or circular topology"
+      invertsTo = None
+      validate = Topology.parse >> (lift ignore) }
 
 /// Base set of hard coded pragmas.  Plugins might augment this list
 let pragmaDefsStatic : PragmaDef list =
-   [warningPragmaDef;
-    warnoffPragmaDef;
-    capaPragmaDef;
-    platformPragmaDef;
-    markersetPragmaDef;
-    namePragmaDef;
-    fusePragmaDef;
-    {name = "linkers"; argShape = AtLeast(1); scope = BlockOnly(Persistent);
-     desc = "Override the default set of RYSE linkers.";
-     invertsTo = None; validate = noValidate}; // TODO: import linker parse function here
-    {name = "refgenome"; argShape = One; scope = BlockOrPart(Persistent);
-     desc = "Specify a reference genome.";
-     invertsTo = None; validate = noValidate};
-    {name = "dnasrc"; argShape = One; scope = PartOnly;
-     desc = "Specify a DNA source for a part.";
-     invertsTo = None; validate = noValidate};
-    {name = "stitch"; argShape = Zero; scope = BlockOnly(Persistent);
-     desc = "TODO description";
-     invertsTo = None; validate = noValidate};
-    {name = "megastitch"; argShape = Zero; scope = BlockOnly(Persistent);
-     desc = "TODO description";
-     invertsTo = None; validate = noValidate};
-    {name = "rabitstart"; argShape = Zero; scope = PartOnly;
-     desc = "Designate part as the start of a RYSE rabit.";
-     invertsTo = Some("rabitend"); validate = noValidate};
-    {name = "rabitend"; argShape = Zero; scope = PartOnly;
-     desc = "Designate part as the end of a RYSE rabit.";
-     invertsTo = Some("rabitstart"); validate = noValidate};
-    {name = "primerpos"; argShape = Exactly(2); scope = PartOnly;
-     desc = "Dictate forward FWD or reverse REV primer position relative to first base of a short inline slice";
-     invertsTo = None; validate = noValidate}; // TODO parse function here
-    {name = "primermax"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Max length of primer that can be designed.";
-     invertsTo = None; validate = parseInt};
-    {name = "primermin"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Max length of primer that can be designed.";
-     invertsTo = None; validate = parseInt};
-    {name = "pcrparams"; argShape = Range(1,5); scope = BlockOnly(Persistent);
-     desc = "Set various parts of PCR conditions.";
-     invertsTo = None; validate = validatePcrParams};
-    {name = "targettm"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Set target melting temperature for pcr designs.";
-     invertsTo = None; validate = parseDouble};
-    {name = "seamlesstm"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Set target melting temperature for seamless designs (body of primer that amplifies the two pieces adjacent to the junction).";
-     invertsTo = None; validate = parseDouble};
-    {name = "seamlessoverlaptm"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Set target melting temperature for the tail of the seamless primers that overlap in the middle to form the junction.";
-     invertsTo = None; validate = parseDouble};
-    {name = "atpenalty"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Set degree of tm flexibility to get a terminal G or C and unstable 3' end of an oligo.";
-     invertsTo = None; validate = parseDouble};
-    {name = "pcrassemblyparams"; argShape = Range(1,5); scope = BlockOnly(Persistent);
-     desc = "Set melting conditions for the overlap junction in a seamless design.";
-     invertsTo = None; validate = validatePcrParams};
-    {name = "minoverlaplen"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Sets the minimum overlap length for junction in a seamless design.";
-     invertsTo = None; validate = parseInt};
-    {name = "len"; argShape = One; scope = PartOnly;
-     desc = "Set specific heterology block length for a ~ part.";
-     invertsTo = None; validate = parseInt};
-    {name = "user"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "Set owner for any output fields with a creator field";
-     invertsTo = None; validate = noValidate};
-    {name = "style"; argShape = One; scope = PartOnly;
-     desc = "Set allele swap style.";
-     invertsTo = None; validate = noValidate};
-    {name = "breed"; argShape = One; scope = PartOnly;
-     desc = "Specify RYSE breed for a specific rabit, overriding any breed inference.";
-     invertsTo = None; validate = noValidate};
-    {name = "inline"; argShape = Zero; scope = PartOnly;
-     desc = "Force long inline sequences to be created inline as part of a 2 piece rabit regardless of length.";
-     invertsTo = None; validate = noValidate};
-    {name = "seed"; argShape = One; scope = BlockOrPart(Persistent);
-     desc = "Sets the seed for the random number generator for things like codon optimization.";
-     invertsTo = None; validate = parseInt};
-    {name = "codonopt"; argShape = AtLeast 1; scope = BlockOnly(Persistent);
-     desc = "Set codon optimization parameters.";
-     invertsTo = None; validate = noValidate};
-    {name = "uri"; argShape = One; scope = BlockOrPart(Transient);
-     desc = "Tag a part or assembly with a URI.";
-     invertsTo = None; validate = noValidate};
-     {name = "swapend"; argShape = One; scope = PartOnly;
-     desc = "State an end preference for an allele swap. Arg should be '3' or '5'.";
-     invertsTo = None; validate = parseInt};
-     {name = "promlen"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "preferred promoter length - overrides genome or system default.";
-     invertsTo = None; validate = parseInt};
-     {name = "termlen"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "preferred terminator length - overrides genome or system default.";
-     invertsTo = None; validate = parseInt};
-     {name = "termlenmrna"; argShape = One; scope = BlockOnly(Persistent);
-     desc = "preferred terminator region length when part of mRNA part- overrides genome or system default.";
-     invertsTo = None; validate = parseInt};
+   [ warningPragmaDef
+     warnoffPragmaDef
+     capaPragmaDef
+     platformPragmaDef
+     markersetPragmaDef
+     namePragmaDef
+     fusePragmaDef
+     { name = "linkers"
+       argShape = AtLeast(1)
+       scope = BlockOnly(Persistent)
+       desc = "Override the default set of RYSE linkers."
+       invertsTo = None
+       validate = noValidate } // TODO: import linker parse function here
+     { name = "refgenome"
+       argShape = One
+       scope = BlockOrPart(Persistent)
+       desc = "Specify a reference genome."
+       invertsTo = None
+       validate = noValidate }
+     { name = "dnasrc"
+       argShape = One
+       scope = PartOnly
+       desc = "Specify a DNA source for a part."
+       invertsTo = None
+       validate = noValidate }
+     { name = "stitch"
+       argShape = Zero
+       scope = BlockOnly(Persistent)
+       desc = "TODO description"
+       invertsTo = None
+       validate = noValidate }
+     { name = "megastitch"
+       argShape = Zero
+       scope = BlockOnly(Persistent)
+       desc = "TODO description"
+       invertsTo = None
+       validate = noValidate }
+     { name = "rabitstart"
+       argShape = Zero
+       scope = PartOnly
+       desc = "Designate part as the start of a RYSE rabit."
+       invertsTo = Some("rabitend")
+       validate = noValidate }
+     { name = "rabitend"
+       argShape = Zero
+       scope = PartOnly
+       desc = "Designate part as the end of a RYSE rabit."
+       invertsTo = Some("rabitstart")
+       validate = noValidate }
+     { name = "primerpos"
+       argShape = Exactly(2)
+       scope = PartOnly;
+       desc = "Dictate forward FWD or reverse REV primer position relative to first base of a short inline slice";
+       invertsTo = None
+       validate = noValidate } // TODO parse function here
+     { name = "primermax"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "Max length of primer that can be designed."
+       invertsTo = None
+       validate = parseInt }
+     { name = "primermin"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "Max length of primer that can be designed."
+       invertsTo = None
+       validate = parseInt }
+     { name = "pcrparams"
+       argShape = Range(1,5)
+       scope = BlockOnly(Persistent)
+       desc = "Set various parts of PCR conditions."
+       invertsTo = None
+       validate = validatePcrParams }
+     { name = "targettm"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "Set target melting temperature for pcr designs."
+       invertsTo = None
+       validate = parseDouble }
+     { name = "seamlesstm"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "Set target melting temperature for seamless designs (body of primer that amplifies the two pieces adjacent to the junction)."
+       invertsTo = None
+       validate = parseDouble }
+     { name = "seamlessoverlaptm"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "Set target melting temperature for the tail of the seamless primers that overlap in the middle to form the junction."
+       invertsTo = None
+       validate = parseDouble }
+     { name = "atpenalty"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "Set degree of tm flexibility to get a terminal G or C and unstable 3' end of an oligo."
+       invertsTo = None
+       validate = parseDouble }
+     { name = "pcrassemblyparams"
+       argShape = Range(1,5)
+       scope = BlockOnly(Persistent)
+       desc = "Set melting conditions for the overlap junction in a seamless design."
+       invertsTo = None
+       validate = validatePcrParams }
+     { name = "minoverlaplen"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "Sets the minimum overlap length for junction in a seamless design."
+       invertsTo = None
+       validate = parseInt }
+     { name = "len"
+       argShape = One
+       scope = PartOnly
+       desc = "Set specific heterology block length for a ~ part."
+       invertsTo = None
+       validate = parseInt }
+     { name = "user"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "Set owner for any output fields with a creator field"
+       invertsTo = None
+       validate = noValidate }
+     { name = "style"
+       argShape = One
+       scope = PartOnly
+       desc = "Set allele swap style."
+       invertsTo = None
+       validate = noValidate }
+     { name = "breed"
+       argShape = One
+       scope = PartOnly
+       desc = "Specify RYSE breed for a specific rabit, overriding any breed inference."
+       invertsTo = None
+       validate = noValidate }
+     { name = "inline"
+       argShape = Zero
+       scope = PartOnly
+       desc = "Force long inline sequences to be created inline as part of a 2 piece rabit regardless of length."
+       invertsTo = None
+       validate = noValidate }
+     { name = "seed"
+       argShape = One
+       scope = BlockOrPart(Persistent)
+       desc = "Sets the seed for the random number generator for things like codon optimization."
+       invertsTo = None
+       validate = parseInt }
+     { name = "codonopt"
+       argShape = AtLeast 1
+       scope = BlockOnly(Persistent)
+       desc = "Set codon optimization parameters."
+       invertsTo = None
+       validate = noValidate }
+     { name = "uri"
+       argShape = One
+       scope = BlockOrPart(Transient)
+       desc = "Tag a part or assembly with a URI."
+       invertsTo = None
+       validate = noValidate }
+     { name = "swapend"
+       argShape = One
+       scope = PartOnly
+       desc = "State an end preference for an allele swap. Arg should be '3' or '5'."
+       invertsTo = None
+       validate = parseInt }
+     { name = "promlen"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "preferred promoter length - overrides genome or system default."
+       invertsTo = None
+       validate = parseInt }
+     { name = "termlen"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "preferred terminator length - overrides genome or system default."
+       invertsTo = None
+       validate = parseInt }
+     { name = "termlenmrna"
+       argShape = One
+       scope = BlockOnly(Persistent)
+       desc = "preferred terminator region length when part of mRNA part- overrides genome or system default."
+       invertsTo = None
+       validate = parseInt }
+     topologyPragmaDef
     ]
-
 /// Legal/Valid pragma names and defintions for lookup by name
 let mutable private globalLegalPragmas : Map<_,_> option = None
 
