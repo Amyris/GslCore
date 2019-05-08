@@ -1,3 +1,7 @@
+#### 0.4.44 - May 8th 2019
+
+* Demetrix production release - fixing dependency error of 0.4.43
+
 #### 0.4.43 - May 7th 2019
 * Demetrix production release - updating Dmx.Amyris.Bio to 2.0.24 and adding support for #topology pragma
 

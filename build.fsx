@@ -82,12 +82,14 @@ let (|Fsproj|Csproj|Vbproj|Shproj|) (projFileName:string) =
 
 // Generate assembly info files with the right version & up-to-date information
 Target "AssemblyInfo" (fun _ ->
+    
     let getAssemblyInfoAttributes projectName =
         [ Attribute.Title (dmxProjectName)
           Attribute.Product dmxProject
           Attribute.Description summary
           Attribute.Version release.AssemblyVersion
-          Attribute.FileVersion release.AssemblyVersion ]
+          Attribute.FileVersion release.AssemblyVersion
+          Attribute.InformationalVersion (Git.Information.getCurrentHash()) ]
 
     let getProjectDetails projectPath =
         let projectName = dmxProjectName // System.IO.Path.GetFileNameWithoutExtension(projectPath)
@@ -122,21 +124,14 @@ Target "CopyBinaries" (fun _ ->
 // Clean build results
 
 Target "Clean" (fun _ ->
-    !! solutionFile |> MSBuildRelease "" "Clean" |> ignore
-    CleanDirs ["bin"; "temp"; "docs/output"]
+    CleanDirs ["bin"; "temp"; "docs/output"; "src/GslCore/bin"; "tests/GslCore.Tests/bin"]
 )
 
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
 Target "Build" (fun _ ->
-    !! solutionFile
-#if MONO
-    |> MSBuildReleaseExt "" [ ("DefineConstants","MONO") ] "Build"
-#else
-    |> MSBuildRelease "" "Build"
-#endif
-    |> ignore
+    DotNetCli.Build (fun parameters -> { parameters with Configuration = "Release" })
 )
 
 // --------------------------------------------------------------------------------------
