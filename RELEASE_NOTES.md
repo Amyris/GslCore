@@ -1,3 +1,6 @@
+#### 0.6.1 - May 9 2018
+* Add #topology pragma to specify physical assembly geometry.
+
 #### 0.6.0 - January 7 2018
 * Add syntax for backtick-escaped gene names with special characters.
 * Remove remaining lexer/parser support for deprecated inline linker syntax.
