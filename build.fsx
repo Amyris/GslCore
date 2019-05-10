@@ -173,8 +173,10 @@ Target.create "RunTests" (fun _ ->
 // Build a NuGet package
 
 Target.create "NuGet" (fun _ ->
-    Paket.pack(fun p ->  
+    Paket.pack(fun p ->
         { p with
+            // Workaround until this is fixed: https://github.com/fsharp/FAKE/issues/2242
+            ToolPath = Path.Combine(".", ".paket", (if Environment.isWindows then "paket.exe" else "paket"))
             OutputPath = "bin"
             Version = release.NugetVersion
             MinimumFromLockFile = true
