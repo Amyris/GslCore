@@ -194,3 +194,5 @@ docs/tools/FSharp.Formatting.svclog
 paket.local
 .idea
 **/AssemblyInfo.fs
+.paket/*
+.fake/*

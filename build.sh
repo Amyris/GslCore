@@ -17,6 +17,15 @@ realpath() {
   echo "$REALPATH"
 }
 
+TOOL_PATH=$(realpath .paket)
+PAKET="$TOOL_PATH"/paket
+
+if ! [ -e "$PAKET" ]
+then
+  dotnet tool install paket --tool-path "$TOOL_PATH"
+fi
+"$PAKET" "restore"
+
 TOOL_PATH=$(realpath .fake)
 FAKE="$TOOL_PATH"/fake
 
