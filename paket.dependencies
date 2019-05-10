@@ -10,12 +10,6 @@ nuget FParsec
 nuget MathNet.Numerics
 nuget FSharp.Collections.ParallelSeq
 
-group Build
-  source https://nuget.org/api/v2
-  framework: >= netstandard2.0
-  
-  nuget FSharp.Formatting
-
 group Test
   source https://nuget.org/api/v2
   framework: >= netstandard2.0
