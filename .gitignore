@@ -196,3 +196,4 @@ paket.local
 **/AssemblyInfo.fs
 .paket/*
 .fake/*
+.tool/*
