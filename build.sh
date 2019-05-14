@@ -17,20 +17,19 @@ realpath() {
   echo "$REALPATH"
 }
 
-TOOL_PATH=$(realpath .paket)
+TOOL_PATH=$(realpath .tool)
 PAKET="$TOOL_PATH"/paket
 
 if ! [ -e "$PAKET" ]
 then
-  dotnet tool install paket --tool-path "$TOOL_PATH"
+  dotnet tool install paket --tool-path "$TOOL_PATH" --version 5.207.0
 fi
 "$PAKET" "restore"
 
-TOOL_PATH=$(realpath .fake)
 FAKE="$TOOL_PATH"/fake
 
 if ! [ -e "$FAKE" ]
 then
-  dotnet tool install fake-cli --tool-path "$TOOL_PATH"
+  dotnet tool install fake-cli --tool-path "$TOOL_PATH" --version 5.13.7
 fi
 "$FAKE" "$@"
