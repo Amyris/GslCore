@@ -1,3 +1,7 @@
+#### 0.4.45 - May 15th 2019
+
+* Demetrix production release - Maintenance release - moving to FAKE 5 based build
+
 #### 0.4.44 - May 8th 2019
 
 * Demetrix production release - fixing dependency error of 0.4.43
