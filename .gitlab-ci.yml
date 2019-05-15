@@ -1,0 +1,23 @@
+image: registry.gitlab.com/demetrixbio/amyrisbio/build-image:1.0
+
+
+before_script:
+  # nuget caching - https://gitlab.com/gitlab-org/gitlab-runner/issues/327
+  - export NUGET_PACKAGES=`pwd`/.nuget
+  - chmod +x ./build.sh
+
+cache:
+  key: global
+  paths:
+    - .nuget/
+
+stages:
+  - build
+
+.build: &build
+  stage: build
+  script:
+    - ./build.sh build
+
+build branch:
+  <<: *build

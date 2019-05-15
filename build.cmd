@@ -1,18 +1,13 @@
-@echo off
-cls
+SET TOOL_PATH=.tool
 
-.paket\paket.bootstrapper.exe
-if errorlevel 1 (
-  exit /b %errorlevel%
+IF NOT EXIST "%TOOL_PATH%\paket.exe" (
+  dotnet tool install paket --tool-path ./%TOOL_PATH%  --version 5.207.0
 )
 
-.paket\paket.exe restore
-if errorlevel 1 (
-  exit /b %errorlevel%
+"%TOOL_PATH%/paket.exe" restore
+
+IF NOT EXIST "%TOOL_PATH%\fake.exe" (
+  dotnet tool install fake-cli --tool-path ./%TOOL_PATH% --version 5.13.7
 )
 
-IF NOT EXIST build.fsx (
-  .paket\paket.exe update
-  packages\build\FAKE\tools\FAKE.exe init.fsx
-)
-packages\build\FAKE\tools\FAKE.exe build.fsx %*
+"%TOOL_PATH%/fake.exe" %*

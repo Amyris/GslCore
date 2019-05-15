@@ -193,5 +193,5 @@ docs/content/release-notes.md
 docs/tools/FSharp.Formatting.svclog
 paket.local
 .idea
-
+.tool
 **/AssemblyInfo.fs
