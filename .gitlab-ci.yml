@@ -1,4 +1,4 @@
-image: registry.gitlab.com/demetrixbio/amyrisbio/build-image:1.0
+image: registry.gitlab.com/demetrixbio/gslcore/build-image:1.0
 
 
 before_script:
