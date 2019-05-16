@@ -1,3 +1,7 @@
+#### 0.4.46 - May 16th 2019
+
+* Demetrix production release - Maintenance release - removing FParsec dependency
+
 #### 0.4.45 - May 15th 2019
 
 * Demetrix production release - Maintenance release - moving to FAKE 5 based build
