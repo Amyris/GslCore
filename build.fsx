@@ -196,18 +196,6 @@ Target.create "PublishNuget" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Release Scripts
 
-Target.create "ReleaseDocs" (fun _ ->
-    let tempDocsDir = "temp/gh-pages"
-    Shell.cleanDir tempDocsDir
-    
-    Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
-
-    Shell.copyRecursive "docs/output" tempDocsDir true |> Trace.tracef "%A"
-    Staging.stageAll tempDocsDir
-    Commit.exec tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
-    Branches.push tempDocsDir
-)
-
 Target.create "Release" (fun _ ->
     let user =
         match Environment.environVarOrNone "github-user" with
@@ -257,9 +245,6 @@ Target.create "All" ignore
 
 "BuildPackage"
   ==> "PublishNuget"
-  ==> "Release"
-
-"ReleaseDocs"
   ==> "Release"
 
 Target.runOrDefault "All"
