@@ -5,7 +5,6 @@ nuget Dmx.Amyris.Bio
 nuget FSharp.Data
 nuget Newtonsoft.Json
 nuget FsLexYacc 8.0.1 storage: packages
-nuget FParsec
 nuget MathNet.Numerics
 nuget FSharp.Collections.ParallelSeq
 
