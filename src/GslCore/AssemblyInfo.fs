@@ -5,13 +5,13 @@ open System.Reflection
 [<assembly: AssemblyTitleAttribute("GslCore")>]
 [<assembly: AssemblyProductAttribute("GslCore")>]
 [<assembly: AssemblyDescriptionAttribute("Core library and basic plug-ins for the GSL compiler.")>]
-[<assembly: AssemblyVersionAttribute("0.6.1")>]
-[<assembly: AssemblyFileVersionAttribute("0.6.1")>]
+[<assembly: AssemblyVersionAttribute("0.6.2")>]
+[<assembly: AssemblyFileVersionAttribute("0.6.2")>]
 do ()
 
 module internal AssemblyVersionInformation =
     let [<Literal>] AssemblyTitle = "GslCore"
     let [<Literal>] AssemblyProduct = "GslCore"
     let [<Literal>] AssemblyDescription = "Core library and basic plug-ins for the GSL compiler."
-    let [<Literal>] AssemblyVersion = "0.6.1"
-    let [<Literal>] AssemblyFileVersion = "0.6.1"
+    let [<Literal>] AssemblyVersion = "0.6.2"
+    let [<Literal>] AssemblyFileVersion = "0.6.2"
