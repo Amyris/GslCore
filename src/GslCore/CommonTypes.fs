@@ -15,7 +15,6 @@ type SequenceLibrary = Map<string, Dna>
 /// Instructions gleaned from command line
 type ParsedOptions =
    {quiet: bool;
-    refStrain: string;
     libDir: string;
     iter: bool;
     onlyPhase1: bool;

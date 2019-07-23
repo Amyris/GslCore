@@ -168,7 +168,6 @@ let usageText (args: CollectedCommandLineArgs) =
 let defaultOpts:ParsedOptions =
    {quiet = false;
     libDir = libRoot;
-    refStrain = "cenpk";
     iter = true;
     onlyPhase1 = false;
     doParallel = true;
