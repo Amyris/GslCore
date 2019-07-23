@@ -27,7 +27,8 @@ let minHBCodonUsage = 0.05
 let strToTempC (s:string): float<C> =
     (float s ) * 1.0<C>
 
-let defaultRefGenome = "cenpk"
+// FIXME: this should be injected as a configuration parameter rather than set globally.
+let mutable defaultRefGenome = "cenpk"
 
 let aaLegal = "ACDEFGHIKLMNPQRSTVWY*" |> Set.ofSeq
 
