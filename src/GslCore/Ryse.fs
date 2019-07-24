@@ -1,5 +1,6 @@
 ﻿module ryse
 open System.IO
+open FSharp.Data
 open System
 open pragmaTypes
 open commonTypes
@@ -70,15 +71,22 @@ let getPart (route:string) =
     let url = partLookupUrl route
 
     let lookup () =
-        try
-            use wc = new System.Net.WebClient()
-            let s = wc.DownloadString(url)
-            let res = rycodExample.ThumperRycod.Parse(s)
-            res
-        with ex ->
+        let response = Http.Request(url, silentHttpErrors = true)
+        match response.Body with
+        | Binary _ ->
             failwithf
-                "from thumper %s\nMight be rabit id that does not exist.\n%s\n"
-                url ex.Message
+                "Unexpected binary response from %s, with status code %d."
+                url
+                response.StatusCode
+        | Text body ->
+            if response.StatusCode = 200 then
+                rycodExample.ThumperRycod.Parse(body)
+            else
+                failwithf 
+                    "Request to %s failed with status code %d: %s."
+                    url
+                    response.StatusCode
+                    body
 
     if useCache then
         match fetchCache.TryGetValue(url) with
