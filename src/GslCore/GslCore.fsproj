@@ -9,12 +9,8 @@
   </PropertyGroup>
   <Import Project="..\..\packages\FsLexYacc\build\FsLexYacc.targets" />
   <ItemGroup>
-    <FsYacc Include=".\GslParser.fsy">
-      <OtherFlags>--module GslParser -o GslParser.fs</OtherFlags>
-    </FsYacc>
-    <FsLex Include=".\GslLexer.fsl">
-      <OtherFlags>--unicode -o GslLexer.fs</OtherFlags>
-    </FsLex>
+    <FsLex Include="GslLexer.fsl" />
+    <FsYacc Include="GslParser.fsy" />
     <Compile Include="Constants.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="PcrParamParse.fs" />
@@ -60,7 +56,12 @@
     <Compile Include="GslcProcess.fs" />
     <Compile Include="SeamlessPlugin.fs" />
     <Compile Include="Gslc.fs" />
-    <Compile Include="AssemblyInfo.fs" />
+    <FsLex Include=".\GslLexer.fsl">
+      <OtherFlags>--unicode -o GslLexer.fs</OtherFlags>
+    </FsLex>
+    <FsYacc Include=".\GslParser.fsy">
+      <OtherFlags>--module GslParser -o GslParser.fs</OtherFlags>
+    </FsYacc>
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
