@@ -127,10 +127,7 @@ let expandSimpleMut (asAACheck:bool) (_:GenomeDef) (g:PartIdLegacy) (m:Mutation)
             "ERROR: part %s should start with 'R'.  Non rabit part mutation not supported."
             g.id
 
-    let hr = getRabit (int(g.id.[1..]))
-
-    let rabit = hr.RabitSpecs.[0]
-    let dna = rabit.DnaElementSpecs.[0].DnaSequence.ToUpper()
+    let dna = getRabitSequence (int(g.id.[1..]))
     // Now split by type of mutation and check the original base/amino acid is legit
     match m.mType with
     | NT ->
@@ -158,7 +155,7 @@ let expandSimpleMut (asAACheck:bool) (_:GenomeDef) (g:PartIdLegacy) (m:Mutation)
                 "ERROR: mutation position %d outside range of rabit %s amino acids"
                 m.loc g.id
 
-        let currentCodon = (dna.[(m.loc-1)*3..(m.loc-1)*3+2]).ToCharArray()
+        let currentCodon = (dna.[(m.loc-1)*3..(m.loc-1)*3+2]).arr
 
         // Ensure we are in the right place in the gene
         if (codon2aa currentCodon <> m.f) && asAACheck then

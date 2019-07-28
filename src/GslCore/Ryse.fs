@@ -11,6 +11,7 @@ open constants
 open uri
 open sbolExample
 open AstTypes
+open PluginTypes
 
 // ==================================================================
 // RYSE megastitch architecture
@@ -18,14 +19,6 @@ open AstTypes
 
 /// RYSE verbose flag
 let private verbose = false
-type HutchRabit = {
-    id : int;
-    name : string;
-    five : string;
-    three : string;
-    orient : Orientation;
-    breed : string;
-    dnaSource : string}
 
 /// Load name\tsequence text file of RYSE linkers and return a map
 let loadRyseLinkers (f:string) =
@@ -93,23 +86,27 @@ let getPart (route:string) =
 /// Get spec for rabit from hutch given rabit id
 let getRabit rId = sprintf "rycod/rabit_spec/%d" rId |> getPart
 
+let getRabitSequence rId =
+    let r = getRabit rId
+    Dna(r.RabitSpecs.[0].DnaElementSpecs.[0].DnaSequence)
+
 /// Retrieve a Rabit specifiction from local cache or by making a thumper call.
 let getHutchInfoViaWeb ri =
     let hr = getRabit ri
     let rabit = hr.RabitSpecs.[0]
     assert(rabit.Id.StartsWith("R."))
 
-    {id = int(rabit.Id.[2..]);
-     name = rabit.Name;
-     five = (match rabit.UpstreamLink.String with | Some(x) -> x | None -> "");
-     three = (match rabit.DownstreamLink.String with | None -> "" | Some(x) -> x);
-     orient =
-         match rabit.Direction with
-         | "FWD" -> FWD
-         | "REV" -> REV
-         | _ -> failwithf "inconceivable direction %A\n" rabit.Direction;
-     breed = rabit.Breed;
-     dnaSource = sprintf "R%d" ri}
+    let linkers =
+        let five = rabit.UpstreamLink.String |> Option.defaultValue ""
+        let three = rabit.DownstreamLink.String |> Option.defaultValue ""
+        Some(five, three)
+
+    {id = rabit.Id.[2..]
+     name = rabit.Name
+     dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
+     source = "thumper"
+     linkers = linkers
+    }
 
 /// Determine which sets of linkers to use for a design
 let getLinkerSetsForDesign (aIn: DnaAssembly) =
@@ -393,8 +390,7 @@ let mapRyseLinkers
                         let rabitId = int(x)
                         let h = getHutchInfoViaWeb rabitId
 
-                        let hFive = sprintf "%s" h.five
-                        let hThree = sprintf "%s" h.three
+                        let hFive, hThree = h.linkers |> Option.defaultValue ("", "")
 
                         let linkerName = extractLinker linker.description
                         let linkerNameNext =

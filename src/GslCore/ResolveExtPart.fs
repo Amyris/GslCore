@@ -8,8 +8,7 @@ open Amyris.Bio.biolib
 open constants
 open Amyris.Dna
 open Amyris.ErrorHandling
-
-type ExtFetchSeq = { id : string ; dna : Dna ; source : string ;  name : string}
+open PluginTypes
 
 let legalPrefixes = [ ("r","rabit") ; ("b","biobrick")  ]
 
@@ -42,11 +41,10 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
         | "rabit" ->
             let libName = "@"+pid.ToUpper()
             if not (library.ContainsKey(libName)) then
-                let hr = getRabit (int(pid.[1..]))
 
                 // Have part from the hutch.  We might just use it verbatim or we might be
                 // some modifications to it to make a new part
-                let rabit = hr.RabitSpecs.[0]
+                let rabit = (getRabit (int(pid.[1..]))).RabitSpecs.[0]
                 let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
 
                 // Check for slice modifications.  We can't handle any other type of mod at this point, so
@@ -193,14 +191,15 @@ let fetchFullPartSequence (_ (* verbose*):bool) (library: SequenceLibrary) (part
                 // some modifications to it to make a new part
                 let rabit = hr.RabitSpecs.[0]
                 let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
-                ok({dna = dna; source = "hutch"; id = pid; name = rabit.Name})
+                ok({dna = dna; source = "hutch"; id = pid; name = rabit.Name; linkers = None})
             else
                 // Part is in the library
                 ok(
                    {dna = library.[libName];
                     source = "library";
                     id = pid;
-                    name = libName})
+                    name = libName;
+                    linkers = None})
         | x ->
             failwithf "ERROR: unimplemented external partSpace %s\n" x
 
