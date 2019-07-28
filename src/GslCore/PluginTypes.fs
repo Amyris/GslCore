@@ -126,6 +126,19 @@ type L2Provider = {
         implicitLocusProvider:L2DesignParams-> GslSourceCode
 }
 
+// ==================================================
+// plugin for retrieving an existing part
+// ==================================================
+
+type ExtFetchSeq = {id : string option; dna: Dna; source: string;  name: string}
+
+type IPartProvider =
+    /// Allow part providers to add command line args and be configurable.
+    inherit IConfigurable<IPartProvider>
+    /// Return true if this provider thinks it recognizes the provided identifier.
+    abstract member Accept: string -> bool
+    abstract member Retrieve: string -> Result<ExtFetchSeq, string>
+
 // ======================
 // plugin behavior definition for output assembly transformations
 // ======================
@@ -208,6 +221,7 @@ type PluginBehavior =
     | L2KOTitration of L2Provider
     | OutputFormat of IOutputFormat
     | AssemblyTransform of IAssemblyTransform
+    | PartProvider of IPartProvider
     | CodonProvider of ICodonProvider
     | MarkerProvider of IMarkerProvider
     with
@@ -215,6 +229,7 @@ type PluginBehavior =
         match b with
         | OutputFormat(f) -> f.ProvidedArgs()
         | AssemblyTransform(a) -> a.ProvidedArgs()
+        | PartProvider(p) -> p.ProvidedArgs()
         | CodonProvider(c) -> c.ProvidedArgs()
         | _ -> []
 
@@ -236,6 +251,7 @@ let configureBehavior arg b =
     match b.behavior with
     | OutputFormat(f) -> {b with behavior = OutputFormat(f.Configure(arg))}
     | AssemblyTransform(a) -> {b with behavior = AssemblyTransform(a.Configure(arg))}
+    | PartProvider(p) -> {b with behavior = PartProvider(p.Configure(arg))}
     | CodonProvider(c) -> {b with behavior = CodonProvider(c.Configure(arg))}
     | MarkerProvider(m) -> {b with behavior = MarkerProvider(m.Configure(arg))}
     | AlleleSwapAA _
@@ -245,6 +261,7 @@ let configureBehaviorFromOpts opts b =
     match b.behavior with
     | OutputFormat(f) -> {b with behavior = OutputFormat(f.ConfigureFromOptions(opts))}
     | AssemblyTransform(a) -> {b with behavior = AssemblyTransform(a.ConfigureFromOptions(opts))}
+    | PartProvider(p) -> {b with behavior = PartProvider(p.ConfigureFromOptions(opts))}
     | CodonProvider(c) -> {b with behavior = CodonProvider(c.ConfigureFromOptions(opts))}
     | MarkerProvider(c) -> {b with behavior = MarkerProvider(c.ConfigureFromOptions(opts))}
     | AlleleSwapAA _
@@ -329,6 +346,10 @@ let getL2KOTitrationProviders (plugin: Plugin) =
 let getAssemblyTransformers (plugin: Plugin) =
     plugin.behaviors
     |> List.choose (fun b -> match b.behavior with | AssemblyTransform(a) -> Some(a.TransformAssembly) | _ -> None)
+
+let getPartProviders (plugin: Plugin) =
+    plugin.behaviors
+    |> List.choose (fun b -> match b.behavior with | PartProvider(a) -> Some(a) | _ -> None)
 
 let getOutputProviders (plugin: Plugin) =
     plugin.behaviors
