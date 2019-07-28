@@ -127,7 +127,7 @@ let expandSimpleMut (asAACheck:bool) (_:GenomeDef) (g:PartIdLegacy) (m:Mutation)
             "ERROR: part %s should start with 'R'.  Non rabit part mutation not supported."
             g.id
 
-    let dna = getRabitSequence (int(g.id.[1..]))
+    let dna = (getRabit (int(g.id.[1..]))).dna
     // Now split by type of mutation and check the original base/amino acid is legit
     match m.mType with
     | NT ->

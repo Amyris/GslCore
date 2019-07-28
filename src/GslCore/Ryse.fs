@@ -100,8 +100,6 @@ let getRabit rId =
      linkers = linkers
     }
 
-let getRabitSequence rId = (getRabit rId).dna
-
 /// Determine which sets of linkers to use for a design
 let getLinkerSetsForDesign (aIn: DnaAssembly) =
     let defaultLinkers = ["0";"2";"A";"3";"9"]
