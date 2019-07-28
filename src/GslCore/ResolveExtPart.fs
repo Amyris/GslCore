@@ -44,8 +44,7 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
 
                 // Have part from the hutch.  We might just use it verbatim or we might be
                 // some modifications to it to make a new part
-                let rabit = (getRabit (int(pid.[1..]))).RabitSpecs.[0]
-                let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
+                let part = getRabit (int(pid.[1..]))
 
                 // Check for slice modifications.  We can't handle any other type of mod at this point, so
                 // ensure there are none.
@@ -55,7 +54,8 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
                 // Look for simple case.  If we are just using the part from the hutch unadulterated, then
                 // we specify things differently, referring to the external id
                 if partId.mods.Length = 0 then
-                    let dna = if ppp.fwd then dna else dna.RevComp()
+                    let dna = part.dna |> DnaOps.revCompIf (not ppp.fwd)
+
                     {id = None; 
                      extId = Some(pid.[1..]); 
                      sliceName = sliceName;
@@ -72,7 +72,7 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
                      destFr = 0<ZeroOffset>; 
                      destTo = 0<ZeroOffset>; 
                      destFwd = ppp.fwd;
-                     description = rabit.Name; 
+                     description = part.name; 
                      sliceType = REGULAR; 
                      amplified = false;
                      template = Some dna; // not amplifying from this
@@ -101,16 +101,16 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
 
                     // Find the left and right hand ends of the slice
                     let x, y =
-                        getBoundsFromSlice finalSlice dna.Length (Library(partId.id))
+                        getBoundsFromSlice finalSlice part.dna.Length (Library(partId.id))
                         |> returnOrFail
                 
                     let finalDNA =
-                        dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
+                        part.dna.[(x/1<OneOffset>)-1..(y/1<OneOffset>)-1]
                         |> DnaOps.revCompIf (not ppp.fwd)
 
                     let name1 =
-                        if partId.mods.Length = 0 then rabit.Name
-                        else (rabit.Name + (printSlice finalSlice))
+                        if partId.mods.Length = 0 then part.name
+                        else (part.name + (printSlice finalSlice))
                     let name2 = if ppp.fwd then name1 else "!" + name1
 
                     {id = None; 
@@ -185,13 +185,8 @@ let fetchFullPartSequence (_ (* verbose*):bool) (library: SequenceLibrary) (part
         | "rabit" ->
             let libName = "@"+pid.ToUpper()
             if not (library.ContainsKey(libName)) then
-                let hr = getRabit (int(pid.[1..]))
-
-                // Have part from the hutch.  We might just use it verbatim or we might be
-                // some modifications to it to make a new part
-                let rabit = hr.RabitSpecs.[0]
-                let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
-                ok({dna = dna; source = "hutch"; id = pid; name = rabit.Name; linkers = None})
+                getRabit (int(pid.[1..]))
+                |> ok
             else
                 // Part is in the library
                 ok(

@@ -83,18 +83,10 @@ let getPart (route:string) =
     else
         lookup()
 
-/// Get spec for rabit from hutch given rabit id
-let getRabit rId = sprintf "rycod/rabit_spec/%d" rId |> getPart
-
-let getRabitSequence rId =
-    let r = getRabit rId
-    Dna(r.RabitSpecs.[0].DnaElementSpecs.[0].DnaSequence)
-
-/// Retrieve a Rabit specifiction from local cache or by making a thumper call.
-let getHutchInfoViaWeb ri =
-    let hr = getRabit ri
-    let rabit = hr.RabitSpecs.[0]
-    assert(rabit.Id.StartsWith("R."))
+/// Get spec for rabit from hutch given rabit id.
+let getRabit rId =
+    let rycod = sprintf "rycod/rabit_spec/%d" rId |> getPart
+    let rabit = rycod.RabitSpecs.[0]
 
     let linkers =
         let five = rabit.UpstreamLink.String |> Option.defaultValue ""
@@ -107,6 +99,8 @@ let getHutchInfoViaWeb ri =
      source = "thumper"
      linkers = linkers
     }
+
+let getRabitSequence rId = (getRabit rId).dna
 
 /// Determine which sets of linkers to use for a design
 let getLinkerSetsForDesign (aIn: DnaAssembly) =
@@ -388,7 +382,7 @@ let mapRyseLinkers
                     match hd.extId with
                     | Some(x) -> //when x.[0] = 'R' || x.[0] = 'r' ->
                         let rabitId = int(x)
-                        let h = getHutchInfoViaWeb rabitId
+                        let h = getRabit rabitId
 
                         let hFive, hThree = h.linkers |> Option.defaultValue ("", "")
 
