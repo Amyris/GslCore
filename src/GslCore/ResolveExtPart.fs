@@ -10,7 +10,6 @@ open Amyris.Dna
 open Amyris.ErrorHandling
 
 type ExtFetchSeq = { id : string ; dna : Dna ; source : string ;  name : string}
-type ExtFetchResult = | EXT_FETCH_OK of ExtFetchSeq | EXT_FAIL of string
 
 let legalPrefixes = [ ("r","rabit") ; ("b","biobrick")  ]
 
@@ -182,7 +181,7 @@ let fetchFullPartSequence (_ (* verbose*):bool) (library: SequenceLibrary) (part
 // Sequence can come either from the libary or preferably from the hutch directly
     let pid = partId.id
     match legalPartPrefix pid with
-    | None -> EXT_FAIL( sprintf "ERROR: partId reference %s isn't a defined alias and doesn't start with r for rabit\n" pid)
+    | None -> fail( sprintf "ERROR: partId reference %s isn't a defined alias and doesn't start with r for rabit\n" pid)
     | Some(partSpace, _) ->
         match partSpace with
         | "rabit" ->
@@ -194,10 +193,10 @@ let fetchFullPartSequence (_ (* verbose*):bool) (library: SequenceLibrary) (part
                 // some modifications to it to make a new part
                 let rabit = hr.RabitSpecs.[0]
                 let dna = Dna(rabit.DnaElementSpecs.[0].DnaSequence)
-                EXT_FETCH_OK({dna = dna; source = "hutch"; id = pid; name = rabit.Name})
+                ok({dna = dna; source = "hutch"; id = pid; name = rabit.Name})
             else
                 // Part is in the library
-                EXT_FETCH_OK(
+                ok(
                    {dna = library.[libName];
                     source = "library";
                     id = pid;

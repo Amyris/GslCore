@@ -880,11 +880,11 @@ let private expandHB
             // ===============================================
 
             match fetchFullPartSequence(verbose) (Map.empty) pid1 with
-            | EXT_FAIL(msg) -> failwithf "Fail fetching %s %s" pid1.id msg
-            | EXT_FETCH_OK(part1) ->
+            | Bad msgs -> failwithf "Fail fetching %s %s" pid1.id (msgs |> String.concat " ")
+            | Ok(part1, _) ->
                 match fetchFullPartSequence verbose Map.empty pid4 with
-                | EXT_FAIL(msg) -> failwithf "Fail fetching %s %s" pid1.id msg
-                | EXT_FETCH_OK(part4) ->
+                | Bad msgs -> failwithf "Fail fetching %s %s" pid1.id (msgs |> String.concat " ")
+                | Ok(part4, _) ->
                     let s1= getExtPartSlice verbose pid1
                     let s4= getExtPartSlice verbose pid4
 
