@@ -56,8 +56,8 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
                 if partId.mods.Length = 0 then
                     let dna = part.dna |> DnaOps.revCompIf (not ppp.fwd)
 
-                    {id = None; 
-                     extId = Some(pid.[1..]); 
+                    {id = None;
+                     extId = Some pid; 
                      sliceName = sliceName;
                      uri = uri; // TODO: use the URI of rabit from hutch here instead?
                      dna = dna; 
@@ -145,7 +145,7 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
                 // Part is in the library
                 let dna = library.[libName]
                 {id = None;
-                 extId = Some(pid.[1..]);
+                 extId = Some pid;
                  sliceName = sliceName;
                  uri = uri; // TODO: mint new URI if None?
                  dna = dna; 
@@ -224,7 +224,7 @@ let applySliceToExtSequence
         let dna = extPart.dna |> DnaOps.revCompIf (not fwd)
         
         {id = None;
-         extId = Some(extPart.id.[1..]);
+         extId = Some extPart.id;
          sliceName = sliceName; 
          uri = uri; // TODO: mint new URI if None?
          dna = dna;

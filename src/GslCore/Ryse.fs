@@ -58,7 +58,7 @@ let private fetchCache = new ConcurrentDictionary<string,rycodExample.ThumperRyc
 let mutable useCache = true
 
 /// Hutch interaction: fetch part defs from RYCOd service and cache them.
-let getPart (route:string) =
+let private getPart (route:string) =
 
     let url = partLookupUrl route
 
@@ -378,9 +378,8 @@ let mapRyseLinkers
                     // Make sure linker is appropriate to precede part hd.
                     // Matters in the case where hd is reuse of a ryse part.
                     match hd.extId with
-                    | Some(x) -> //when x.[0] = 'R' || x.[0] = 'r' ->
-                        let rabitId = int(x)
-                        let h = getRabit rabitId
+                    | Some(extId) -> //when x.[0] = 'R' || x.[0] = 'r' ->
+                        let h = getRabit extId
 
                         let hFive, hThree = h.linkers |> Option.defaultValue ("", "")
 
@@ -392,8 +391,8 @@ let mapRyseLinkers
 
                         let failWithLinkerErrorMsg whichEnd hEnd name =
                             failwithf
-                                "part R%d expects %s linker (%s) and linker (%s) used instead \nERROR:(%s)"
-                                rabitId whichEnd hEnd name errorDesc
+                                "part %s expects %s linker (%s) and linker (%s) used instead \nERROR:(%s)"
+                                extId whichEnd hEnd name errorDesc
 
                         if phase then
                             if linkerName <> hFive then
