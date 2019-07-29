@@ -22,6 +22,7 @@ open commonTypes
 open resolveExtPart
 open LexAndParse
 open PluginTypes
+open FetchPart
 
 // ==================
 // phase 1 of AST reduction
@@ -879,10 +880,10 @@ let private expandHB
             // External part variation
             // ===============================================
 
-            match fetchFullPartSequence(verbose) (Map.empty) pid1 with
+            match fetchPart pid1.id with
             | Bad msgs -> failwithf "Fail fetching %s %s" pid1.id (msgs |> String.concat " ")
             | Ok(part1, _) ->
-                match fetchFullPartSequence verbose Map.empty pid4 with
+                match fetchPart pid4.id with
                 | Bad msgs -> failwithf "Fail fetching %s %s" pid1.id (msgs |> String.concat " ")
                 | Ok(part4, _) ->
                     let s1= getExtPartSlice verbose pid1

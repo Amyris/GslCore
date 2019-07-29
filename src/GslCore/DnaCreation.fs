@@ -578,7 +578,7 @@ let expandAssembly
                     yield markerProvider.CreateDna(task)
 
                 | PARTID(partId) ->
-                    yield resolveExtPart.fetchSequence verbose library ppp partId
+                    yield resolveExtPart.fetchSequence verbose ppp partId
                 | INLINEDNA(dna) ->
                     yield expandInlineDna dnaSource ppp dna
                 | INLINEPROT(_) ->
