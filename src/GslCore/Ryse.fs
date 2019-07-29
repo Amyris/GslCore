@@ -12,6 +12,7 @@ open uri
 open sbolExample
 open AstTypes
 open PluginTypes
+open FetchPart
 
 // ==================================================================
 // RYSE megastitch architecture

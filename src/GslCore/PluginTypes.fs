@@ -146,8 +146,12 @@ type ExtFetchSeq = {
 type IPartProvider =
     /// Allow part providers to add command line args and be configurable.
     inherit IConfigurable<IPartProvider>
+    /// The name of this part provider service.
+    abstract member Name: string
     /// Return true if this provider thinks it recognizes the provided identifier.
     abstract member Accept: string -> bool
+    /// Call the service to retrieve this part.
+    /// Implementors may assume that this method will only be called if Accept has returned true.
     abstract member Retrieve: string -> Result<ExtFetchSeq, string>
 
 // ======================
