@@ -1,4 +1,13 @@
-#### 0.6.0 - January 7 2018
+#### 0.6.3 - July 24 2019
+* Improve error handling for part lookup failures.
+
+#### 0.6.2 - July 22 2019
+* Make default reference genome mutable and settable via command line parameter.
+
+#### 0.6.1 - May 9 2019
+* Add #topology pragma to specify physical assembly geometry.
+
+#### 0.6.0 - January 7 2019
 * Add syntax for backtick-escaped gene names with special characters.
 * Remove remaining lexer/parser support for deprecated inline linker syntax.
 

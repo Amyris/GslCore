@@ -123,6 +123,14 @@ let builtinCmdLineArgs =
              desc = "List all plugins installed in this build of the compiler."}
          proc = fun _ opts -> {opts with listPlugins = true}};
 
+        {spec=
+            {name = "defaultRef"; param = ["refname"]; alias = [];
+             desc = "Globally set the default reference genome."}
+         proc = (fun p opts ->
+             constants.defaultRefGenome <- p.[0]
+             opts)
+        };
+
       
     ]
     |> Seq.map (fun a -> seq {
@@ -168,7 +176,6 @@ let usageText (args: CollectedCommandLineArgs) =
 let defaultOpts:ParsedOptions =
    {quiet = false;
     libDir = libRoot;
-    refStrain = "cenpk";
     iter = true;
     onlyPhase1 = false;
     doParallel = true;

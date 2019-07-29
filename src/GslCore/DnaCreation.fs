@@ -530,6 +530,11 @@ let private chooseMarkerProvider capabilities (providers: IMarkerProvider list) 
         |> sprintf "Unknown marker set %s, expected one of %s" markerSet
         |> fail
 
+let private determineTopology (pragmas : PragmaCollection) : Topology =
+    match pragmas.TryFind(Topology.PragmaName) with
+    | Some(pragma) -> pragma.args |> Topology.parse |> returnOrFail
+    | None -> Linear
+
 /// Take a parsed assembly definition and translate it
 /// to underlying DNA pieces, checking the structure in the process.
 /// Raises an exception on error.
@@ -590,16 +595,19 @@ let expandAssembly
                     yield fusionSliceConstant
             } |> List.ofSeq |> recalcOffset
     let materializedParts = expandPPPList a.parts
-
-    {id = Some(index)
-     dnaParts = materializedParts
-     name =
-        match a.name with
-        | None -> sprintf "A%d" index
-        | Some(s) -> s;
-     uri = a.uri;
-     linkerHint = a.linkerHint;
-     pragmas = a.pragmas;
-     designParams = a.designParams;
-     docStrings = a.docStrings;
-     materializedFrom = a}
+    let assemblyName = 
+         match a.name with
+         | None -> sprintf "A%d" index
+         | Some(s) -> s
+    
+    let topology = a.pragmas |> determineTopology
+    { id = Some(index)
+      dnaParts = materializedParts
+      name = assemblyName
+      uri = a.uri
+      linkerHint = a.linkerHint
+      pragmas = a.pragmas
+      designParams = a.designParams
+      docStrings = a.docStrings
+      materializedFrom = a
+      topology = topology }
