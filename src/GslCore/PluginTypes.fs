@@ -129,16 +129,12 @@ type L2Provider = {
 // ==================================================
 // plugin for retrieving an existing part
 // ==================================================
-    
+
 type ExtFetchSeq = {
-    /// Persistent identifier of this part.
-    id : string
     /// Human-readable name.
     name: string
     /// DNA sequence of this part.
     dna: Dna
-    /// The name of the system that provided this part.
-    source: string
     /// Optional RYSE linker specification (5' link code, 3' link code).
     linkers: (string*string) option
 }

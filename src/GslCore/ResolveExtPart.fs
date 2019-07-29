@@ -2,7 +2,7 @@
 open commonTypes
 open pragmaTypes
 open LegacyParseTypes
-open ryse
+open FetchPart
 open applySlices
 open Amyris.Bio.biolib
 open constants
@@ -44,7 +44,7 @@ let fetchSequence (verbose:bool) (library: SequenceLibrary) (ppp:PPP) (partId:Pa
 
                 // Have part from the hutch.  We might just use it verbatim or we might be
                 // some modifications to it to make a new part
-                let part = getRabit (int(pid.[1..]))
+                let part = fetchPart pid |> returnOrFail
 
                 // Check for slice modifications.  We can't handle any other type of mod at this point, so
                 // ensure there are none.
@@ -185,8 +185,7 @@ let fetchFullPartSequence (_ (* verbose*):bool) (library: SequenceLibrary) (part
         | "rabit" ->
             let libName = "@"+pid.ToUpper()
             if not (library.ContainsKey(libName)) then
-                getRabit (int(pid.[1..]))
-                |> ok
+                fetchPart pid
             else
                 // Part is in the library
                 ok(

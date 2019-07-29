@@ -62,6 +62,7 @@
     <FsYacc Include=".\GslParser.fsy">
       <OtherFlags>--module GslParser -o GslParser.fs</OtherFlags>
     </FsYacc>
+    <Compile Include="LibraryPartProvider.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

@@ -4,6 +4,7 @@
 /// Support for introducing mutations into genes
 ///
 open Amyris.Bio
+open Amyris.ErrorHandling
 open Amyris.Dna
 open System
 open constants
@@ -17,7 +18,7 @@ open IO.CodonUsage
 open utils
 open biolib
 open primercore
-open ryse // for getrabit
+open FetchPart
 
 open PluginTypes
 
@@ -121,13 +122,9 @@ let selectMutCodonRight = selectMutCodonBase diffRight
 /// expand a simple mutation inline with a part
 let expandSimpleMut (asAACheck:bool) (_:GenomeDef) (g:PartIdLegacy) (m:Mutation) : GslSourceCode =
 
-    // Get part sequence
-    if not (g.id.StartsWith("R")) then
-        failwithf
-            "ERROR: part %s should start with 'R'.  Non rabit part mutation not supported."
-            g.id
-
-    let dna = (getRabit (int(g.id.[1..]))).dna
+    let dna = 
+        let part = fetchPart g.id |> returnOrFail
+        part.dna
     // Now split by type of mutation and check the original base/amino acid is legit
     match m.mType with
     | NT ->
