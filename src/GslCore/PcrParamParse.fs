@@ -26,7 +26,7 @@ let (|ParsePcrParam|_|) str =
 
 type PcrUnit = | UM | MM | NM
 
-let (|ParsedAsFloat|_|) str =
+let (|ParsedAsFloat|_|) (str : string) =
     match Double.TryParse(str) with
     | true, v -> Some v
     | _ -> None

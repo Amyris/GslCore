@@ -1,3 +1,7 @@
+#### 0.4.47 - Dec 16th 2019
+
+* Demetrix production release - Maintenance release - moving to netstandard2.1 introducing tool manifest
+
 #### 0.4.46 - May 16th 2019
 
 * Demetrix production release - Maintenance release - removing FParsec dependency
