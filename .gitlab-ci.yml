@@ -1,4 +1,4 @@
-image: registry.gitlab.com/demetrixbio/gslcore/build-image:1.0
+image: mcr.microsoft.com/dotnet/core/sdk:3.1.100-buster
 
 
 before_script:
