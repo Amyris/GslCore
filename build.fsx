@@ -105,7 +105,7 @@ Target.create "AssemblyInfo" (fun _ ->
           AssemblyInfo.InformationalVersion (Git.Information.getCurrentHash())
           AssemblyInfo.FileVersion release.AssemblyVersion ]
 
-    let getProjectDetails projectPath =
+    let getProjectDetails (projectPath : string) =
         let projectName = Path.GetFileNameWithoutExtension(projectPath)
         ( projectPath,
           projectName,
@@ -177,8 +177,7 @@ let paketPath = Path.Combine(".", ".tool", (if Environment.isWindows then "paket
 Target.create "NuGet" (fun _ ->
     Paket.pack(fun p ->
         { p with
-            // Workaround until this is fixed: https://github.com/fsharp/FAKE/issues/2242
-            ToolPath = paketPath
+            ToolType = ToolType.CreateCLIToolReference()
             OutputPath = "bin"
             Version = release.NugetVersion
             MinimumFromLockFile = true
@@ -188,8 +187,7 @@ Target.create "NuGet" (fun _ ->
 Target.create "PublishNuget" (fun _ ->
     Paket.push(fun p ->
         { p with
-            // Workaround until this is fixed: https://github.com/fsharp/FAKE/issues/2242
-            ToolPath = paketPath
+            ToolType = ToolType.CreateCLIToolReference()
             WorkingDir = "bin" })
 )
 
