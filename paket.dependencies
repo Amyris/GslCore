@@ -1,7 +1,7 @@
 source https://nuget.org/api/v2
 framework: >= netstandard2.1
 storage none
-nuget Dmx.Amyris.Bio >= 2.0.25
+nuget Amyris.Bio
 nuget FSharp.Data
 nuget Newtonsoft.Json
 nuget FsLexYacc storage: packages
