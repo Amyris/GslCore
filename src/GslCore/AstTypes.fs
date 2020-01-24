@@ -1,6 +1,6 @@
 ﻿/// Types and functions for AST creation.
 module AstTypes
-open Microsoft.FSharp.Text.Lexing
+open FSharp.Text.Lexing
 open constants
 open System
 open utils

@@ -1,9 +1,6 @@
-FSharp.Core
 Amyris.Bio
-FParsec
 FSharp.Data
 FsLexYacc
-FsLexYacc.Runtime
 MathNet.Numerics
 Newtonsoft.Json
 FSharp.Collections.ParallelSeq

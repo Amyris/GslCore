@@ -1,26 +1,19 @@
 source https://nuget.org/api/v2
-
-nuget FSharp.Core >= 4.1.0 redirects: force
-nuget Amyris.Bio >= 2.0.18 framework: >= net45
+framework: >= netstandard2.1
+storage none
+nuget Amyris.Bio
 nuget FSharp.Data
 nuget Newtonsoft.Json
-nuget FsLexYacc < 7
-nuget FsLexYacc.Runtime < 7
-nuget FParsec
+nuget FsLexYacc storage: packages
 nuget MathNet.Numerics
 nuget FSharp.Collections.ParallelSeq
 
-group Build
-  source https://nuget.org/api/v2
-
-  nuget SourceLink.Fake
-  nuget FAKE
-  nuget FSharp.Formatting
-
-  github fsharp/FAKE modules/Octokit/Octokit.fsx
-
 group Test
   source https://nuget.org/api/v2
+  framework: >= netstandard2.1
+  storage none
 
-  nuget NUnit ~> 2
-  nuget NUnit.Runners ~> 2
+  nuget NUnit ~> 3
+  nuget NUnit.ConsoleRunner ~> 3
+  nuget Microsoft.NET.Test.Sdk
+  nuget NUnit3TestAdapter

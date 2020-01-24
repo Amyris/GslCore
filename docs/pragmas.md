@@ -38,4 +38,3 @@ The `#termlen` pragma alters the default length for a terminator part.  E.g. `tA
 The `#promlen` pragma provides similar functionality but affects the promoter length which defaults to 500bp.
 
 The `#termlenmrna` pragma affects the length of a terminator when it is part of an mRNA part.  This is controlled independently from the stand-alone terminator part.  It defaults to 200bp.
-

@@ -7,7 +7,7 @@ open Amyris.ErrorHandling
 open constants
 open utils
 
-open Microsoft.FSharp.Text.Lexing
+open FSharp.Text.Lexing
 open RefGenome
 open utils
 open constants

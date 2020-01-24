@@ -1,10 +1,10 @@
-# 1 "GslLexer.fsl"
+# 1 ".\GslLexer.fsl"
  
 module GslLexer
 open System
 open GslParser
 open AstTypes
-open Microsoft.FSharp.Text.Lexing
+open FSharp.Text.Lexing
 
 let newline (lexbuf:LexBuffer<_>) =
     lexbuf.EndPos <- lexbuf.EndPos.NextLine
@@ -317,465 +317,451 @@ let trans : uint16[] array =
      [| 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 147us; 147us; 147us; 147us; 147us; 147us; 147us; 147us; 147us; 147us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; 65535us; |];
     |] 
 let actions : uint16[] = [|65535us; 0us; 1us; 2us; 3us; 4us; 5us; 6us; 7us; 8us; 9us; 65535us; 11us; 11us; 12us; 10us; 0us; 65535us; 0us; 0us; 1us; 2us; 3us; 4us; 8us; 7us; 7us; 7us; 6us; 6us; 5us; 5us; 0us; 65535us; 0us; 0us; 1us; 2us; 4us; 4us; 65535us; 5us; 5us; 4us; 3us; 3us; 65535us; 0us; 0us; 1us; 2us; 0us; 65535us; 0us; 0us; 1us; 2us; 0us; 65535us; 4us; 4us; 2us; 2us; 3us; 4us; 2us; 1us; 0us; 65535us; 0us; 9us; 9us; 9us; 9us; 9us; 9us; 9us; 43us; 9us; 43us; 11us; 12us; 13us; 14us; 15us; 16us; 17us; 18us; 19us; 20us; 21us; 22us; 23us; 24us; 25us; 26us; 27us; 43us; 29us; 43us; 43us; 35us; 36us; 40us; 40us; 41us; 42us; 43us; 40us; 31us; 65535us; 32us; 31us; 30us; 65535us; 28us; 37us; 65535us; 65535us; 65535us; 34us; 65535us; 65535us; 65535us; 33us; 65535us; 39us; 38us; 65535us; 10us; 65535us; 9us; 8us; 8us; 9us; 9us; 7us; 6us; 9us; 5us; 9us; 4us; 3us; 9us; 2us; 9us; 1us; 0us; |]
-let _fslex_tables = Microsoft.FSharp.Text.Lexing.UnicodeTables.Create(trans,actions)
+let _fslex_tables = FSharp.Text.Lexing.UnicodeTables.Create(trans,actions)
 let rec _fslex_dummy () = _fslex_dummy() 
-(* Rule main *)
-and main setTokenizer (lexbuf : Microsoft.FSharp.Text.Lexing.LexBuffer<_>) = _fslex_main setTokenizer 68 lexbuf
-(* Rule comment *)
-and comment  (lexbuf : Microsoft.FSharp.Text.Lexing.LexBuffer<_>) = _fslex_comment  58 lexbuf
-(* Rule docstring *)
-and docstring buffer (lexbuf : Microsoft.FSharp.Text.Lexing.LexBuffer<_>) = _fslex_docstring buffer 52 lexbuf
-(* Rule comment1 *)
-and comment1  (lexbuf : Microsoft.FSharp.Text.Lexing.LexBuffer<_>) = _fslex_comment1  46 lexbuf
-(* Rule pragmaLine *)
-and pragmaLine setTokenizer (lexbuf : Microsoft.FSharp.Text.Lexing.LexBuffer<_>) = _fslex_pragmaLine setTokenizer 33 lexbuf
-(* Rule inlinePragmaParts *)
-and inlinePragmaParts setTokenizer (lexbuf : Microsoft.FSharp.Text.Lexing.LexBuffer<_>) = _fslex_inlinePragmaParts setTokenizer 17 lexbuf
-(* Rule roughage *)
-and roughage setTokenizer (lexbuf : Microsoft.FSharp.Text.Lexing.LexBuffer<_>) = _fslex_roughage setTokenizer 0 lexbuf
-(* Rule main *)
-and _fslex_main setTokenizer _fslex_state lexbuf =
-  match _fslex_tables.Interpret(_fslex_state,lexbuf) with
+// Rule main
+and main setTokenizer lexbuf =
+  match _fslex_tables.Interpret(68,lexbuf) with
   | 0 -> ( 
-# 37 "GslLexer.fsl"
+# 37 ".\GslLexer.fsl"
                            INT(tokenizeInt lexbuf) 
-# 342 "GslLexer.fs"
+# 328 "GslLexer.fs"
           )
   | 1 -> ( 
-# 38 "GslLexer.fsl"
+# 38 ".\GslLexer.fsl"
                              LET 
-# 347 "GslLexer.fs"
+# 333 "GslLexer.fs"
           )
   | 2 -> ( 
-# 39 "GslLexer.fsl"
+# 39 ".\GslLexer.fsl"
                              CUT 
-# 352 "GslLexer.fs"
+# 338 "GslLexer.fs"
           )
   | 3 -> ( 
-# 40 "GslLexer.fsl"
+# 40 ".\GslLexer.fsl"
                             DO 
-# 357 "GslLexer.fs"
+# 343 "GslLexer.fs"
           )
   | 4 -> ( 
-# 41 "GslLexer.fsl"
+# 41 ".\GslLexer.fsl"
                              END 
-# 362 "GslLexer.fs"
+# 348 "GslLexer.fs"
           )
   | 5 -> ( 
-# 42 "GslLexer.fsl"
+# 42 ".\GslLexer.fsl"
                              FOR 
-# 367 "GslLexer.fs"
+# 353 "GslLexer.fs"
           )
   | 6 -> ( 
-# 43 "GslLexer.fsl"
+# 43 ".\GslLexer.fsl"
                             IN 
-# 372 "GslLexer.fs"
+# 358 "GslLexer.fs"
           )
   | 7 -> ( 
-# 44 "GslLexer.fsl"
+# 44 ".\GslLexer.fsl"
                               OPEN 
-# 377 "GslLexer.fs"
+# 363 "GslLexer.fs"
           )
   | 8 -> ( 
-# 45 "GslLexer.fsl"
+# 45 ".\GslLexer.fsl"
                                  VARIABLE(tokenizeStringTrimFirstChar lexbuf) 
-# 382 "GslLexer.fs"
+# 368 "GslLexer.fs"
           )
   | 9 -> ( 
-# 46 "GslLexer.fsl"
+# 46 ".\GslLexer.fsl"
                              ID(tokenizeString lexbuf) 
-# 387 "GslLexer.fs"
+# 373 "GslLexer.fs"
           )
   | 10 -> ( 
-# 47 "GslLexer.fsl"
+# 47 ".\GslLexer.fsl"
                                 GENE_NAME(tokenizeEscapedGeneName lexbuf) 
-# 392 "GslLexer.fs"
+# 378 "GslLexer.fs"
           )
   | 11 -> ( 
-# 48 "GslLexer.fsl"
+# 48 ".\GslLexer.fsl"
                            TILDE(tokenizeUnit lexbuf) 
-# 397 "GslLexer.fs"
+# 383 "GslLexer.fs"
           )
   | 12 -> ( 
-# 49 "GslLexer.fsl"
+# 49 ".\GslLexer.fsl"
                            COLON 
-# 402 "GslLexer.fs"
+# 388 "GslLexer.fs"
           )
   | 13 -> ( 
-# 50 "GslLexer.fsl"
+# 50 ".\GslLexer.fsl"
                            SEMICOLON(tokenizeUnit lexbuf) 
-# 407 "GslLexer.fs"
+# 393 "GslLexer.fs"
           )
   | 14 -> ( 
-# 51 "GslLexer.fsl"
+# 51 ".\GslLexer.fsl"
                            OPENSQBRACKET 
-# 412 "GslLexer.fs"
+# 398 "GslLexer.fs"
           )
   | 15 -> ( 
-# 52 "GslLexer.fsl"
+# 52 ".\GslLexer.fsl"
                            CLOSESQBRACKET 
-# 417 "GslLexer.fs"
+# 403 "GslLexer.fs"
           )
   | 16 -> ( 
-# 53 "GslLexer.fsl"
+# 53 ".\GslLexer.fsl"
                            HYPHEN 
-# 422 "GslLexer.fs"
+# 408 "GslLexer.fs"
           )
   | 17 -> ( 
-# 54 "GslLexer.fsl"
+# 54 ".\GslLexer.fsl"
                            SLASH 
-# 427 "GslLexer.fs"
+# 413 "GslLexer.fs"
           )
   | 18 -> ( 
-# 55 "GslLexer.fsl"
+# 55 ".\GslLexer.fsl"
                            COMMA 
-# 432 "GslLexer.fs"
+# 418 "GslLexer.fs"
           )
   | 19 -> ( 
-# 56 "GslLexer.fsl"
+# 56 ".\GslLexer.fsl"
                            DOLLAR 
-# 437 "GslLexer.fs"
+# 423 "GslLexer.fs"
           )
   | 20 -> ( 
-# 57 "GslLexer.fsl"
+# 57 ".\GslLexer.fsl"
                            EXCLM 
-# 442 "GslLexer.fs"
+# 428 "GslLexer.fs"
           )
   | 21 -> ( 
-# 58 "GslLexer.fsl"
+# 58 ".\GslLexer.fsl"
                            DOT 
-# 447 "GslLexer.fs"
+# 433 "GslLexer.fs"
           )
   | 22 -> ( 
-# 59 "GslLexer.fsl"
+# 59 ".\GslLexer.fsl"
                            STAR 
-# 452 "GslLexer.fs"
+# 438 "GslLexer.fs"
           )
   | 23 -> ( 
-# 60 "GslLexer.fsl"
+# 60 ".\GslLexer.fsl"
                            AT 
-# 457 "GslLexer.fs"
+# 443 "GslLexer.fs"
           )
   | 24 -> ( 
-# 61 "GslLexer.fsl"
+# 61 ".\GslLexer.fsl"
                            EQUALS 
-# 462 "GslLexer.fs"
+# 448 "GslLexer.fs"
           )
   | 25 -> ( 
-# 62 "GslLexer.fsl"
+# 62 ".\GslLexer.fsl"
                            PLUS 
-# 467 "GslLexer.fs"
+# 453 "GslLexer.fs"
           )
   | 26 -> ( 
-# 63 "GslLexer.fsl"
+# 63 ".\GslLexer.fsl"
                            LPAREN 
-# 472 "GslLexer.fs"
+# 458 "GslLexer.fs"
           )
   | 27 -> ( 
-# 64 "GslLexer.fsl"
+# 64 ".\GslLexer.fsl"
                            RPAREN 
-# 477 "GslLexer.fs"
+# 463 "GslLexer.fs"
           )
   | 28 -> ( 
-# 65 "GslLexer.fsl"
+# 65 ".\GslLexer.fsl"
                             setTokenizer InlineRoughage; START_ROUGHAGE 
-# 482 "GslLexer.fs"
+# 468 "GslLexer.fs"
           )
   | 29 -> ( 
-# 66 "GslLexer.fsl"
+# 66 ".\GslLexer.fsl"
                            setTokenizer InlinePragma; LBRACE 
-# 487 "GslLexer.fs"
+# 473 "GslLexer.fs"
           )
   | 30 -> ( 
-# 67 "GslLexer.fsl"
+# 67 ".\GslLexer.fsl"
                            STRING(tokenizeStringLiteral lexbuf) 
-# 492 "GslLexer.fs"
+# 478 "GslLexer.fs"
           )
   | 31 -> ( 
-# 68 "GslLexer.fsl"
+# 68 ".\GslLexer.fsl"
                              setTokenizer PragmaLine; PNAME(tokenizeStringTrimFirstChar lexbuf) 
-# 497 "GslLexer.fs"
+# 483 "GslLexer.fs"
           )
   | 32 -> ( 
-# 69 "GslLexer.fsl"
+# 69 ".\GslLexer.fsl"
                              MARKER(tokenizeUnit lexbuf) 
-# 502 "GslLexer.fs"
+# 488 "GslLexer.fs"
           )
   | 33 -> ( 
-# 70 "GslLexer.fsl"
+# 70 ".\GslLexer.fsl"
                                      AAMUTATION(tokenizeString lexbuf) 
-# 507 "GslLexer.fs"
+# 493 "GslLexer.fs"
           )
   | 34 -> ( 
-# 71 "GslLexer.fsl"
+# 71 ".\GslLexer.fsl"
                                           DNAMUTATION(tokenizeString lexbuf) 
-# 512 "GslLexer.fs"
+# 498 "GslLexer.fs"
           )
   | 35 -> ( 
-# 72 "GslLexer.fsl"
+# 72 ".\GslLexer.fsl"
                         CARAT 
-# 517 "GslLexer.fs"
+# 503 "GslLexer.fs"
           )
   | 36 -> ( 
-# 73 "GslLexer.fsl"
+# 73 ".\GslLexer.fsl"
                            GREATERTHAN 
-# 522 "GslLexer.fs"
+# 508 "GslLexer.fs"
           )
   | 37 -> ( 
-# 74 "GslLexer.fsl"
+# 74 ".\GslLexer.fsl"
                             comment lexbuf; main setTokenizer lexbuf 
-# 527 "GslLexer.fs"
+# 513 "GslLexer.fs"
           )
   | 38 -> ( 
-# 75 "GslLexer.fsl"
+# 75 ".\GslLexer.fsl"
                           docstring (new System.Text.StringBuilder()) lexbuf 
-# 532 "GslLexer.fs"
+# 518 "GslLexer.fs"
           )
   | 39 -> ( 
-# 76 "GslLexer.fsl"
+# 76 ".\GslLexer.fsl"
                             comment1 lexbuf 
-# 537 "GslLexer.fs"
+# 523 "GslLexer.fs"
           )
   | 40 -> ( 
-# 77 "GslLexer.fsl"
+# 77 ".\GslLexer.fsl"
                                 newline lexbuf; NEWLINE 
-# 542 "GslLexer.fs"
+# 528 "GslLexer.fs"
           )
   | 41 -> ( 
-# 78 "GslLexer.fsl"
+# 78 ".\GslLexer.fsl"
                                    main setTokenizer lexbuf
-# 547 "GslLexer.fs"
+# 533 "GslLexer.fs"
           )
   | 42 -> ( 
-# 79 "GslLexer.fsl"
+# 79 ".\GslLexer.fsl"
                            EOF 
-# 552 "GslLexer.fs"
+# 538 "GslLexer.fs"
           )
   | 43 -> ( 
-# 80 "GslLexer.fsl"
+# 80 ".\GslLexer.fsl"
                           failwithf "Unrecognized input '%s'" (lexeme lexbuf) 
-# 557 "GslLexer.fs"
+# 543 "GslLexer.fs"
           )
   | _ -> failwith "main"
-(* Rule comment *)
-and _fslex_comment  _fslex_state lexbuf =
-  match _fslex_tables.Interpret(_fslex_state,lexbuf) with
+// Rule comment
+and comment  lexbuf =
+  match _fslex_tables.Interpret(58,lexbuf) with
   | 0 -> ( 
-# 84 "GslLexer.fsl"
+# 84 ".\GslLexer.fsl"
                             comment lexbuf; comment lexbuf 
-# 566 "GslLexer.fs"
+# 552 "GslLexer.fs"
           )
   | 1 -> ( 
-# 85 "GslLexer.fsl"
+# 85 ".\GslLexer.fsl"
                             () 
-# 571 "GslLexer.fs"
+# 557 "GslLexer.fs"
           )
   | 2 -> ( 
-# 86 "GslLexer.fsl"
+# 86 ".\GslLexer.fsl"
                                 newline lexbuf; comment lexbuf 
-# 576 "GslLexer.fs"
+# 562 "GslLexer.fs"
           )
   | 3 -> ( 
-# 87 "GslLexer.fsl"
+# 87 ".\GslLexer.fsl"
                            failwithf "Unterminated comment." 
-# 581 "GslLexer.fs"
+# 567 "GslLexer.fs"
           )
   | 4 -> ( 
-# 88 "GslLexer.fsl"
+# 88 ".\GslLexer.fsl"
                          comment lexbuf 
-# 586 "GslLexer.fs"
+# 572 "GslLexer.fs"
           )
   | _ -> failwith "comment"
-(* Rule docstring *)
-and _fslex_docstring buffer _fslex_state lexbuf =
-  match _fslex_tables.Interpret(_fslex_state,lexbuf) with
+// Rule docstring
+and docstring buffer lexbuf =
+  match _fslex_tables.Interpret(52,lexbuf) with
   | 0 -> ( 
-# 93 "GslLexer.fsl"
+# 93 ".\GslLexer.fsl"
                            
                        let d = DOCSTRING({i = buffer.ToString(); pos = getPos lexbuf} ) in
                            newline lexbuf; d
-# 597 "GslLexer.fs"
+# 583 "GslLexer.fs"
           )
   | 1 -> ( 
-# 96 "GslLexer.fsl"
+# 96 ".\GslLexer.fsl"
                         EOF 
-# 602 "GslLexer.fs"
+# 588 "GslLexer.fs"
           )
   | 2 -> ( 
-# 97 "GslLexer.fsl"
+# 97 ".\GslLexer.fsl"
                       docstring (buffer.Append(lexeme lexbuf)) lexbuf 
-# 607 "GslLexer.fs"
+# 593 "GslLexer.fs"
           )
   | _ -> failwith "docstring"
-(* Rule comment1 *)
-and _fslex_comment1  _fslex_state lexbuf =
-  match _fslex_tables.Interpret(_fslex_state,lexbuf) with
+// Rule comment1
+and comment1  lexbuf =
+  match _fslex_tables.Interpret(46,lexbuf) with
   | 0 -> ( 
-# 102 "GslLexer.fsl"
+# 102 ".\GslLexer.fsl"
                                 newline lexbuf; NEWLINE 
-# 616 "GslLexer.fs"
+# 602 "GslLexer.fs"
           )
   | 1 -> ( 
-# 103 "GslLexer.fsl"
+# 103 ".\GslLexer.fsl"
                            EOF 
-# 621 "GslLexer.fs"
+# 607 "GslLexer.fs"
           )
   | 2 -> ( 
-# 104 "GslLexer.fsl"
+# 104 ".\GslLexer.fsl"
                          comment1 lexbuf 
-# 626 "GslLexer.fs"
+# 612 "GslLexer.fs"
           )
   | _ -> failwith "comment1"
-(* Rule pragmaLine *)
-and _fslex_pragmaLine setTokenizer _fslex_state lexbuf =
-  match _fslex_tables.Interpret(_fslex_state,lexbuf) with
+// Rule pragmaLine
+and pragmaLine setTokenizer lexbuf =
+  match _fslex_tables.Interpret(33,lexbuf) with
   | 0 -> ( 
-# 108 "GslLexer.fsl"
+# 108 ".\GslLexer.fsl"
                                newline lexbuf; setTokenizer Main; NEWLINE 
-# 635 "GslLexer.fs"
+# 621 "GslLexer.fs"
           )
   | 1 -> ( 
-# 109 "GslLexer.fsl"
+# 109 ".\GslLexer.fsl"
                            EOF 
-# 640 "GslLexer.fs"
+# 626 "GslLexer.fs"
           )
   | 2 -> ( 
-# 110 "GslLexer.fsl"
+# 110 ".\GslLexer.fsl"
                                   pragmaLine setTokenizer lexbuf 
-# 645 "GslLexer.fs"
+# 631 "GslLexer.fs"
           )
   | 3 -> ( 
-# 111 "GslLexer.fsl"
+# 111 ".\GslLexer.fsl"
                                     VARIABLE(tokenizeStringTrimFirstChar lexbuf) 
-# 650 "GslLexer.fs"
+# 636 "GslLexer.fs"
           )
   | 4 -> ( 
-# 112 "GslLexer.fsl"
+# 112 ".\GslLexer.fsl"
                                            PVALUE(tokenizeString lexbuf) 
-# 655 "GslLexer.fs"
+# 641 "GslLexer.fs"
           )
   | 5 -> ( 
-# 113 "GslLexer.fsl"
+# 113 ".\GslLexer.fsl"
                              failwithf "Encountered more than one pragma in a single pragma line: %s" (lexeme lexbuf) 
-# 660 "GslLexer.fs"
+# 646 "GslLexer.fs"
           )
   | _ -> failwith "pragmaLine"
-(* Rule inlinePragmaParts *)
-and _fslex_inlinePragmaParts setTokenizer _fslex_state lexbuf =
-  match _fslex_tables.Interpret(_fslex_state,lexbuf) with
+// Rule inlinePragmaParts
+and inlinePragmaParts setTokenizer lexbuf =
+  match _fslex_tables.Interpret(17,lexbuf) with
   | 0 -> ( 
-# 117 "GslLexer.fsl"
+# 117 ".\GslLexer.fsl"
                                      failwithf "Unexpected end of line in inline pragma." 
-# 669 "GslLexer.fs"
+# 655 "GslLexer.fs"
           )
   | 1 -> ( 
-# 118 "GslLexer.fsl"
+# 118 ".\GslLexer.fsl"
                                      failwithf "Unexpected end of file in inline pragma." 
-# 674 "GslLexer.fs"
+# 660 "GslLexer.fs"
           )
   | 2 -> ( 
-# 119 "GslLexer.fsl"
+# 119 ".\GslLexer.fsl"
                                      inlinePragmaParts setTokenizer lexbuf 
-# 679 "GslLexer.fs"
+# 665 "GslLexer.fs"
           )
   | 3 -> ( 
-# 120 "GslLexer.fsl"
+# 120 ".\GslLexer.fsl"
                                      inlinePragmaParts setTokenizer lexbuf 
-# 684 "GslLexer.fs"
+# 670 "GslLexer.fs"
           )
   | 4 -> ( 
-# 121 "GslLexer.fsl"
+# 121 ".\GslLexer.fsl"
                                      setTokenizer Main; RBRACE 
-# 689 "GslLexer.fs"
+# 675 "GslLexer.fs"
           )
   | 5 -> ( 
-# 122 "GslLexer.fsl"
+# 122 ".\GslLexer.fsl"
                                      PNAME(tokenizeStringTrimFirstChar lexbuf) 
-# 694 "GslLexer.fs"
+# 680 "GslLexer.fs"
           )
   | 6 -> ( 
-# 123 "GslLexer.fsl"
+# 123 ".\GslLexer.fsl"
                                      VARIABLE(tokenizeStringTrimFirstChar lexbuf) 
-# 699 "GslLexer.fs"
+# 685 "GslLexer.fs"
           )
   | 7 -> ( 
-# 124 "GslLexer.fsl"
+# 124 ".\GslLexer.fsl"
                                      PVALUE(tokenizeString lexbuf) 
-# 704 "GslLexer.fs"
+# 690 "GslLexer.fs"
           )
   | 8 -> ( 
-# 125 "GslLexer.fsl"
+# 125 ".\GslLexer.fsl"
                                      failwithf "Unexpected character char='%s' in inline pragma." (lexeme lexbuf) 
-# 709 "GslLexer.fs"
+# 695 "GslLexer.fs"
           )
   | _ -> failwith "inlinePragmaParts"
-(* Rule roughage *)
-and _fslex_roughage setTokenizer _fslex_state lexbuf =
-  match _fslex_tables.Interpret(_fslex_state,lexbuf) with
+// Rule roughage
+and roughage setTokenizer lexbuf =
+  match _fslex_tables.Interpret(0,lexbuf) with
   | 0 -> ( 
-# 128 "GslLexer.fsl"
+# 128 ".\GslLexer.fsl"
                              ID(tokenizeString lexbuf) 
-# 718 "GslLexer.fs"
+# 704 "GslLexer.fs"
           )
   | 1 -> ( 
-# 129 "GslLexer.fsl"
+# 129 ".\GslLexer.fsl"
                            COLON 
-# 723 "GslLexer.fs"
+# 709 "GslLexer.fs"
           )
   | 2 -> ( 
-# 130 "GslLexer.fsl"
+# 130 ".\GslLexer.fsl"
                            CARAT 
-# 728 "GslLexer.fs"
+# 714 "GslLexer.fs"
           )
   | 3 -> ( 
-# 131 "GslLexer.fsl"
+# 131 ".\GslLexer.fsl"
                            DOT 
-# 733 "GslLexer.fs"
+# 719 "GslLexer.fs"
           )
   | 4 -> ( 
-# 132 "GslLexer.fsl"
+# 132 ".\GslLexer.fsl"
                            OPENSQBRACKET 
-# 738 "GslLexer.fs"
+# 724 "GslLexer.fs"
           )
   | 5 -> ( 
-# 133 "GslLexer.fsl"
+# 133 ".\GslLexer.fsl"
                            CLOSESQBRACKET 
-# 743 "GslLexer.fs"
+# 729 "GslLexer.fs"
           )
   | 6 -> ( 
-# 134 "GslLexer.fsl"
+# 134 ".\GslLexer.fsl"
                            GREATERTHAN 
-# 748 "GslLexer.fs"
+# 734 "GslLexer.fs"
           )
   | 7 -> ( 
-# 135 "GslLexer.fsl"
+# 135 ".\GslLexer.fsl"
                            LESSTHAN 
-# 753 "GslLexer.fs"
+# 739 "GslLexer.fs"
           )
   | 8 -> ( 
-# 136 "GslLexer.fsl"
+# 136 ".\GslLexer.fsl"
                            HYPHEN 
-# 758 "GslLexer.fs"
+# 744 "GslLexer.fs"
           )
   | 9 -> ( 
-# 137 "GslLexer.fsl"
+# 137 ".\GslLexer.fsl"
                                roughage setTokenizer lexbuf 
-# 763 "GslLexer.fs"
+# 749 "GslLexer.fs"
           )
   | 10 -> ( 
-# 138 "GslLexer.fsl"
+# 138 ".\GslLexer.fsl"
                             setTokenizer Main ; END_ROUGHAGE
-# 768 "GslLexer.fs"
+# 754 "GslLexer.fs"
           )
   | 11 -> ( 
-# 139 "GslLexer.fsl"
+# 139 ".\GslLexer.fsl"
                                newline lexbuf; NEWLINE 
-# 773 "GslLexer.fs"
+# 759 "GslLexer.fs"
           )
   | 12 -> ( 
-# 140 "GslLexer.fsl"
+# 140 ".\GslLexer.fsl"
                            failwithf "Encountered end of file inside a roughage section, missing a '@>'." 
-# 778 "GslLexer.fs"
+# 764 "GslLexer.fs"
           )
   | _ -> failwith "roughage"
 
