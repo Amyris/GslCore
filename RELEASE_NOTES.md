@@ -1,3 +1,6 @@
+#### 1.0.0 - January 24 2020
+* Upgrade to netstandard 2.1
+
 #### 0.6.3 - July 24 2019
 * Improve error handling for part lookup failures.
 

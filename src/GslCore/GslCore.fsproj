@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>GslCore</RootNamespace>
     <AssemblyName>GslCore</AssemblyName>
+    <PackageVersion>1.0.0</PackageVersion>
     <Name>GslCore</Name>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
