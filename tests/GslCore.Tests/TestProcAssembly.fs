@@ -5,6 +5,31 @@ open gslcProcess
 open commonTypes
 open AssemblyTestSupport
 
+module SharedSliceTesting =
+    let dumpSlices (slices:DNASlice list) =
+        printf "%s" (String.Join(";",[for s in slices -> s.sliceName]))
+
+    let checkSequence (expected:DNASlice list) (actual:DNASlice list) =
+        if expected.Length <> actual.Length then
+            printfn "========================================="
+            printfn "checkSequence about to fail\nexplen=%d actualLen=%d" expected.Length actual.Length
+            printfn "checkSequence: expected"
+            dumpSlices expected
+            printfn "\ncheckSequence: actual"
+            dumpSlices actual
+            printfn ""
+
+        for e,a in List.zip expected actual do
+            match e.sourceFrApprox,e.sourceToApprox with
+            | false,false ->
+                Assert.AreEqual(e.dna.str,a.dna,sprintf "expect %s to equal %s" e.sliceName a.sliceName)
+            | true,false ->
+                Assert.IsTrue(e.dna.EndsWith(a.dna),sprintf "expect %s to end with %s" e.sliceName a.sliceName)
+            | false,true ->
+                Assert.IsTrue(e.dna.StartsWith(a.dna),sprintf "expect %s to start with %s" e.sliceName a.sliceName)
+            | _ ->
+                Assert.IsTrue(e.dna.Contains(a.dna),sprintf "expect %s to contain %s" e.sliceName a.sliceName)
+
 [<TestFixture>]
 type TestProcAssembly() =
 
@@ -48,31 +73,7 @@ type TestProcAssembly() =
                    |> List.reduce(+)
         Assert.AreEqual(expected,pattern)
 
-    let dumpSlices (slices:DNASlice list) =
-        printf "%s" (String.Join(";",[for s in slices -> s.sliceName]))
-
     /// Check that the final DNA sequence contains all the input elements
-    let checkSequence (expected:DNASlice list) (actual:DNASlice list) =
-        if expected.Length <> actual.Length then
-            printfn "========================================="
-            printfn "checkSequence about to fail\nexplen=%d actualLen=%d" expected.Length actual.Length
-            printfn "checkSequence: expected"
-            dumpSlices expected
-            printfn "\ncheckSequence: actual"
-            dumpSlices actual
-            printfn ""
-
-        for e,a in List.zip expected actual do
-            match e.sourceFrApprox,e.sourceToApprox with
-            | false,false ->
-                Assert.AreEqual(e.dna.str,a.dna,sprintf "expect %s to equal %s" e.sliceName a.sliceName)
-            | true,false ->
-                Assert.IsTrue(e.dna.EndsWith(a.dna),sprintf "expect %s to end with %s" e.sliceName a.sliceName)
-            | false,true ->
-                Assert.IsTrue(e.dna.StartsWith(a.dna),sprintf "expect %s to start with %s" e.sliceName a.sliceName)
-            | _ ->
-                Assert.IsTrue(e.dna.Contains(a.dna),sprintf "expect %s to contain %s" e.sliceName a.sliceName)
-
     /// perform one test and check output pattern and sequences
     let runOne name slicesIn pattern seqs =
         let dpps,slices =
@@ -80,7 +81,7 @@ type TestProcAssembly() =
                 name
                 slicesIn
         checkPattern pattern dpps
-        checkSequence seqs slices
+        SharedSliceTesting.checkSequence seqs slices
 
     [<Test>]
     /// Equivalent of gFOO^
@@ -90,14 +91,14 @@ type TestProcAssembly() =
         checkPattern "GDGDG" dpps
         printfn "slice order expected: %s" (String.Join(";",[ for s in [ uFoo ; fuse ; marker ; fuse ; dFoo] -> s.sliceName]))
         printfn "slice order returned: %s" (String.Join(";",[ for s in slices -> s.sliceName]))
-        checkSequence [ uFoo ; fuse ; marker ; fuse ; dFoo] slices
+        SharedSliceTesting.checkSequence [ uFoo ; fuse ; marker ; fuse ; dFoo] slices
 
     [<Test>]
     /// Equivalent of uFoo; /inline/ ; dFoo
     member __.koInlineNoLinkers() =
         let dpps,slices = doProcAssembly "koInlineNoLinkers" [ uFoo ; shortInline ; dFoo]
         checkPattern "GDG" dpps
-        checkSequence [ uFoo ;  shortInline ; dFoo] slices
+        SharedSliceTesting.checkSequence [ uFoo ;  shortInline ; dFoo] slices
 
     [<Test>]
     member __.koLinkers() =
@@ -106,7 +107,7 @@ type TestProcAssembly() =
                 "koLinkers"
                 [ linkerAlice; uFoo ; linkerBob ;  marker ; linkerCharlie ; dFoo ; linkerDoug]
         checkPattern "DGDGDGD" dpps
-        checkSequence [ linkerAlice; uFoo ; linkerBob ;  marker ; linkerCharlie ; dFoo ; linkerDoug] slices
+        SharedSliceTesting.checkSequence [ linkerAlice; uFoo ; linkerBob ;  marker ; linkerCharlie ; dFoo ; linkerDoug] slices
 
     [<Test>]
     member __.testRabitStartAdjacentToMarker() =
@@ -115,7 +116,7 @@ type TestProcAssembly() =
                 "testRabitStartAdjacentToMarker"
                 [ linkerAlice; uFoo ; linkerBob ;  shortInlineWithRabitStart ; marker ; linkerCharlie ; dFoo ; linkerDoug]
         checkPattern "DGDSGDGD" dpps
-        checkSequence [ linkerAlice; uFoo ; linkerBob ;  shortInlineWithRabitStart;marker ; linkerCharlie ; dFoo ; linkerDoug] slices
+        SharedSliceTesting.checkSequence [ linkerAlice; uFoo ; linkerBob ;  shortInlineWithRabitStart;marker ; linkerCharlie ; dFoo ; linkerDoug] slices
     [<Test>]
     member __.testRabitStartAdjacentToRegularSlice() =
         let dpps,slices =
@@ -123,7 +124,7 @@ type TestProcAssembly() =
                 "testRabitStartAdjacentToRegularSlice"
                 [ linkerAlice; uFoo ; linkerBob ;  shortInlineWithRabitStart ; oBar ; linkerCharlie ; dFoo ; linkerDoug]
         checkPattern "DGDSGDGD" dpps
-        checkSequence [ linkerAlice; uFoo ; linkerBob ;  shortInlineWithRabitStart;oBar ; linkerCharlie ; dFoo ; linkerDoug] slices
+        SharedSliceTesting.checkSequence [ linkerAlice; uFoo ; linkerBob ;  shortInlineWithRabitStart;oBar ; linkerCharlie ; dFoo ; linkerDoug] slices
 
 
 
