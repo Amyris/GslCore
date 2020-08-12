@@ -101,10 +101,10 @@ type TestMapRyseLinkers() =
     [<Test>]
     /// BROKEN - this is a test case for https://gitlab.com/demetrixbio/DemGslc/-/issues/48
     member __.TerminalSlice() =
-        let uFooFuse = {uFoo with pragmas = makePragma "fuse" [] }
+        
         runOne "TwoPartsShortInline"
                 false // is stitch
                 ([linkerAlice ; linkerBob],[]) // A and B part linkers
-                [ uFooFuse ; dFoo ; shortInlineWithRabitEnd]
-                [linkerAlice ; uFooFuse ; dFoo ; shortInline ; linkerBob]
+                [ uFoo ; fuse; dFoo ; shortInlineWithRabitEnd]
+                [linkerAlice ; uFoo ; dFoo ; shortInline ; linkerBob]
 

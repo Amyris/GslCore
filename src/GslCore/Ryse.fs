@@ -417,6 +417,9 @@ let mapRyseLinkers
             printVerbose "inlineST no linker needed"
             assign startLinkers phase c linkers (b::a::res)
 
+        | a :: b :: c :: d when a.sliceType = FUSIONST && c.sliceType = INLINEST -> 
+            assign startLinkers phase d linkers (c :: b :: res)         
+        
         | a::b::c when a.sliceType = FUSIONST ->
             // No need for a linker before or after a fusion place holder, since
             // it doesn't really exist, but is a hint to join the two adjacent/

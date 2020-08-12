@@ -195,7 +195,8 @@ type DNASlice =
     breed: Breed;
     /// Keep track of the part this slice was materialized from.
     materializedFrom: PPP option;
-    annotations: SliceAnnotation list}
+    annotations: SliceAnnotation list} with
+   override this.ToString() = sprintf "{ %s - %A - %A }" this.description this.sliceType this.breed
 
 /// Recalculate the offsets of pieces in a list of pieces after new pieces are added in
 let recalcOffset (pieces: DNASlice list) =
