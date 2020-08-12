@@ -1450,13 +1450,13 @@ let rec procAssembly
         // There is a catch if the previous sequence was a short inline sequence.
         // We should treat that as a sandwich sequence, built it into the primer but not
         // design amplification against it.
-        let sandwich,prevAmp =
+        let sandwich,prevAmp, skipped =
             match prev with
-            | hd::hd2::_ when hd.sliceType = SliceType.INLINEST -> Some(hd),Some(hd2)
+            | hd::hd2::_ when hd.sliceType = SliceType.INLINEST -> Some(hd),Some(hd2), true
             | [hd] when hd.sliceType = SliceType.INLINEST ->
                 failwithf "internal amplification error amplifying INLINEST %A" hd.description
-            | hd::_ -> None,Some(hd)
-            | _ -> None,None
+            | hd::_ -> None, Some(hd), false
+            | _ -> None, None, false
 
         let primerR'',offsetR = linkerRev2 verbose dp errorName prevAmp
         let sandwichDNA =
@@ -1511,6 +1511,11 @@ let rec procAssembly
                 if List.isEmpty sliceOut then // Assume it's a stand-alone inline sequence that could be made with a pair of primers
                     [last] // Fake slice for now.. TODO TODO
                 else failwith "expected preceding linker adjacent to terminal inline sequence"
+            | previousInline :: previousAmp :: tail when skipped ->
+                if verbose then
+                    printfn "procAssembly:  potentially trimming p=%s last=%s" previousAmp.description last.description
+                last :: previousInline ::(cutRight verbose previousAmp offsetR) :: tail  
+                |> List.rev // Finally reverse the slice out list since we pushed it as we created it            
             | p::_ -> 
                 // 1) prepend the final part (probably the terminal linker)
                 // 2) cut the previous element (head of prev slices) if primer moved boundary
