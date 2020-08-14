@@ -181,12 +181,12 @@ let tuneTails
     let fullTemplate = DnaOps.concat [ rev.body.RevComp() ; middleDNA ; fwd.body ]
 
     /// Target Tm for middle annealing part.  Cheat if it's a linker and we just want to keep this part (ideally) full length
-    let annealTarget = 
-        match firmMiddle with 
-        | Some(x) -> 
+    let annealTarget =
+        match firmMiddle with
+        | Some(x) ->
                 if verbose then printfn "setAnnealTarget to firmMiddle=%A" x
-                x 
-        | None -> 
+                x
+        | None ->
                 if verbose then printfn "setAnnealTarget to seamlessOverlapTm=%A" dp.seamlessOverlapTm
                 dp.seamlessOverlapTm
     //let annealTarget = dp.seamlessOverlapTm // Just use this,  rev/fwdTailLenFixed vars take care of constraining RYSE linkers
@@ -282,12 +282,12 @@ let tuneTails
                 | OligoOver(_) -> // cut something off
                     if state.fb>dp.pp.minLength then  yield CHOP_F_AMP
                     // Put guard on this to stop best anneal data running away to zero kelvin ;(
-                    if fwdTailLenFixed.IsNone && state.ft > fwdTailLenMin && state.bestAnnealDelta < maxAnnealSearchDeviation then 
+                    if fwdTailLenFixed.IsNone && state.ft > fwdTailLenMin && state.bestAnnealDelta < maxAnnealSearchDeviation then
                         yield CHOP_F_ANNEAL
                 | OligoMax(_) -> // could slide or cut
                     if state.bestFwdDelta < 0.0<C> && state.fb>dp.pp.minLength then yield CHOP_F_AMP
                     if fwdTailLenFixed.IsNone then
-                        if  state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then 
+                        if  state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then
                             yield CHOP_F_ANNEAL
                         if state.fb < fwd.body.Length && state.ft > fwdTailLenMin then yield SLIDE_F_RIGHT
                         if state.rt > revTailLenMin && state.ft < fwdTailLenMax then
@@ -298,7 +298,7 @@ let tuneTails
                         if state.bestFwdDelta < 0.0<C> && state.ft < fwdTailLenMin && state.fb>dp.pp.minLength
                             then yield CHOP_F_AMP
                         elif state.fb < fwd.body.Length then yield EXT_F_AMP
-                        if state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then 
+                        if state.bestAnnealDelta < 0.0<C> && state.ft > fwdTailLenMin then
                             yield CHOP_F_ANNEAL
                         elif state.ft < fwdTailLenMax then yield EXT_F_ANNEAL
 
@@ -572,7 +572,7 @@ let tuneTails
         fwd',rev'
 
 let prettyPrintPrimer = function
-    | DPP(dpp) -> sprintf "DPP(%s)" dpp.name 
+    | DPP(dpp) -> sprintf "DPP(%s)" dpp.name
     | GAP -> "GAP"
     | SANDWICHGAP -> "GAPSANDWICH"
 
@@ -816,13 +816,13 @@ let linkerRev2 verbose (dp:DesignParams) errorName (last:DNASlice option) =
 
     let rec linkerRev2Iterative pen margin =
         match last with
-        | None -> 
+        | None ->
             if verbose then
                 printfn "linkerFwd2: entering with margin=%d last=None" margin
             { body = Dna(""); tail=Dna("") ; annotation=[]},0
         | Some(ds) ->
             if verbose then
-                printfn "linkerFwd2: entering with margin=%d last=%s sourceToApprox=%s" 
+                printfn "linkerFwd2: entering with margin=%d last=%s sourceToApprox=%s"
                     margin ds.description (if ds.sourceToApprox then "y" else "n")
             let x,task =
                 if ds.sourceToApprox then
@@ -887,7 +887,7 @@ let trimLinkerTailBody (dp:DesignParams) (p:Primer) =
                     find (bLen-1) tLen
     find p.body.Length p.tail.Length
 
-let nameFromSlice (s:DNASlice) = 
+let nameFromSlice (s:DNASlice) =
         if s.description.Length > 25 then
             sprintf "%s..[%d]" (s.description.[..24]) s.description.Length
         else
@@ -899,9 +899,9 @@ let checkSliceCoods(slice:DNASlice) n =
             slice.description  slice.dna.Length n
 
     if slice.sourceFr > slice.sourceTo then
-        failwithf "slice %s has sourceFwd=Y sliceFr=%d sliceTo=%d.  sliceFr should be less than sliceTo" 
-            slice.description 
-            slice.sourceFr 
+        failwithf "slice %s has sourceFwd=Y sliceFr=%d sliceTo=%d.  sliceFr should be less than sliceTo"
+            slice.description
+            slice.sourceFr
             slice.sourceTo
 
 // Two functions for cutting left or right into a slice, used when those slice ends were approximate
@@ -911,7 +911,7 @@ let cutRight verbose (slice:DNASlice) n =
     // work out which end of the original source coordinate to adjust based on orientation of the
     // part.  cut 'right' refers to right end of part as placed.
     if verbose then
-        printfn "procAssembly: cutRight moving sourceTo for %s left by %d sourceFwd=%s destFwd=%s" 
+        printfn "procAssembly: cutRight moving sourceTo for %s left by %d sourceFwd=%s destFwd=%s"
             slice.description n (if slice.sourceFwd then "Y" else "N") (if slice.destFwd then "Y" else "N")
     if (slice.sourceFwd && slice.destFwd) ||
         ((not slice.sourceFwd) && (not slice.destFwd))
@@ -932,7 +932,7 @@ let cutLeft verbose (slice:DNASlice) n =
     // sourceFr and sourceTo are the 5' and 3' ends of the gene
 
     if verbose then
-        printfn "procAssembly: cutLeft moving sourceFr for %s right by %d sourceFwd=%s destFwd=%s" 
+        printfn "procAssembly: cutLeft moving sourceFr for %s right by %d sourceFwd=%s destFwd=%s"
             slice.description n (if slice.sourceFwd then "Y" else "N") (if slice.destFwd then "Y" else "N")
     if (slice.sourceFwd && slice.destFwd) ||
        ((not slice.sourceFwd) && (not slice.destFwd)) then
@@ -948,13 +948,27 @@ let cutLeft verbose (slice:DNASlice) n =
 /// emitting an output set of DNA slices and a diverged primer pair list
 let rec procAssembly
         verbose
+        /// Needed for primer design
         (dp:DesignParams)
+        /// Name to use in any things that blow up (passed in from parent)
         errorName
         (prev : DNASlice list)
+        /// Emitted slices
         sliceOut
+        /// Primer sets we have emitted.  They come in fwd/rev pairs (both of which can be None at ends)
         (primersOut:DivergedPrimerPair list)
+        /// Remaining slices to process
         (l:DNASlice list) =
 
+    (*
+What is the difference between prev and sliceOut?
+The short answer is that sometimes when we process a slice we aren't ready to emit it
+(we don't know what has to happen till we see future pieces).  An example is a slice with a fuzzy / approximate end.
+The compiler captures the longest possible piece of DNA but when we hit the next slice (typically a linker)
+we do primer design and might chop the previous piece down (and then spit it out).  The reason it isn't always
+just the last slice we handed is that we also hit things like virtual slices so the previous slice we
+can design (say) a primer against might be further back in the stack and it's just easier to explicitly keep that prev unemitted slice
+    *)
     if verbose then
         printfn "procAsembly --->"
         printfn "procAssembly: top,  prev=[%s]\n                    n=[%s]\n                    l=[%s]\n            slice out=[%s]"
@@ -963,22 +977,27 @@ let rec procAssembly
             (String.Join(";",(primersOut |> Seq.map(prettyPrintPrimer))))
             (String.Join(";",(sliceOut |> Seq.map(nameFromSlice))))
 
-    /// Include prev in slices out if it wasn't None
+    /// Include head of prev in slicesOut if prev isn't None (we delayed emission at time of processing but now
+    /// need to send it out).
     let incPrev (prev: DNASlice list) (slices : DNASlice list) =
         if verbose then
             printfn "Called incPrev"
-        match prev with 
-        | [] -> slices 
-        | p::_ -> 
+
+        match prev with
+        | [] -> slices
+        | p::_ -> // There is a head of the prev
             if verbose then
                 printfn "Adding %s" p.dna.str
-            p::slices
+            p::slices // add it to the out slices passed in (on front - we are pushing LIFO)
 
+    // Main match for remaining cases
     match l with
     | [] ->
+        // No remaining slices - everything processed.
         let sliceOut' = sliceOut // daz  (I think this is now reincluding a slice)  //    incPrev prev sliceOut |> List.rev
         if verbose then
             printfn "procAssembly: done with slices"
+        // since we made primers and sliceOut with LIFO model, need to reverse them now
         List.rev primersOut,List.rev sliceOut' // reverse the primers and the slices since we pushed as we built
     | hd::next::tl when hd.sliceType = FUSIONST && next.sliceType=INLINEST ->
         // Fusing a slice to a following inline sequence is redundant as that's the
@@ -986,6 +1005,8 @@ let rec procAssembly
         // small DNA sequence, so just ignore FUSION directive
         if verbose then
             printfn "procAssembly: skipping redudant FUSIONST/INLINEST (skip)"
+        // hd was a vitual part (no sequence), so we skip adding it to the sliceOut and add next instead
+        // also doesnt change prev - last real slice is still head of prev (since hd is virtual)
         procAssembly verbose dp errorName prev sliceOut primersOut (next::tl)
     | hd::next::tl when hd.sliceType = FUSIONST ->
         // Slice hd is a fusion slice, which is virtual, it exists only to mark
@@ -993,34 +1014,52 @@ let rec procAssembly
         if verbose then
             printfn "procAssembly: FUSIONST - generating primers (DPP)"
         if prev = [] then failwith "INTERNAL ERROR: unexpected prev = [] in procAssembly\n"
+        // make a seamless junction with head of prev (last slice we can design into) and next (next real
+        // slice after the virtual fusion marker
         let primerF,offsetF,primerR,offsetR = seamless verbose dp (List.head prev) next
 
         // If we stitched fwd/rev off of linker hd then the previous and next elements (prev) and next
         // might need to be modified (chopped) if the ends were flexible
         if verbose then printfn "procAssembly: fusion slice, cutting offsetF=%d offsetR=%d" offsetF offsetR
+
+        //            (empty/virtual)
+        //  prev .... hd(fusionst) .. next .. tl...
+        //  <---------------------------
+        //     ------------------------->
+
+        // We designed into prev, and potentially shortened it if its end was approximate / flexible
+        // so now we can actually emit the head of prev into the sliceOut (chopped potentially)
+        // sliceOut' is the updated version with chopped prev on the head
+
         let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight verbose p offsetR)::sliceOut
 
         procAssembly
             verbose
             dp
             errorName
-            (hd::prev)
-            sliceOut'
+            (hd::prev) // hd becomes the next prev.  DP: Not sure how helpful this is since it's virtual..
+            sliceOut' // updated sliceOut with prev emitted
             (DPP({fwd = primerF ; rev = primerR ; name = next.sliceName})::primersOut)
             ((cutLeft verbose next offsetF)::tl) // Remove bases from the next slice if we moved the primer
-    // linker::next   or non-rabitend-inline::next
+
+    // linker::next
+    // or /inline/ (but not rabit start/end) :: next
+    // AND.. inline is after a previous slice that can be designed against
     | hd::next::tl when
         (hd.sliceType = LINKER) ||
         (hd.sliceType =
             INLINEST && // Actual mid rabit inline slice not one at the end of a rabit
-            not (       hd.pragmas.ContainsKey("rabitend") || 
+            not (       hd.pragmas.ContainsKey("rabitend") ||
                         hd.pragmas.ContainsKey("rabitstart") ||
                         hd.pragmas.ContainsKey("amp") // if directed to amplify, don't do as an inline
             )
          ) && prev <> [] // must be a previous slice to do an inline
         ->
+
         if verbose then
             printfn "procAssembly: LINKER or inline not rabitstart/end"
+
+        // If the inline is short enough (should probably check also for #inline pragma that forces inline)
         if hd.sliceType = INLINEST && hd.dna.Length < 12 then
             if verbose then
                 printfn "procAssembly: ... shortcase (DPP)"
@@ -1038,18 +1077,23 @@ let rec procAssembly
             //                          >>>>>>>>>>>>>>>>
             //  prev ppppppppppppppppp iiiiiiii nnnnnnnnnnnnnnn next
             //                    <<<<<<<<<<<<<<
+
+            // head of prev becomes what we design against on the left
+            // next is what we design against on the right
             let primerF,offsetF,primerR,offsetR = seamless verbose dp (List.head prev) next
 
             //
             // They can instruct us to keep the forward or reverse primers past a particular point.  If
-            // so, we might need to truncat the primers a little
+            // so, we might need to truncate the primers a little
             //
             //
             //  #primerpos FWD 5   implies fwd primer should start from the 5th base relative to the start of the sandwich segment
             //                     >>>>>>>>>>X>>>>>>>>>>>
             //  prev ppppppppppppppppppp iiiiiii nnnnnnnnnnnnnnn next
+            // primerpos is useful for enzyme library designs where they want a fixed primer on one side of a lot of designs
+            // to ensure consistent primer pair overlap in mixtures (and reduce primers)
             //
-            // Parse any primer position directive
+            // Parse any primer position directive and determine cosntraints on lengths
             let fwdTailLenMax,revTailLenMax =
                 match parsePrimerPos hd.pragmas with
                 | FWD(offset) ->
@@ -1064,6 +1108,13 @@ let rec procAssembly
                 printf "primerpos directive: fwdTailLenMax = %A revTailLenMax = %A\n" fwdTailLenMax revTailLenMax
 
             // Tail consists of internal sequence and reverse oligo concatenated.
+            // This is messed up - note - double recomp :)
+            //
+            //  prev ppppppppppppppppp hdhdhdhdh nnnnnnnnnnnnn next
+            //                <<<<<<<<<<<<<<<<<<
+            //                revbody  hd.RevComp
+            //                fwdRunway.........>
+            //
             let fwdRunway = DnaOps.concat([hd.dna.RevComp(); primerR.body]).RevComp()
 
             // Up to how many bases can we use for tail?
@@ -1104,31 +1155,70 @@ let rec procAssembly
 
             if verbose then printfn "short inline case, cutting offsetR=%d" offsetR
 
+            // chop the head of prev (last slice that we can design into) now we have potentially shortened it (if
+            // it had an approximate end),  then move it over to the slicesOut  generating sliceOut'
+            //        <------(chop this bit) -------------
+            //  prevprevprevprevprevprevprev hdhdhdhdhdhdh nextnextnext
+            //                                  ---------- ------>
             let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight verbose p offsetR)::(List.tail sliceOut)
+
+            // Note: next is also potentially chopped a bit if its leading edge is an approximate end.  Next will
+            // include all the possible bases but primer design could have done this
+            //
+            //  prevprevprevprevprevprevprev hdhdhdhdhdhdh nextnextnext
+            //                                  ---------- (chopped) ------>
+            // this is taken
+            let next' = ((cutLeft verbose next offsetF)::tl) // Remove bases from the next slice if we moved the primer
 
             assert(primerF'.lenLE(dp.pp.maxLength))
             assert(primerR'.lenLE(dp.pp.maxLength))
+
 
             procAssembly
                 verbose
                 dp
                 errorName
-                (hd::prev)
-                (hd::sliceOut')
+                (hd::prev) // hd (inline sequence) becomes next head of prev sequence
+                (hd::sliceOut') // emit hd and sliceOut directly into slicesOut (we aren't going to chop hd more)
                 (DPP({fwd = primerF'; rev = primerR'; name = "shortinline"+hd.sliceName})::primersOut)
-                ((cutLeft verbose next offsetF)::tl) // Remove bases from the next slice if we moved the primer
-        else
+                next' // Remove bases from the next slice if we moved the primer
+        else // phew..
+            // (as an aisde, this match case violates every last thing I was taught in school about reasonable function sizes).
+            // Probably worth breaking up and writing damn unit tests against cases but be careful to not break tail recursion
+
+            // In this case the inline sequence is too long (we should also look for the #amp pragma technically to
+            // force this case.  We are going to make the inline via PCR rather than just try to make it with a pair
+            // of primers
+            // so we have these for parts
+            //
+            // hd(long inline not rabit start/end)::next::tail..
+            // OR.....
+            // hd(linker)::next::tail..
+
             if verbose then
                 printfn "procAssembly: ... longcase (DPP)"
             // LONGINLINE Case
+            //
             // Regular inline case or linker case - just design fwd and reverse then prepend
             // leading sequence (inline or linker)
+            //
+            //     hd (inline/linker) :: next :: tail....
+            //     ------------------------->
+            // <--------------------
+            //
             // Wrinkle - the fwd primer might go through an inline sequence, so we need to
             // handle that case and really design against the inline sequence two positions downstream.
+            //
+            //
+            //     hd (inline/linker) :: next :: tail....
+            //     ---------------------(sandw)..---->  (primer needs to be designed against tail not next)
+            // <--------------------
             // c,d and e are ....
             // c (sandwichF) is the sandwich slice if any
             // d   is the actual "next" slice we design the primer into
             // e   are the remaining slices for further processing
+            //    hd    ::    c   ::   d    ::e..
+            //    --------------------->
             let sandwichF, d, e =
                 if next.sliceType = INLINEST then
                     if verbose then
@@ -1136,10 +1226,10 @@ let rec procAssembly
                     match tl with
                     | [] -> failwithf "expected next dnaslice preparing for linkerFwd design\n"
                     | tlhd::tltl -> Some(next),tlhd,tltl
-                else 
+                else
                     if verbose then
-                        printfn "procAssembly: ... not sandwich case hd=sliceType %A (%s), next sliceType=%A (%s)" 
-                            hd.sliceType 
+                        printfn "procAssembly: ... not sandwich case hd=sliceType %A (%s), next sliceType=%A (%s)"
+                            hd.sliceType
                             hd.sliceName
                             next.sliceType // e.g. hd = inline
                             next.sliceName
@@ -1161,13 +1251,14 @@ let rec procAssembly
             // <<<<<<<<------------------0
             //   b  :: inline (a) :: LINKER ..
             //
+            // skipped marks if we had to step over an inline/sandwich slice
             let sandwichR, b, skipped =
                 match prev with
-                | hd1::hd2::_ when hd1.sliceType = INLINEST ->
+                | hd1::hd2::_ when hd1.sliceType = INLINEST -> // hd1 needs to be skipped and hd2 is the slice to design again - sucks if there was more than 1 small slice :(
                     // skipped is set if we had to reach over a slice
-                    Some(hd1),Some(hd2),true
-                | hd::_ -> None,Some(hd),false
-                | [] -> None,None,false
+                    Some(hd1),Some(hd2),true // yes we skipped hd1, design agaisnt hd2
+                | hd::_ -> None,Some(hd),false // no sandwich, just design against hd // yay F# matching.. BTW
+                | [] -> None,None,false // nothing on left hand side to design again
 
             // REV primer creation.  If we need to go back through b then skipped is set to true
             // when b is a small inline slice
@@ -1181,14 +1272,21 @@ let rec procAssembly
             // This can be too long/short in case of inline sequences.  Get the up/downstream
             // sequences and fine tune the primers in the case of inline sequences to target the seamlesstm
 
+            /// First get the tail of the primer we are proposing
             let revTail =
                 match sandwichR with
-                | None -> hd.dna.RevComp()
-                | Some(s) -> DnaOps.append s.dna hd.dna |> DnaOps.revComp
+                | None -> hd.dna.RevComp() //  hdhdhdhdhdhdhd // just the head
+                | Some(s) ->
+                    // put together the hd and sandwich dna for the primer tail (non amplification region).  Get right orientation
+                    DnaOps.append s.dna hd.dna |> DnaOps.revComp
 
             // Build data for tuneTails.  For the purpose of assignment, body is the part that
             // amplifies the neighbouring regions.
             // Any sandwich and linker DNA goes into the tail
+
+            // ----------|--------|----->
+            // overlap   sandwich  amplification (body)
+            // tail--------------->
 
             // TUNING STEP
 
@@ -1241,7 +1339,7 @@ let rec procAssembly
             // Always generate full length linkers.
             // Alternatively we can try to target the linker tm but compromise and chew it back
             // a little if we run out of linker
-            let linkerChew = true
+            let linkerChew = true // ok to reduce length of linker region slightly
             let round (f:float) = (f+1.0) |> int
             let (fwdTailLenFixed,
                  fwdTailLenMin,
@@ -1262,7 +1360,7 @@ let rec procAssembly
                 let midOverlapContribution = (hd.dna.Length * 2 - minInlineOverlap)/2 |> max 0
                 let fwdMiddleLen = (min lenSF maxSandwichLength)+midOverlapContribution
                 let revMiddleLen = (min lenSR maxSandwichLength)+midOverlapContribution
-                if hd.dna.Length = 0 then 
+                if hd.dna.Length = 0 then
                     (None,
                      0,
                      Microsoft.FSharp.Core.int.MaxValue,
@@ -1313,12 +1411,15 @@ let rec procAssembly
                      Microsoft.FSharp.Core.int.MaxValue)
 
             if fwdTailLenMin > dp.pp.maxLength then
-                failwithf "%s: required primer fwd primer tail length %d exceeds primer max length of %d" 
+                failwithf "%s: required primer fwd primer tail length %d exceeds primer max length of %d"
                                 errorName fwdTailLenMin dp.pp.maxLength
             if revTailLenMin > dp.pp.maxLength then
-                failwithf "%s: required primer revfwd primer tail length %d exceeds primer max length of %d" 
+                failwithf "%s: required primer revfwd primer tail length %d exceeds primer max length of %d"
                                 errorName revTailLenMin dp.pp.maxLength
 
+            // --------------------------------------------------------------------------------
+            // main show - play with all the primer lengths to get optimal forward and reverse primers
+            // --------------------------------------------------------------------------------
             let primerF,primerR =
                 tuneTails
                     verbose
@@ -1335,7 +1436,8 @@ let rec procAssembly
                     midArg
 
             // One final little snag with building the primers for RYSE.   Although we included sandwich regions in the
-            // tail for optimization purposes, we now put them into the body since that's the convention followed in thumper.
+            // tail for optimization purposes, we now put them into the *body* since that's the convention followed in thumper.  Ideally we'd model 3 part linkers
+            // since body is strictly for amplification,  tail should be for overlap with neighnor and sandwich is along for the ride..
             // Transfer some bases from the tails to the body if necessary
 
             let primerF =
@@ -1361,14 +1463,27 @@ let rec procAssembly
             assert(primerR.lenLE(dp.pp.maxLength))
 
             // Ensure primers overlap
+            // --------------------------------------------------
 
             // If we stitched fwd/rev off of linker hd then the previous and next elements (prev) and next
             // might need to be modified (chopped) if the ends were flexible.  Calculate the new lengths/positions of the
             // ends of the adjacent slices.
+            //
+            // chop the head of prev (last slice that we can design into) now we have potentially shortened it (if
+            // it had an approximate end),  then move it over to the slicesOut  generating sliceOut'
+            //        <------(chop this bit) -------------
+            //  prevprevprevprevprevprevprev hdhdhdhdhdhdh nextnextnext (d)
+            //                                  ---------- ------>
+            // Note: next is also potentially chopped a bit if its leading edge is an approximate end.  Next will
+            // include all the possible bases but primer design could have done this
+            //
+            //  prevprevprevprevprevprevprev hdhdhdhdhdhdh nextnextnext (d)
+            //                                  ---------- (chopped) ------>
+            // this is taken
 
             if verbose then
                 printfn "regular inline case hd=%s, cutting offsetR=%d" hd.description offsetR
-                printfn "procAssembly: prepping for sliceOut' skipped=%s sliceOut=%s" 
+                printfn "procAssembly: prepping for sliceOut' skipped=%s sliceOut=%s"
                     (if skipped then "yes" else "no")
                     (String.Join(";",[for x in sliceOut -> x.description]))
             let sliceOut' =
@@ -1384,7 +1499,7 @@ let rec procAssembly
 
                     // new sliceout starts with p1, the small skipped inline slice, then p2 cut to reflect the primer adjusted boundary
                     // finally we include the remainder of the slice out
-                    p1::(cutRight verbose p2 offsetR)::tl 
+                    p1::(cutRight verbose p2 offsetR)::tl
                 | p::_ -> // simple prev case, cut to any offset we generated
                     if verbose then printfn "cutRight p=%s offsetR=%d" p.description offsetR
                     //(cutRight p offsetR)::sliceOut
@@ -1392,8 +1507,8 @@ let rec procAssembly
 
             let choppedD =  // The next slice might have a flexible end in which case we need to respect where the primer chopped it
                             let chopped = cutLeft verbose d offsetF
-                            if verbose then 
-                                printfn "chop d %s to %d\ndpre=%s\ndPost=%s" 
+                            if verbose then
+                                printfn "chop d %s to %d\ndpre=%s\ndPost=%s"
                                     d.description
                                     offsetF
                                     d.dna.str
@@ -1414,10 +1529,10 @@ let rec procAssembly
                     verbose
                     dp
                     errorName
-                    (choppedD::hd::prev) // prev slices
-                    (choppedD::hd::sliceOut') // updated slices we are emitting
+                    (choppedD::hd::prev) // prev slices (emit chopped version of next slide choppedD, and this inline hd as well)
+                    (choppedD::hd::sliceOut') // updated slices we are emitting - everything is emitted already
                     (GAP::DPP({fwd = primerF; rev = primerR; name = hd.description})::primersOut) // primers out - GAP for the D slice and DPP for the primers on the hd/linker piece
-                    e // todo slices
+                    e // remaining unprocessed slices
             | Some x ->
                 if verbose then
                     printfn "procAssembly:  taking Some x=%s arm of long inline hd=%s" x.description hd.description
@@ -1425,22 +1540,10 @@ let rec procAssembly
                     verbose
                     dp
                     errorName
-                    (choppedD::x::hd::prev) // prev slices. Include the sandwich x and the downstream d which may have been chopped
-                    (choppedD::x::hd::sliceOut') // updated slices we are emitting  - pair the sandwich with a SANDWICHGAP Dpp type
+                    (choppedD::x::hd::prev) // prev slices. Include the sandwich x and the downstream d which may have been chopped - note LIFO so choppedD right most
+                    (choppedD::x::hd::sliceOut') // updated slices we are emitting  - pair the sandwich with a SANDWICHGAP Dpp type in the primer out stream
                     (GAP::SANDWICHGAP::DPP({fwd = primerF; rev = primerR; name = hd.description})::primersOut)
                     e // todo slices
-
-
-            (*
-            procAssembly
-                dp
-                errorName
-                d::hd::prev // emitted
-                sliceOut'
-                (DPP({fwd = primerF; rev = primerR; name = errorName})::primersOut)
-                // Remove bases from the next slice if we moved the primer
-                (match sandwichF with | None -> [] | Some(t) -> [t])@[(cutLeft d offsetF)]@e
-            *)
 
     // technically shouldn't end on a non linker (unless non ryse design) but..
     | [last] when (last.sliceType = LINKER || last.sliceType = INLINEST) ->
@@ -1448,17 +1551,25 @@ let rec procAssembly
             printfn "procAssembly: ... last LINKER or INLINEST last=%A name=%s" last.sliceType last.description
         // We are about to design a primer back into the previous sequence if it exists.
         // There is a catch if the previous sequence was a short inline sequence.
-        // We should treat that as a sandwich sequence, built it into the primer but not
+        // We should treat that as a sandwich sequence, build it into the primer but not
         // design amplification against it.
+        // hd2 :: hd (sandwich)             :: this slice..
+        // <-- (skipped for primer design)..
         let sandwich,prevAmp, skipped =
             match prev with
-            | hd::hd2::_ when hd.sliceType = SliceType.INLINEST -> Some(hd),Some(hd2), true
+            | hd::hd2::_ when hd.sliceType = SliceType.INLINEST -> Some(hd),Some(hd2), true // reach back past inline sequence hd
             | [hd] when hd.sliceType = SliceType.INLINEST ->
+                // Only one slice to the left (head of prev) and it's inline so not enough DNA to make a primer against
+                // Note this could be a bad decision if it's a big inline sequence but those get promoted elsewhere to being real slices not inline
+                // some room to allow users to use #amp to shape this decision in the future..
                 failwithf "internal amplification error amplifying INLINEST %A" hd.description
-            | hd::_ -> None, Some(hd), false
-            | _ -> None, None, false
+            | hd::_ -> None, Some(hd), false // head isn't an inline, no sandwich present
+            | _ -> None, None, false // who knows whatever other cases... :)
 
+        // design back into whichever slice we selected to amplify against. prevAmp is the slice that we design against
         let primerR'',offsetR = linkerRev2 verbose dp errorName prevAmp
+
+        // Now mark sandwich dna if anything or empty if nothing (flip for reverse primer)
         let sandwichDNA =
             match sandwich with | None -> Dna("") | Some(dna) -> dna.dna.RevComp()
 
@@ -1477,6 +1588,7 @@ let rec procAssembly
         //
         // Body, [sandwich],  tail  (linker)
         // <-bbbbbbbbbbb sssssss TTTTTTTTTTTTTTT
+        /// Mark the bases that became the sandwich within the primer
         let sandwichAnnotation =
             if sandwichDNA.Length = 0 then []
             else [{il=primerR'.tail.Length;
@@ -1494,15 +1606,17 @@ let rec procAssembly
                              {il=primerR'.tail.Length+sandwichDNA.Length;
                               ir = primerR'.tail.Length + primerR'.body.Length-1;
                               iType = DNAIntervalType.AMP}]}
+        // prevAmp was the slice we designed the rev primer against
         match prevAmp with
-        | None -> assert(primerR.Primer.Length=0)
-        | Some(ds) -> primerCheck primerR.Primer.arr (ds.dna.RevComp().[offsetR..].arr)
+        | None -> assert(primerR.Primer.Length=0) // if none, should be no reverse primer
+        | Some(ds) -> primerCheck primerR.Primer.arr (ds.dna.RevComp().[offsetR..].arr) // Otherwise check primer actually lands in it otherwise bad things happen
 
-        // potentially adjust previously emitted slice if primer generation moved the boundary
+        // potentially adjust previously emitted slice if primer generation moved the boundary (it was approximate ended)
+        // sliceOut' is the final slice list (reversed into the correct left to right order as we are finishing up)
         let sliceOut' =
             match prev with
             | [] ->
-                // We are on the last element and there are no precending elements.  This could
+                // We are on the last element and there are no preceding elements.  This could
                 // be a stand-alone, single DNA slice.  Process it as such.  This is going to create
                 // trouble if the user intended a RYSE design but they might not be headed there so we have
                 // to handle this case.
@@ -1511,29 +1625,32 @@ let rec procAssembly
                 if List.isEmpty sliceOut then // Assume it's a stand-alone inline sequence that could be made with a pair of primers
                     [last] // Fake slice for now.. TODO TODO
                 else failwith "expected preceding linker adjacent to terminal inline sequence"
-            | previousInline :: previousAmp :: tail when skipped ->
+            | previousInline :: previousAmp :: tail when skipped -> // this case assumes previousInline is a sandwich because skipped is set
                 if verbose then
                     printfn "procAssembly:  potentially trimming p=%s last=%s" previousAmp.description last.description
-                last :: previousInline ::(cutRight verbose previousAmp offsetR) :: tail  
-                |> List.rev // Finally reverse the slice out list since we pushed it as we created it            
-            | p::_ -> 
+                // take remaining element (last) and push it onto sliceOut with inline and adjusted amp slice cut if necessary
+                last :: previousInline ::(cutRight verbose previousAmp offsetR) :: tail
+                |> List.rev // Finally reverse the slice out list since we pushed it as we created it  ( we are done - not recursing any more and this is the result)
+            | p::_ ->
                 // 1) prepend the final part (probably the terminal linker)
                 // 2) cut the previous element (head of prev slices) if primer moved boundary
                 // 3) incllude remainder of previous slices
                 // 4) reverse list to get natural forward order since we pushed results on successively
                 if verbose then
                     printfn "procAssembly:  potentially trimming p=%s last=%s" p.description last.description
-                last::(cutRight verbose p offsetR)::(List.tail sliceOut)  
-                |> List.rev // Finally reverse the slice out list since we pushed it as we created it
+                last::(cutRight verbose p offsetR)::(List.tail sliceOut)
+                |> List.rev // Finally reverse the slice out list since we pushed it as we created it  ( we are done - not recursing any more and this is the result)
 
         if verbose then
                 printfn "sliceOut'=%s" (String.Join(";",[for s in sliceOut' -> s.description]))
+
+        // This is going back to caller.  Collect the primer arrangment and slices as a tuple (this deserves at least an anonymous record)
         let finalOutput = (DPP({fwd = {body=Dna(""); tail =Dna(""); annotation = []}; rev = primerR; name = last.description})::primersOut |> List.rev,
                              sliceOut') // Last linker
         let finalDPPs,finalSlices = finalOutput
         let outputParity = finalDPPs.Length = finalSlices.Length
         if verbose || (not outputParity) then
-                
+
             let y = (String.Join(";",(finalDPPs |> Seq.map(prettyPrintPrimer))))
             let x = (String.Join(";",(finalSlices |> Seq.map(nameFromSlice))))
             printfn "procAssembly: finalOutput(slices n=%d): %s" (finalSlices.Length) x
@@ -1542,53 +1659,78 @@ let rec procAssembly
                 failwithf "These lists should have same length :( - error in procAssembly"
             ()
         finalOutput // RETURN POINT *****
-    | hd::tl when 
-        hd.sliceType = INLINEST && 
+    // /inline/ (not amp or rabitend) ::.....
+    // this is strictly an inline slice that is going to get built by primers when we do the next
+    // slice
+    | hd::tl when
+        hd.sliceType = INLINEST &&
         (not (hd.pragmas.ContainsKey("rabitend") || hd.pragmas.ContainsKey("amp"))) ->
         if verbose then
             printfn "procAssembly: ... (GAP) INLINEST"
+        // For now we don't know what is going to happen with this slice.  It will get created
+        // as part of the next slice that gets processed (e.g. a slice or a linker).  For now
+        // just put the slice onto the prev stack
         let prevNew = hd::prev
+
+        // We also include any slice on head prev in the sliceOut. (incPrev)
+        // todo:
+        // This seems a bit sketchy - how sure can we be that the previous slice hasn't
+        // already been emitted.  I'd be more comfortable in future if every slice had a marker
+        // noting if/how it had been emitted and we could do a sanity check at end of the run to
+        // make sure everything went out just once
+
         procAssembly verbose dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
     // This cases catches inline sequences just before a linker marked rabitend
+    // This slice will be implemented when linker goes out
     | hd::tl when hd.sliceType = INLINEST && hd.pragmas.ContainsKey("rabitend") ->
         if verbose then
             printfn "procAssembly: ... (GAP) INLINEST rabitend case hd=%s" hd.description
             printfn "procAssembly: ... new sliceOut = %s" (String.Join(";",[for x in hd::sliceOut -> x.description]))
-        // push the slice onto the prev stack
+        // push the slice onto the prev stack (it's going to get implemented by next slice primer gen)
         let prevNew = hd::prev
+        // push hd onto slices out.  It will be of type sandwich on primer side
         procAssembly verbose dp errorName prevNew (hd::sliceOut) (SANDWICHGAP::primersOut) tl
         // procAssembly verbose dp errorName prevNew (incPrev prev sliceOut) (GAP::primersOut) tl
+    // Finally catch all case
+    // -----------------------------------------------
     | hd::tl ->
         if verbose then
-            printfn 
-                "procAssembly: ... (GAP) catchall case - should this be fused with previous slice? hd.dna.Length=%d hd.containsAmp=%s" 
-                hd.dna.Length 
+            printfn
+                "procAssembly: ... (GAP) catchall case - should this be fused with previous slice? hd.dna.Length=%d hd.containsAmp=%s"
+                hd.dna.Length
                 (if hd.pragmas.ContainsKey("amp") then "Y" else "N")
+            // emit some diagnostics on prev slice
             match prev with
             | pHd::_ ->
-                printfn "procAssembly: ...                      phd.dna.Length=%d phd.containsAmp=%s"  
-                    pHd.dna.Length 
+                printfn "procAssembly: ...                      phd.dna.Length=%d phd.containsAmp=%s"
+                    pHd.dna.Length
                     (if pHd.pragmas.ContainsKey("amp") then "Y" else "N")
             | [] ->
                 printfn "procAssembly: ...                      prev empty"
 
         // Check if this slice should have been fused with previous slice?
         match prev with
-        | pHd::_ when 
-            (pHd.dna.Length>100 || pHd.pragmas.ContainsKey("amp")) &&  
+        | pHd::_ when
+            // IF prev head long enough or using amp / pcr
+            (pHd.dna.Length>100 || pHd.pragmas.ContainsKey("amp")) &&
+            // AND this big enough or using amp/pcr THEN
             (hd.dna.Length > 100 || hd.pragmas.ContainsKey("amp")) ->
 
+            // If previous head and this slice are big enough or being forced into an amplification
+            // strategy then we are going seamless between them
             printfn "procAssembly: ... generate seamless junction between prev=%s and this=%s" pHd.description hd.description
 
+            // look for any tricky instructions of primer position for previous head
             let primerPos = parsePrimerPos pHd.pragmas
 
+            // determine primer constraints
             let fwdTailLenMax,revTailLenMax =
                 match primerPos with
                 | FWD(offset) ->
                     let x = -offset // Convert to tail length
                     x, 999999
                 | REV(offset) ->
-                    let x = offset 
+                    let x = offset
                     999999,x
                 | NONE -> 999999,999999 // no primerpos
             if verbose then
@@ -1596,16 +1738,17 @@ let rec procAssembly
                     printfn "procAssembly: fwdTailLenMax = %d" fwdTailLenMax
                     printfn "procAssembly: revTailLenMax = %d" revTailLenMax
 
+            // step 1, make seamless primers fwd and reverse to join segments without worrying about length constraints (pre chop)
             let primerFPreChop,offsetF,primerRPreChop,offsetR = seamless verbose dp pHd hd
 
             // step 2, chop tails off maybe if the primer positioning requires it
-            let primerFStep2 = 
-                    {primerFPreChop with 
-                        tail = primerFPreChop.tail.[..(fwdTailLenMax|> min primerFPreChop.tail.Length)-1] 
+            let primerFStep2 =
+                    {primerFPreChop with
+                        tail = primerFPreChop.tail.[..(fwdTailLenMax|> min primerFPreChop.tail.Length)-1]
                     }
-            let primerRStep2 = 
-                    {primerRPreChop with 
-                        tail = primerRPreChop.tail.[..(revTailLenMax|> min primerRPreChop.tail.Length)-1] 
+            let primerRStep2 =
+                    {primerRPreChop with
+                        tail = primerRPreChop.tail.[..(revTailLenMax|> min primerRPreChop.tail.Length)-1]
                     }
 
             // step 3,  backfill primer if warranted to make a longer overlap
@@ -1626,13 +1769,14 @@ let rec procAssembly
                       let primerFNewTail = pHd.dna.[pHd.dna.Length-maxTailLen..]
                       {primerFStep2 with tail = primerFNewTail},{primerRStep2 with body = primerRStep2.body.[(-x)-1..]}
                 | _ -> primerFStep2,primerRStep2
-                        
+
 
             // If we stitched fwd/rev off of linker hd then the previous and next elements (prev) and next
             // might need to be modified (chopped) if the ends were flexible
             let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight verbose p offsetR)::(List.tail sliceOut)
 
-            let fusionSlice = {     
+            // todo: feelings like this should deined elsewhere.  It's just an empty fusion slice
+            let fusionSlice = {
                 id = None
                 extId = None
                 dna = Dna("")
@@ -1664,15 +1808,17 @@ let rec procAssembly
                 verbose
                 dp
                 errorName
-                (hd::prev)
-                (hd::fusionSlice::sliceOut')
+                (hd::prev) // head goes onto previous
+                (hd::fusionSlice::sliceOut') // push out the head with fusion slice to note what we did (there has to be a slice corresponding to the primer pair in that position)
                 (GAP::DPP({fwd = primerF ; rev = primerR ; name = hd.sliceName})::primersOut)
                 tl // Remove bases from the next slice if we moved the primer
-                // FIXFIX
+                // FIXFIX - I am pretty sure this will result in a bug if the next slice has an approximate end.  We should minimally assert that this is not true...
                 //((cutLeft hd offsetF)::tl) // Remove bases from the next slice if we moved the primer
-        | _ ->
+        // This is another monster match inside a match case.  Badly needs some gentle dissection into more managable pieces.  I'd probably start with test coverage though before we break too much
+        | _ -> // Catch all case for prev when prev was just one item.  todo: should be [hd] with an error case for anything else?
             if verbose then
                 printfn "procAssembly: ... regular branch of catch all"
+            // hd just moves to prev and slices out (any primers will come from processing adjacent slices)
             procAssembly verbose dp errorName (hd::prev) (hd::sliceOut)  (GAP::primersOut) tl
 
 // --- end procAssembly ------------------------------------------------------------------------
