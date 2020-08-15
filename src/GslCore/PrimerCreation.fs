@@ -184,10 +184,10 @@ let tuneTails
     let annealTarget =
         match firmMiddle with
         | Some(x) ->
-                if verbose then printfn "setAnnealTarget to firmMiddle=%A" x
+                if verbose then printfn "procAssembly: tuneTails: setAnnealTarget to firmMiddle=%A" x
                 x
         | None ->
-                if verbose then printfn "setAnnealTarget to seamlessOverlapTm=%A" dp.seamlessOverlapTm
+                if verbose then printfn "procAssembly: tuneTails: setAnnealTarget to seamlessOverlapTm=%A" dp.seamlessOverlapTm
                 dp.seamlessOverlapTm
     //let annealTarget = dp.seamlessOverlapTm // Just use this,  rev/fwdTailLenFixed vars take care of constraining RYSE linkers
 
@@ -203,7 +203,7 @@ let tuneTails
     /// First base of inline region
     let Y = rev.body.Length
     if verbose then
-        printfn "tuneTailOpt: X=%d Y=%d\n template=%s" X Y fullTemplate.str
+        printfn "procAssembly: tuneTails: tuneTailOpt: X=%d Y=%d\n template=%s" X Y fullTemplate.str
 
     /// Maximum amount by which we can stray from ideal annealing term during tune tails search
     let maxAnnealSearchDeviation = 10.0<C>
@@ -818,11 +818,11 @@ let linkerRev2 verbose (dp:DesignParams) errorName (last:DNASlice option) =
         match last with
         | None ->
             if verbose then
-                printfn "linkerFwd2: entering with margin=%d last=None" margin
+                printfn "procAssembly: linkerFwd2: entering with margin=%d last=None" margin
             { body = Dna(""); tail=Dna("") ; annotation=[]},0
         | Some(ds) ->
             if verbose then
-                printfn "linkerFwd2: entering with margin=%d last=%s sourceToApprox=%s"
+                printfn "procAssembly: linkerFwd2: entering with margin=%d last=%s sourceToApprox=%s"
                     margin ds.description (if ds.sourceToApprox then "y" else "n")
             let x,task =
                 if ds.sourceToApprox then
@@ -835,7 +835,7 @@ let linkerRev2 verbose (dp:DesignParams) errorName (last:DNASlice option) =
                         targetTemp = dp.targetTm;
                         sequencePenalties  = None}
                     if verbose then
-                        printf "linkerRev: oligo design approx\n template=%s\npen=%A\n"
+                        printf "procAssembly: linkerRev: oligo design approx\n template=%s\npen=%A\n"
                             (arr2seq task.temp) pen
                     primercore.oligoDesignWithCompromise false pen task,task
                 else
@@ -848,7 +848,7 @@ let linkerRev2 verbose (dp:DesignParams) errorName (last:DNASlice option) =
                         targetTemp = dp.targetTm;
                         sequencePenalties  = None}
                     if verbose then
-                        printf "linkerRev: oligo design non approx\n template=%s\npen=%A\n"
+                        printf "procAssembly: linkerRev: oligo design non approx\n template=%s\npen=%A\n"
                             (arr2seq task.temp) pen
                     primercore.oligoDesignWithCompromise false pen task,task
             match x with
@@ -970,12 +970,15 @@ just the last slice we handed is that we also hit things like virtual slices so 
 can design (say) a primer against might be further back in the stack and it's just easier to explicitly keep that prev unemitted slice
     *)
     if verbose then
-        printfn "procAsembly --->"
-        printfn "procAssembly: top,  prev=[%s]\n                    n=[%s]\n                    l=[%s]\n            slice out=[%s]"
+        printfn ""
+        printfn "procAssembly: ==========================================================================================="
+        printfn "procAssembly: TOP,  prev=[%s]\n                    n=[%s]\n                    l=[%s]\n            slice out=[%s]"
             (String.Join(";",(prev |> Seq.map(nameFromSlice))))
             (String.Join(";",(l |> Seq.map(nameFromSlice))))
             (String.Join(";",(primersOut |> Seq.map(prettyPrintPrimer))))
             (String.Join(";",(sliceOut |> Seq.map(nameFromSlice))))
+        printfn "procAssembly: ==========================================================================================="
+        printfn ""
 
     /// Include head of prev in slicesOut if prev isn't None (we delayed emission at time of processing but now
     /// need to send it out).
@@ -996,7 +999,7 @@ can design (say) a primer against might be further back in the stack and it's ju
         // No remaining slices - everything processed.
         let sliceOut' = sliceOut // daz  (I think this is now reincluding a slice)  //    incPrev prev sliceOut |> List.rev
         if verbose then
-            printfn "procAssembly: done with slices"
+            printfn "procAssembly: PACASE 0 - done with slices"
         // since we made primers and sliceOut with LIFO model, need to reverse them now
         List.rev primersOut,List.rev sliceOut' // reverse the primers and the slices since we pushed as we built
     | hd::next::tl when hd.sliceType = FUSIONST && next.sliceType=INLINEST ->
@@ -1004,7 +1007,7 @@ can design (say) a primer against might be further back in the stack and it's ju
         // strategy we employ by default, but it will mess things up to try to put a seamless stitch here into a possibly
         // small DNA sequence, so just ignore FUSION directive
         if verbose then
-            printfn "procAssembly: skipping redudant FUSIONST/INLINEST (skip)"
+            printfn "procAssembly: PACASE 1 - skipping redudant FUSIONST/INLINEST (skip)"
         // hd was a vitual part (no sequence), so we skip adding it to the sliceOut and add next instead
         // also doesnt change prev - last real slice is still head of prev (since hd is virtual)
         procAssembly verbose dp errorName prev sliceOut primersOut (next::tl)
@@ -1012,7 +1015,7 @@ can design (say) a primer against might be further back in the stack and it's ju
         // Slice hd is a fusion slice, which is virtual, it exists only to mark
         // the intention to fuse prev and next together
         if verbose then
-            printfn "procAssembly: FUSIONST - generating primers (DPP)"
+            printfn "procAssembly: PACASE 2 - FUSIONST - generating primers (DPP)"
         if prev = [] then failwith "INTERNAL ERROR: unexpected prev = [] in procAssembly\n"
         // make a seamless junction with head of prev (last slice we can design into) and next (next real
         // slice after the virtual fusion marker
@@ -1057,7 +1060,7 @@ can design (say) a primer against might be further back in the stack and it's ju
         ->
 
         if verbose then
-            printfn "procAssembly: LINKER or inline not rabitstart/end"
+            printfn "procAssembly: PACASE 3 - LINKER or inline not rabitstart/end"
 
         // If the inline is short enough (should probably check also for #inline pragma that forces inline)
         if hd.sliceType = INLINEST && hd.dna.Length < 12 then
@@ -1548,7 +1551,7 @@ can design (say) a primer against might be further back in the stack and it's ju
     // technically shouldn't end on a non linker (unless non ryse design) but..
     | [last] when (last.sliceType = LINKER || last.sliceType = INLINEST) ->
         if verbose then
-            printfn "procAssembly: ... last LINKER or INLINEST last=%A name=%s" last.sliceType last.description
+            printfn "procAssembly: PACASE 4 - ... last LINKER or INLINEST last=%A name=%s" last.sliceType last.description
         // We are about to design a primer back into the previous sequence if it exists.
         // There is a catch if the previous sequence was a short inline sequence.
         // We should treat that as a sandwich sequence, build it into the primer but not
@@ -1687,7 +1690,7 @@ can design (say) a primer against might be further back in the stack and it's ju
         hd.sliceType = INLINEST &&
         (not (hd.pragmas.ContainsKey("rabitend") || hd.pragmas.ContainsKey("amp"))) ->
         if verbose then
-            printfn "procAssembly: ... (GAP) INLINEST"
+            printfn "procAssembly: PACASE 5 -... (GAP) INLINEST"
         // For now we don't know what is going to happen with this slice.  It will get created
         // as part of the next slice that gets processed (e.g. a slice or a linker).  For now
         // just put the slice onto the prev stack
@@ -1705,6 +1708,7 @@ can design (say) a primer against might be further back in the stack and it's ju
     // This slice will be implemented when linker goes out
     | hd::tl when hd.sliceType = INLINEST && hd.pragmas.ContainsKey("rabitend") ->
         if verbose then
+            printfn "procAssembly: PACASE 6 -"
             printfn "procAssembly: ... (GAP) INLINEST rabitend case hd=%s" hd.description
             printfn "procAssembly: ... new sliceOut = %s" (String.Join(";",[for x in hd::sliceOut -> x.description]))
         // push the slice onto the prev stack (it's going to get implemented by next slice primer gen)
@@ -1717,7 +1721,7 @@ can design (say) a primer against might be further back in the stack and it's ju
     | hd::tl ->
         if verbose then
             printfn
-                "procAssembly: ... (GAP) catchall case - should this be fused with previous slice? hd.dna.Length=%d hd.containsAmp=%s"
+                "procAssembly: PACASE 7 -... (GAP) catchall case - should this be fused with previous slice? hd.dna.Length=%d hd.containsAmp=%s"
                 hd.dna.Length
                 (if hd.pragmas.ContainsKey("amp") then "Y" else "N")
             // emit some diagnostics on prev slice
@@ -1796,7 +1800,7 @@ can design (say) a primer against might be further back in the stack and it's ju
             // might need to be modified (chopped) if the ends were flexible
             let sliceOut' = match prev with | [] -> sliceOut | p::_ -> (cutRight verbose p offsetR)::(List.tail sliceOut)
 
-            // todo: feelings like this should deined elsewhere.  It's just an empty fusion slice
+            // todo: feelings like this should defined elsewhere.  It's just an empty fusion slice
             let fusionSlice = {
                 id = None
                 extId = None

@@ -7,7 +7,7 @@ open AssemblyTestSupport
 
 module SharedSliceTesting =
     let dumpSlices (slices:DNASlice list) =
-        printf "%s" (String.Join(";",[for s in slices -> s.sliceName]))
+        printf "%s" (String.Join(";",[for s in slices -> if s.sliceName <> "" then s.sliceName else s.description]))
 
     let checkSequence (expected:DNASlice list) (actual:DNASlice list) =
         if expected.Length <> actual.Length then
@@ -276,6 +276,14 @@ type TestProcAssembly() =
             [ linkerAlice; uFoo ; dFoo ; linkerCharlie]
             "DGDGD"
             [ linkerAlice; uFoo ; fuse ;  dFoo; linkerCharlie]
+    [<Test>]
+    member __.testFuseThenSlice() =
+        runOne
+            "testFuseThenSlice"
+            [ linkerAlice; uFooFuse ; dFoo ; linkerCharlie]
+            "DGDGD"
+            [ linkerAlice; uFoo ; fuse ;  dFoo; linkerCharlie]
+
     [<Test>]
     member __.testTerminalSlice() =
         runOne

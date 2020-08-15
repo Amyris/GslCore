@@ -11,7 +11,7 @@ open Amyris.ErrorHandling
 [<TestFixture>]
 type TestMapRyseLinkers() =
 
-    let verbose = false  // enable for detailed (very detailed) output from mapRyseLinkers
+    let verbose = true  // enable for detailed (very detailed) output from mapRyseLinkers
 
     do
         // initialize pragmas
@@ -99,9 +99,18 @@ type TestMapRyseLinkers() =
                 [linkerAlice ; uFoo ; shortInline ; dFoo ; linkerBob]
 
     [<Test>]
+    /// BROKEN - inserting linker where should fuse uFooFuse and dFoo
+    member __.FuseTwoNormalSlices() =
+        runOne "FuseTwoNormalSlices"
+                false // is stitch
+                ([linkerAlice ; linkerBob ; linkerCharlie],[]) // A and B part linkers
+                [uFooFuse ; dFoo]
+                [linkerAlice ; uFooFuse ; dFoo ; linkerBob]
+
+    [<Test>]
     /// BROKEN - this is a test case for https://gitlab.com/demetrixbio/DemGslc/-/issues/48
     member __.TerminalSlice() =
-        
+
         runOne "TwoPartsShortInline"
                 false // is stitch
                 ([linkerAlice ; linkerBob],[]) // A and B part linkers
