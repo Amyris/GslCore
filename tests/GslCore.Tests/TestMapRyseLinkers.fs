@@ -99,13 +99,25 @@ type TestMapRyseLinkers() =
                 [linkerAlice ; uFoo ; shortInline ; dFoo ; linkerBob]
 
     [<Test>]
-    /// BROKEN - inserting linker where should fuse uFooFuse and dFoo
     member __.FuseTwoNormalSlices() =
+        // Note - we need to use the explicit fusionSlice here to test
+        // rather than just putting a #fuse pragma inside foo since that expansion
+        // step (pragma -> virtual slice) would already have happened by this stage normally
+        runOne "FuseTwoNormalSlices"
+                false // is stitch
+                ([linkerAlice ; linkerBob ],[]) // A and B part linkers
+                [uFoo ; fuse ; dFoo]
+                [linkerAlice ; uFoo ; dFoo ; linkerBob]
+
+    [<Test>]
+    member __.TestSkipToLastLinker() =
+        // With linkers A,B,C available and only A and a last linker needed, we should choose A and C (not A and B)
+        // This effectively implements the 'put D9 at the end' rule
         runOne "FuseTwoNormalSlices"
                 false // is stitch
                 ([linkerAlice ; linkerBob ; linkerCharlie],[]) // A and B part linkers
-                [uFooFuse ; dFoo]
-                [linkerAlice ; uFooFuse ; dFoo ; linkerBob]
+                [uFoo ; fuse ; dFoo]
+                [linkerAlice ; uFoo ; dFoo ; linkerCharlie]
 
     [<Test>]
     /// BROKEN - this is a test case for https://gitlab.com/demetrixbio/DemGslc/-/issues/48
@@ -117,3 +129,11 @@ type TestMapRyseLinkers() =
                 [ uFoo ; fuse; dFoo ; shortInlineWithRabitEnd]
                 [linkerAlice ; uFoo ; dFoo ; shortInline ; linkerBob]
 
+    [<Test>]
+    member __.InternalFuseThenInline() =
+
+        runOne "InternalFuseThenInline"
+                false // is stitch
+                ([linkerAlice ; linkerBob ; linkerCharlie ; linkerDoug],[]) // A and B part linkers
+                [ uFoo ; fuse; dFoo ; shortInlineWithRabitStart ; oBar]
+                [linkerAlice ; uFoo ; dFoo ; linkerBob ; shortInlineWithRabitStart ; oBar ; linkerDoug]
