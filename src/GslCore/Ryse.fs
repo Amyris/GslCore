@@ -318,6 +318,7 @@ let mapRyseLinkers
         // recursive match expression
         match inputList with
         | [] ->
+0xxxxxxxxxxxxxxxUu            printVerbose "MRL-CASE 0"
             if megaMono && linkers.Length > 0 then
                 let last = List.rev linkers |> List.head
                 printVerbose (sprintf
@@ -349,6 +350,7 @@ let mapRyseLinkers
                 a.sliceType = INLINEST &&
                 (b.sliceType = REGULAR || b.sliceType=SliceType.INLINEST || b.sliceType=SliceType.MARKER) &&
                 a.pragmas.ContainsKey("rabitstart") ->
+            printVerbose "MRL-CASE 1"
             // a in an inline type with a pragma telling us to initiate the
             // start of a rabit here, so it needs to be preceded by a linker in
             // the final part list
@@ -376,6 +378,7 @@ let mapRyseLinkers
                 a.sliceType = INLINEST &&
                 (b.sliceType = REGULAR || b.sliceType = MARKER || b.sliceType = INLINEST)
                 && a.pragmas.ContainsKey("rabitend") ->
+            printVerbose "MRL-CASE 2"
             // a in an inline type with a pragma telling us to end a rabit here,
             // so it needs to be followed by a rabit in the final part list
             //
@@ -396,6 +399,7 @@ let mapRyseLinkers
                 assign startLinkers phase (b::c) linkers (a::res)
 
         | [a;b] when b.sliceType = INLINEST && a.sliceType = REGULAR ->
+            printVerbose "MRL-CASE 3"
             // a is regular and b inline - special terminal inline case
             //
             printVerbose "terminal regular::inlineST case, take one linker"
@@ -411,17 +415,26 @@ let mapRyseLinkers
 
                 //assign startLinkers phase c linkers (b::a::res)
 
+        // CASE 4
         | a::b::c when a.sliceType = INLINEST && b.sliceType = REGULAR ->
             // a is an inline and b regular, so take b and a and move them to
             // the output
+            printVerbose "MRL-CASE 4"
             printVerbose "inlineST no linker needed"
             assign startLinkers phase c linkers (b::a::res)
 
-        | a :: b :: c :: d when a.sliceType = FUSIONST && c.sliceType = INLINEST ->
+        // CASE 5
+        | a :: b :: c :: d when
+            (a.sliceType = FUSIONST) &&
+            (c.sliceType = INLINEST && not (c.pragmas.ContainsKey("rabitstart")))
+             ->
+            printVerbose "MRL-CASE 5"
             // Note: a not emitted - we are not passing FUSIONST through in this case
             assign startLinkers phase d linkers (c :: b :: res)
 
+        // CASE 6
         | a::b::c when a.sliceType = FUSIONST ->
+            printVerbose "MRL-CASE 6"
             // No need for a linker before or after a fusion place holder, since
             // it doesn't really exist, but is a hint to join the two adjacent/
             // pieces.
@@ -431,6 +444,7 @@ let mapRyseLinkers
             assign startLinkers phase c linkers (b::res) // Was emitting A previously daz
 
         | a::b::c when a.sliceType = INLINEST && b.sliceType = INLINEST ->
+            printVerbose "MRL-CASE 7"
             // Double inline slice type.  Room for more logic here to potentially merge short slices but for now
             // just avoid dropping linkers into the middle of it all
             printVerbose "Double inline no linker needed"
@@ -440,6 +454,7 @@ let mapRyseLinkers
         | a::b::c when a.sliceType = INLINEST && b.sliceType = FUSIONST
                         && (not (a.pragmas.ContainsKey("rabitstart")))
                         && (not (a.pragmas.ContainsKey("rabitend"))) ->
+            printVerbose "MRL-CASE 8"
             // inline then fuse slice type and no directive to end or start here.
             // avoid dropping linkers into the middle of it all
             printVerbose "inline then fuse no linker needed"
@@ -449,6 +464,7 @@ let mapRyseLinkers
 
 
         | hd::tl -> // General case, chomp one linker
+            printVerbose "MRL-CASE 999"
             printVerbose "General case - assign a linker"
             match linkers with
             | [] -> failwith noLinkersLeftMsg
