@@ -1650,14 +1650,35 @@ can design (say) a primer against might be further back in the stack and it's ju
         let finalDPPs,finalSlices = finalOutput
         let outputParity = finalDPPs.Length = finalSlices.Length
         if verbose || (not outputParity) then
+            // Debugging output
+            // ======================================
 
-            let y = (String.Join(";",(finalDPPs |> Seq.map(prettyPrintPrimer))))
-            let x = (String.Join(";",(finalSlices |> Seq.map(nameFromSlice))))
+            let y = finalDPPs |> Seq.map prettyPrintPrimer |> Array.ofSeq
+            let x = finalSlices |> Seq.map nameFromSlice |> Array.ofSeq
+
+            // format things so they line up - which is the longer element in each position
+            // being careful because one list is smaller
+            // kind of excessive but makes debugging output a lot easier to read
+            let formatWidth =
+                Array.init
+                    (max x.Length y.Length)
+                    (fun i ->
+                        let len1 = if i < x.Length then x.[i].Length else 0
+                        let len2 = if i < y.Length then y.[i].Length else 0
+                        printfn "l1=%d l2=%d" len1 len2
+                        max len1 len2
+                    )
+            let pad (s:string) n = if s.Length >=n then s else s+("                                              ".[0..n-s.Length-1])
+            let x' = x |> Array.mapi (fun i v -> pad v (formatWidth.[i]))
+            let y' = y |> Array.mapi (fun i v -> pad v (formatWidth.[i]))
+
+            let y = String.Join(" ; ",x')
+            let x = String.Join(" ; ",y')
             printfn "procAssembly: finalOutput(slices n=%d): %s" (finalSlices.Length) x
             printfn "procAssembly: finalOutput(primer n=%d): %s" (finalDPPs.Length) y
             if not outputParity then
                 failwithf "These lists should have same length :( - error in procAssembly"
-            ()
+
         finalOutput // RETURN POINT *****
     // /inline/ (not amp or rabitend) ::.....
     // this is strictly an inline slice that is going to get built by primers when we do the next
