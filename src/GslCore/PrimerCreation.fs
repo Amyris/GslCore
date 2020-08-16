@@ -1617,7 +1617,7 @@ can design (say) a primer against might be further back in the stack and it's ju
         // potentially adjust previously emitted slice if primer generation moved the boundary (it was approximate ended)
         // sliceOut' is the final slice list (reversed into the correct left to right order as we are finishing up)
         let sliceOut' =
-            match prev with
+            match sliceOut with
             | [] ->
                 // We are on the last element and there are no preceding elements.  This could
                 // be a stand-alone, single DNA slice.  Process it as such.  This is going to create
@@ -1631,6 +1631,9 @@ can design (say) a primer against might be further back in the stack and it's ju
             | previousInline :: previousAmp :: tail when skipped -> // this case assumes previousInline is a sandwich because skipped is set
                 if verbose then
                     printfn "procAssembly:  sliceout case 2: potentially trimming p=%s last=%s" previousAmp.description last.description
+                    printfn "procAssembly:  previousInline = %s" previousInline.description
+                    printfn "procAssembly:  previousAmp   =  %s" previousAmp.description
+                    printfn "procAssembly:  tail   =  %s" (String.Join(";",[for t in tail -> t.description]))
                 // take remaining element (last) and push it onto sliceOut with inline and adjusted amp slice cut if necessary
                 last :: previousInline ::(cutRight verbose previousAmp offsetR) :: tail
                 |> List.rev // Finally reverse the slice out list since we pushed it as we created it  ( we are done - not recursing any more and this is the result)
