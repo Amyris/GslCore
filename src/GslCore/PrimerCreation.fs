@@ -1624,13 +1624,13 @@ can design (say) a primer against might be further back in the stack and it's ju
                 // trouble if the user intended a RYSE design but they might not be headed there so we have
                 // to handle this case.
                 // Assume it's a stand-alone inline sequence that could be made with a pair of primers
-                printfn "procAssembly:  final sliceOut' prev empty branch"
+                printfn "procAssembly:  sliceout case 1: final sliceOut' prev empty branch"
                 if List.isEmpty sliceOut then // Assume it's a stand-alone inline sequence that could be made with a pair of primers
                     [last] // Fake slice for now.. TODO TODO
                 else failwith "expected preceding linker adjacent to terminal inline sequence"
             | previousInline :: previousAmp :: tail when skipped -> // this case assumes previousInline is a sandwich because skipped is set
                 if verbose then
-                    printfn "procAssembly:  potentially trimming p=%s last=%s" previousAmp.description last.description
+                    printfn "procAssembly:  sliceout case 2: potentially trimming p=%s last=%s" previousAmp.description last.description
                 // take remaining element (last) and push it onto sliceOut with inline and adjusted amp slice cut if necessary
                 last :: previousInline ::(cutRight verbose previousAmp offsetR) :: tail
                 |> List.rev // Finally reverse the slice out list since we pushed it as we created it  ( we are done - not recursing any more and this is the result)
@@ -1640,7 +1640,7 @@ can design (say) a primer against might be further back in the stack and it's ju
                 // 3) incllude remainder of previous slices
                 // 4) reverse list to get natural forward order since we pushed results on successively
                 if verbose then
-                    printfn "procAssembly:  potentially trimming p=%s last=%s" p.description last.description
+                    printfn "procAssembly:  sliceout case 3: potentially trimming p=%s last=%s" p.description last.description
                 last::(cutRight verbose p offsetR)::(List.tail sliceOut)
                 |> List.rev // Finally reverse the slice out list since we pushed it as we created it  ( we are done - not recursing any more and this is the result)
 
@@ -1656,7 +1656,9 @@ can design (say) a primer against might be further back in the stack and it's ju
             // Debugging output
             // ======================================
 
+            /// primers
             let y = finalDPPs |> Seq.map prettyPrintPrimer |> Array.ofSeq
+            /// slices
             let x = finalSlices |> Seq.map nameFromSlice |> Array.ofSeq
 
             // format things so they line up - which is the longer element in each position
@@ -1672,11 +1674,13 @@ can design (say) a primer against might be further back in the stack and it's ju
                         max len1 len2
                     )
             let pad (s:string) n = if s.Length >=n then s else s+("                                              ".[0..n-s.Length-1])
+            /// slices
             let x' = x |> Array.mapi (fun i v -> pad v (formatWidth.[i]))
+            /// primers
             let y' = y |> Array.mapi (fun i v -> pad v (formatWidth.[i]))
 
-            let y = String.Join(" ; ",x')
-            let x = String.Join(" ; ",y')
+            let y = String.Join(" ; ",y')
+            let x = String.Join(" ; ",x')
             printfn "procAssembly: finalOutput(slices n=%d): %s" (finalSlices.Length) x
             printfn "procAssembly: finalOutput(primer n=%d): %s" (finalDPPs.Length) y
             if not outputParity then
@@ -1743,7 +1747,7 @@ can design (say) a primer against might be further back in the stack and it's ju
 
             // If previous head and this slice are big enough or being forced into an amplification
             // strategy then we are going seamless between them
-            printfn "procAssembly: ... generate seamless junction between prev=%s and this=%s" pHd.description hd.description
+            printfn "procAssembly: ... PACASE 7.1 generate seamless junction between prev=%s and this=%s" pHd.description hd.description
 
             // look for any tricky instructions of primer position for previous head
             let primerPos = parsePrimerPos pHd.pragmas
@@ -1842,7 +1846,7 @@ can design (say) a primer against might be further back in the stack and it's ju
         // This is another monster match inside a match case.  Badly needs some gentle dissection into more managable pieces.  I'd probably start with test coverage though before we break too much
         | _ -> // Catch all case for prev when prev was just one item.  todo: should be [hd] with an error case for anything else?
             if verbose then
-                printfn "procAssembly: ... regular branch of catch all"
+                printfn "procAssembly: ... PACASE 7.2 regular branch of catch all"
             // hd just moves to prev and slices out (any primers will come from processing adjacent slices)
             procAssembly verbose dp errorName (hd::prev) (hd::sliceOut)  (GAP::primersOut) tl
 

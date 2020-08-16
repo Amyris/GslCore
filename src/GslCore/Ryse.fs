@@ -318,7 +318,7 @@ let mapRyseLinkers
         // recursive match expression
         match inputList with
         | [] ->
-0xxxxxxxxxxxxxxxUu            printVerbose "MRL-CASE 0"
+            printVerbose "MRL-CASE 0"
             if megaMono && linkers.Length > 0 then
                 let last = List.rev linkers |> List.head
                 printVerbose (sprintf

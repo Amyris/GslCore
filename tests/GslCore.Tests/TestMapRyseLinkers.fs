@@ -2,7 +2,6 @@
 open System
 open LegacyParseTypes
 open NUnit.Framework
-open gslcProcess
 open commonTypes
 open AssemblyTestSupport
 open pragmaTypes
@@ -11,7 +10,8 @@ open Amyris.ErrorHandling
 [<TestFixture>]
 type TestMapRyseLinkers() =
 
-    let verbose = true  // enable for detailed (very detailed) output from mapRyseLinkers
+    /// Enable for detailed (very detailed) output from mapRyseLinkers - useful for debugging test cases
+    let verbose = false
 
     do
         // initialize pragmas

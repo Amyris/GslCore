@@ -33,7 +33,8 @@ module SharedSliceTesting =
 [<TestFixture>]
 type TestProcAssembly() =
 
-    let verbose = false  // enable for detailed (very detailed) output from procAssembly
+    // enable for detailed (very detailed) output from procAssembly. Useful for debugging test cases
+    let verbose = true
 
     do
         // initialize pragmas
