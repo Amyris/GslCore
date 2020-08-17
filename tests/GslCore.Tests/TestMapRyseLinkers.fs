@@ -137,7 +137,7 @@ type TestMapRyseLinkers() =
                 ([linkerAlice ; linkerBob ; linkerCharlie ; linkerDoug],[]) // A and B part linkers
                 [ uFoo ; fuse; dFoo ; shortInlineWithRabitStart ; oBar]
                 [linkerAlice ; uFoo ; dFoo ; linkerBob ; shortInlineWithRabitStart ; oBar ; linkerDoug]
-                
+
 (* Temporarily adding it here, this is the original design that i created this test from:
  #linkers A,B,C,D|
  &gene1 {#fuse}; gene2; /NNNNNNNNNNNN/ {#rabitstart} ; gene3 ; /GCATGCATGCAT/ {#rabitend} *)
