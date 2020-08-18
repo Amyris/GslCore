@@ -1,5 +1,5 @@
 source https://nuget.org/api/v2
-framework: >= netstandard2.1
+framework: >= netstandard2.0
 storage none
 nuget Dmx.Amyris.Bio 
 nuget FSharp.Data
@@ -10,7 +10,7 @@ nuget FSharp.Collections.ParallelSeq
 
 group Test
   source https://nuget.org/api/v2
-  framework: >= netstandard2.1
+  framework: >= netstandard2.0
   storage none
   
   nuget NUnit ~> 3
