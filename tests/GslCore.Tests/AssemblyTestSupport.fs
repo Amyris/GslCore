@@ -237,8 +237,8 @@ let mediumInlineFuse = {mediumInline with pragmas = mediumInline.pragmas.Add(fus
 let longInlineAmp = {longInline with pragmas = longInline.pragmas.Add(amp) ; sliceName = longInline.sliceName+"#amp"}
 let longInlineAmpFuse = {longInlineAmp with pragmas = longInlineAmp.pragmas.Add(fusePragma) ; sliceName = longInlineAmp.sliceName+"#fuse"}
 let longInlineInline = {longInline with pragmas = longInline.pragmas.Add(inlinePragma)}
-let shortInlineWithRabitStart = { shortInline with pragmas = shortInline.pragmas.Add(rabitStart)}
-let shortInlineWithRabitEnd = { shortInline with pragmas = shortInline.pragmas.Add(rabitEnd)}
+let shortInlineWithRabitStart = { shortInline with pragmas = shortInline.pragmas.Add(rabitStart) ; sliceName = shortInline.sliceName+"#rabitstart"}
+let shortInlineWithRabitEnd = { shortInline with pragmas = shortInline.pragmas.Add(rabitEnd) ; sliceName = shortInline.sliceName+"#rabitend"}
 
 let linkerAlice =
     makeSimpleSlice

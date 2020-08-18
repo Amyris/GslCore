@@ -168,6 +168,11 @@ let getLinkerSetsForDesign (aIn: DnaAssembly) =
         if verbose then printf "Using alternative linkers: %A,%A" altLinkers1 altLinkers2
         (altLinkers1, altLinkers2)
 
+/// active pattern for picking out inline slice types
+let (|IsInlineSlice|_|) = function
+    | x when x.sliceType = INLINEST -> Some(x)
+    | _ -> None
+
 /// Determine how many junctions will require RYSE linkers.
 /// Inline dna segments won't for example unless they have rabitstart/end pragmas
 let rec countRyseLinkersNeeded printVerbose total (l:DNASlice list) =
@@ -489,12 +494,19 @@ let mapRyseLinkers
             assign startLinkers phase (b::c) linkers (a::res)
 
         // MRL-CASE 10
-        | [hd] when
-            hd.sliceType = INLINEST &&
+        | [IsInlineSlice(hd)] when
             (hd.pragmas.ContainsKey("rabitend") || hd.pragmas.ContainsKey("inline")) ->
             printVerbose "MRL-CASE 10"
             printVerbose "terminal inline slice that will be made off final linker, just move it to output list"
             assign startLinkers phase [] linkers (hd::res)
+
+        // MRL-CASE 11
+        | hd::tl when (match res with
+                       | IsInlineSlice(x)::_  when not <| x.pragmas.ContainsKey("rabitend") -> true
+                       | _ -> false
+                       )  ->
+            printVerbose "MRL-CASE 11 - slice with preceding inline slice , don't drop linker"
+            assign startLinkers phase tl linkers (hd::res)
 
         // MRL-CASE 999
         | hd::tl -> // General case, chomp one linker
