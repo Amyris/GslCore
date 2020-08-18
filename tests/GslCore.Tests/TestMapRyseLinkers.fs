@@ -149,10 +149,24 @@ type TestMapRyseLinkers() =
                 ([linkerAlice ; linkerBob ; linkerCharlie ; linkerDoug],[]) // A and B part linkers
                 [ uFoo ; fuse; dFoo ; shortInlineWithRabitStart ; oBar; shortInlineWithRabitEnd]
                 [linkerAlice ; uFoo ; dFoo ; linkerBob ; shortInlineWithRabitStart ; oBar; shortInlineWithRabitEnd ; linkerDoug]
+
+
     [<Test>]
-    member __.``inlineFusedExample``() =
+    member __.``inlineFusedExample1``() =
+        // this case is interesting - it currently breaks things
+        // but the equivalent raw GSL doesn't cause an issue.  I think because the
+        // fuse is getting stripped out early on.
+        runOne "inlineFusedExample"
+            false
+            ([linkerAlice; linkerBob],[])
+            [uFoo; fuse ; shortInline; dFoo]
+            [linkerAlice ; uFoo; shortInline; dFoo ; linkerDoug]
+
+    [<Test>]
+    member __.``inlineFusedExample2``() =
+        // This case is a more elaborate example where the fuse marked XXX is causing a linker to get inserted
         runOne "inlineFusedExample"
             false
             ([linkerAlice; linkerBob;linkerCharlie; linkerDoug],[])
-            [uFoo;  oBar ;fuse; uFoo ;fuse ; shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; shortInlineWithRabitStart; dFoo]
-            [linkerAlice ; uFoo;  linkerBob; oBar ;fuse; uFoo ;fuse ; shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]
+            [uFoo;  oBar ;fuse; uFoo ;fuse (* XXX *); shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; shortInlineWithRabitStart; dFoo]
+            [linkerAlice ; uFoo;  linkerBob; oBar ;uFoo ;shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]
