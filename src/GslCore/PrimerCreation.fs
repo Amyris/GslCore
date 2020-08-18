@@ -1750,7 +1750,7 @@ can design (say) a primer against might be further back in the stack and it's ju
 
             // If previous head and this slice are big enough or being forced into an amplification
             // strategy then we are going seamless between them
-            printfn "procAssembly: ... PACASE 7.1 generate seamless junction between prev=%s and this=%s" pHd.description hd.description
+            if verbose then printfn "procAssembly: ... PACASE 7.1 generate seamless junction between prev=%s and this=%s" pHd.description hd.description
 
             // look for any tricky instructions of primer position for previous head
             let primerPos = parsePrimerPos pHd.pragmas
