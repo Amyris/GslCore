@@ -169,8 +169,15 @@ let getLinkerSetsForDesign (aIn: DnaAssembly) =
         (altLinkers1, altLinkers2)
 
 /// active pattern for picking out inline slice types
-let (|IsInlineSlice|_|) = function
+let (|InlineSlice|_|) = function
     | x when x.sliceType = INLINEST -> Some(x)
+    | _ -> None
+let (|RegularSlice|_|) = function
+    | x when x.sliceType = REGULAR -> Some(x)
+    | _ -> None
+
+let (|FusionSlice|_|) = function
+    | x when x.sliceType = FUSIONST -> Some(x)
     | _ -> None
 
 /// Determine how many junctions will require RYSE linkers.
@@ -356,8 +363,7 @@ let mapRyseLinkers
                         (x.ToString()) (if phase then "phase1" else "phase2") errorDesc
 
         // MRL-CASE 1
-        | a::b::c when
-                a.sliceType = INLINEST &&
+        | InlineSlice(a)::b::c when
                 (b.sliceType = REGULAR || b.sliceType=SliceType.INLINEST || b.sliceType=SliceType.MARKER) &&
                 a.pragmas.ContainsKey("rabitstart") ->
             printVerbose "MRL-CASE 1"
@@ -385,8 +391,7 @@ let mapRyseLinkers
                     assign startLinkers phase c lt (b::a::linker::res)
 
         // MRL-CASE 2
-        | a::b::c when
-                a.sliceType = INLINEST &&
+        | InlineSlice(a)::b::c when
                 (b.sliceType = REGULAR || b.sliceType = MARKER || b.sliceType = INLINEST)
                 && a.pragmas.ContainsKey("rabitend") ->
             printVerbose "MRL-CASE 2"
@@ -410,7 +415,7 @@ let mapRyseLinkers
                 assign startLinkers phase (b::c) linkers (a::res)
 
         // MRL-CASE 3
-        | [a;b] when b.sliceType = INLINEST && a.sliceType = REGULAR ->
+        | [RegularSlice(a);InlineSlice(b)] ->
             printVerbose "MRL-CASE 3"
             // a is regular and b inline - special terminal inline case
             //
@@ -428,7 +433,7 @@ let mapRyseLinkers
                 //assign startLinkers phase c linkers (b::a::res)
 
         // MRL-CASE 4
-        | a::b::c when a.sliceType = INLINEST && b.sliceType = REGULAR ->
+        | InlineSlice(a)::RegularSlice(b)::c ->
             // a is an inline and b regular, so take b and a and move them to
             // the output
             printVerbose "MRL-CASE 4"
@@ -436,19 +441,14 @@ let mapRyseLinkers
             assign startLinkers phase c linkers (b::a::res)
 
         // MRL-CASE 5
-        | a :: b :: c :: d when
-            (a.sliceType = FUSIONST) &&
-            (c.sliceType = INLINEST && not (c.pragmas.ContainsKey("rabitstart")))
-             ->
+        | FusionSlice(a) :: b :: InlineSlice(c) :: d when not (c.pragmas.ContainsKey("rabitstart")) ->
             printVerbose "MRL-CASE 5"
             printVerbose "fusionST followed by X and then inline that is not a rabit start"
             // Note: a not emitted - we are not passing FUSIONST through in this case
             assign startLinkers phase d linkers (c :: b :: res)
 
         // MRL-CASE 6
-        | a::b::c::d when
-            a.sliceType = FUSIONST &&
-            b.sliceType = INLINEST &&
+        | FusionSlice(a)::InlineSlice(b)::c::d when
             not (b.pragmas.ContainsKey("rabitstart")) &&
             not (b.pragmas.ContainsKey("rabitend")) ->
             printVerbose "MRL-CASE 6"
@@ -462,7 +462,7 @@ let mapRyseLinkers
             assign startLinkers phase d linkers (c::b::res) // Was emitting A previously daz
 
         // MRL-CASE 7
-        | a::b::c when a.sliceType = FUSIONST ->
+        | FusionSlice(a)::b::c ->
             printVerbose "MRL-CASE 7"
             // No need for a linker before or after a fusion place holder, since
             // it doesn't really exist, but is a hint to join the two adjacent/
@@ -473,7 +473,7 @@ let mapRyseLinkers
             assign startLinkers phase c linkers (b::res) // Was emitting A previously daz
 
         // MRL-CASE 8
-        | a::b::c when a.sliceType = INLINEST && b.sliceType = INLINEST ->
+        | InlineSlice(a)::InlineSlice(b)::c ->
             printVerbose "MRL-CASE 8"
             // Double inline slice type.  Room for more logic here to potentially merge short slices but for now
             // just avoid dropping linkers into the middle of it all
@@ -482,9 +482,9 @@ let mapRyseLinkers
             assign startLinkers phase c linkers (b::a::res)
 
         // MRL-CASE 9
-        | a::b::c when a.sliceType = INLINEST && b.sliceType = FUSIONST
-                        && (not (a.pragmas.ContainsKey("rabitstart")))
-                        && (not (a.pragmas.ContainsKey("rabitend"))) ->
+        | InlineSlice(a)::FusionSlice(b)::c when
+                (not (a.pragmas.ContainsKey("rabitstart"))) &&
+                (not (a.pragmas.ContainsKey("rabitend"))) ->
             printVerbose "MRL-CASE 9"
             // inline then fuse slice type and no directive to end or start here.
             // avoid dropping linkers into the middle of it all
@@ -494,7 +494,7 @@ let mapRyseLinkers
             assign startLinkers phase (b::c) linkers (a::res)
 
         // MRL-CASE 10
-        | [IsInlineSlice(hd)] when
+        | [InlineSlice(hd)] when
             (hd.pragmas.ContainsKey("rabitend") || hd.pragmas.ContainsKey("inline")) ->
             printVerbose "MRL-CASE 10"
             printVerbose "terminal inline slice that will be made off final linker, just move it to output list"
@@ -502,7 +502,7 @@ let mapRyseLinkers
 
         // MRL-CASE 11
         | hd::tl when (match res with
-                       | IsInlineSlice(x)::_  when not <| x.pragmas.ContainsKey("rabitend") -> true
+                       | InlineSlice(x)::_  when not <| x.pragmas.ContainsKey("rabitend") -> true
                        | _ -> false
                        )  ->
             printVerbose "MRL-CASE 11 - slice with preceding inline slice , don't drop linker"
