@@ -491,9 +491,7 @@ let mapRyseLinkers
         // MRL-CASE 10
         | [hd] when
             hd.sliceType = INLINEST &&
-            (hd.pragmas.ContainsKey("rabitend") || hd.dna.Length < 30 // todo: 30 is arbitrary , we need a better way to determine inlineability
-             || hd.pragmas.ContainsKey("inline")
-             ) ->
+            (hd.pragmas.ContainsKey("rabitend") || hd.pragmas.ContainsKey("inline")) ->
             printVerbose "MRL-CASE 10"
             printVerbose "terminal inline slice that will be made off final linker, just move it to output list"
             assign startLinkers phase [] linkers (hd::res)
