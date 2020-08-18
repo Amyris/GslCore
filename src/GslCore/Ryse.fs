@@ -436,6 +436,7 @@ let mapRyseLinkers
             (c.sliceType = INLINEST && not (c.pragmas.ContainsKey("rabitstart")))
              ->
             printVerbose "MRL-CASE 5"
+            printVerbose "fusionST followed by X and then inline that is not a rabit start"
             // Note: a not emitted - we are not passing FUSIONST through in this case
             assign startLinkers phase d linkers (c :: b :: res)
 
@@ -446,6 +447,7 @@ let mapRyseLinkers
             not (b.pragmas.ContainsKey("rabitstart")) &&
             not (b.pragmas.ContainsKey("rabitend")) ->
             printVerbose "MRL-CASE 6"
+            printVerbose "fusionST followed by inline that is not a rabit start"
             // No need for a linker before or after a fusion place holder, since
             // it doesn't really exist, but is a hint to join the two adjacent/
             // pieces.
