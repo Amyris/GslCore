@@ -153,20 +153,20 @@ type TestMapRyseLinkers() =
 
     [<Test>]
     member __.``inlineFusedExample1``() =
-        // this case is interesting - it currently breaks things
+        // this case is interesting - it broke things at the time (fixed)
         // but the equivalent raw GSL doesn't cause an issue.  I think because the
-        // fuse is getting stripped out early on.
+        // fuse is getting stripped out early on. Still a decent case we should cover
         runOne "inlineFusedExample"
             false
             ([linkerAlice; linkerBob],[])
             [uFoo; fuse ; shortInline; dFoo]
-            [linkerAlice ; uFoo; shortInline; dFoo ; linkerDoug]
+            [linkerAlice ; uFoo; shortInline; dFoo ; linkerBob]
 
     [<Test>]
     member __.``inlineFusedExample2``() =
-        // This case is a more elaborate example where the fuse marked XXX is causing a linker to get inserted
+        // This case is a more elaborate example where the fuse marked XXX is causing a linker to get inserted (fixed)
         runOne "inlineFusedExample"
             false
             ([linkerAlice; linkerBob;linkerCharlie; linkerDoug],[])
             [uFoo;  oBar ;fuse; uFoo ;fuse (* XXX *); shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; shortInlineWithRabitStart; dFoo]
-            [linkerAlice ; uFoo;  linkerBob; oBar ;uFoo ;shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]
+            [linkerAlice ; uFoo;  linkerBob; oBar ;uFoo ;shortInline; dFoo ; shortInline ; oBar ;uFoo ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]

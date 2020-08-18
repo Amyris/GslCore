@@ -440,8 +440,23 @@ let mapRyseLinkers
             assign startLinkers phase d linkers (c :: b :: res)
 
         // MRL-CASE 6
-        | a::b::c when a.sliceType = FUSIONST ->
+        | a::b::c::d when
+            a.sliceType = FUSIONST &&
+            b.sliceType = INLINEST &&
+            not (b.pragmas.ContainsKey("rabitstart")) &&
+            not (b.pragmas.ContainsKey("rabitend")) ->
             printVerbose "MRL-CASE 6"
+            // No need for a linker before or after a fusion place holder, since
+            // it doesn't really exist, but is a hint to join the two adjacent/
+            // pieces.
+            printVerbose "Fusion ST before inlinest no linker needed"
+
+            // Note: a not emitted - we are not passing FUSIONST through in this case
+            assign startLinkers phase d linkers (c::b::res) // Was emitting A previously daz
+
+        // MRL-CASE 7
+        | a::b::c when a.sliceType = FUSIONST ->
+            printVerbose "MRL-CASE 7"
             // No need for a linker before or after a fusion place holder, since
             // it doesn't really exist, but is a hint to join the two adjacent/
             // pieces.
@@ -450,20 +465,20 @@ let mapRyseLinkers
             // Note: a not emitted - we are not passing FUSIONST through in this case
             assign startLinkers phase c linkers (b::res) // Was emitting A previously daz
 
-        // MRL-CASE 7
+        // MRL-CASE 8
         | a::b::c when a.sliceType = INLINEST && b.sliceType = INLINEST ->
-            printVerbose "MRL-CASE 7"
+            printVerbose "MRL-CASE 8"
             // Double inline slice type.  Room for more logic here to potentially merge short slices but for now
             // just avoid dropping linkers into the middle of it all
             printVerbose "Double inline no linker needed"
             // a and b move to output list, c stays as the next input
             assign startLinkers phase c linkers (b::a::res)
 
-        // MRL-CASE 8
+        // MRL-CASE 9
         | a::b::c when a.sliceType = INLINEST && b.sliceType = FUSIONST
                         && (not (a.pragmas.ContainsKey("rabitstart")))
                         && (not (a.pragmas.ContainsKey("rabitend"))) ->
-            printVerbose "MRL-CASE 8"
+            printVerbose "MRL-CASE 9"
             // inline then fuse slice type and no directive to end or start here.
             // avoid dropping linkers into the middle of it all
             printVerbose "inline then fuse no linker needed"
@@ -471,13 +486,13 @@ let mapRyseLinkers
             // b and c stay on the stack of input slices to be processed later
             assign startLinkers phase (b::c) linkers (a::res)
 
-        // MRL-CASE 9
+        // MRL-CASE 10
         | [hd] when
             hd.sliceType = INLINEST &&
             (hd.pragmas.ContainsKey("rabitend") || hd.dna.Length < 30 // todo: 30 is arbitrary , we need a better way to determine inlineability
              || hd.pragmas.ContainsKey("inline")
              ) ->
-            printVerbose "MRL-CASE 9"
+            printVerbose "MRL-CASE 10"
             printVerbose "terminal inline slice that will be made off final linker, just move it to output list"
             assign startLinkers phase [] linkers (hd::res)
 
