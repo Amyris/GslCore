@@ -153,7 +153,7 @@ type TestMapRyseLinkers() =
         // this case is interesting - it broke things at the time (fixed)
         // but the equivalent raw GSL doesn't cause an issue.  I think because the
         // fuse is getting stripped out early on. Still a decent case we should cover
-        runOne "inlineFusedExample"
+        runOne "inlineFusedExample1"
             false
             ([linkerAlice; linkerBob],[])
             [uFoo; fuse ; shortInline; dFoo]
@@ -162,16 +162,16 @@ type TestMapRyseLinkers() =
     [<Test>]
     member __.``inlineFusedExample2``() =
         // This case is a more elaborate example where the fuse marked XXX is causing a linker to get inserted (fixed)
-        runOne "inlineFusedExample"
+        runOne "inlineFusedExample2"
             false
             ([linkerAlice; linkerBob;linkerCharlie; linkerDoug],[])
             [uFoo;  oBar ;fuse; uFoo ;fuse (* XXX *); shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; shortInlineWithRabitStart; dFoo]
             [linkerAlice ; uFoo;  linkerBob; oBar ;uFoo ;shortInline; dFoo ; shortInline ; oBar ;uFoo ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]
     [<Test>]
     member __.``inlineFusedExample3``() =
-        // This case is a more elaborate example where the fuse marked XXX is causing a linker to get inserted (fixed)
-        runOne "inlineFusedExample"
+        // similar to previous case but omits fuse before shortInline
+        runOne "inlineFusedExample3"
             false
             ([linkerAlice; linkerBob;linkerCharlie; linkerDoug],[])
-            [uFoo;  oBar ;fuse; uFoo (* no fuse c.f inlineFusedExample2 *); shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; shortInlineWithRabitStart; dFoo]
-            [linkerAlice ; uFoo;  linkerBob; oBar ;uFoo ;shortInline; dFoo ; shortInline ; oBar ;uFoo ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]
+            [uFoo;  pBaz ;fuse; uFoo (* no fuse c.f inlineFusedExample2 *); shortInline; dFoo ; shortInline ; oBar2 ;fuse ; tShaz ; shortInlineWithRabitStart; dFoo]
+            [linkerAlice ; uFoo; linkerBob; pBaz ; uFoo; shortInline; dFoo ; shortInline ; oBar2 ;tShaz ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]

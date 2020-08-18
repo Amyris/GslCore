@@ -108,6 +108,41 @@ let oBar =
         true // amplified
         Breed.B_FUSABLEORF
 
+/// open reading frame slice
+let oBar2 =
+    makeSimpleSlice
+        (Dna "ATTGTGATGCTGTACGTGGTTGCGTTGCTGTGTGCGTGCGCGCGTATATTATAGTCGCGGCTAGTTACGTGCGGCGTACTGGTCGTGTCGATGGTAGTCGTCGGCGCGAGTGTCGTATGCGTACGTACTGACGGCGCGCGCAGTTGATAG")
+        "oBar"
+        SliceType.REGULAR
+        EmptyPragmas
+        false // from approx
+        false // to approx
+        true // amplified
+        Breed.B_FUSABLEORF
+
+/// promoter
+let pBaz =
+    makeSimpleSlice
+        (Dna "TTGACTGATGCTGACTGACTGATGCTGACTGACTGGGGGCTAGTGCTACTATCTATCCATCACACACACATCAGTCGTACTTATATTATATGATCTTACGATCTATATTATTACGGATCTGATATATTTACGTTGATTATGCGATCTGAT")
+        "pBaz"
+        SliceType.REGULAR
+        EmptyPragmas
+        true // from approx
+        false // to approx
+        true // amplified
+        Breed.B_PROMOTER
+
+/// terminator
+let tShaz =
+    makeSimpleSlice
+        (Dna "ATATTATATACTGTCGCGACTTATATATATATCTGACGTCTGTGCTGATGATTATATATTACTGACTGCGTCATGATCTATTATATATATATTATATCTGGTCGTCGTCTGAGTCATGCGTACTGACGTACTATATATATATATATATAG")
+        "pBaz"
+        SliceType.REGULAR
+        EmptyPragmas
+        false // from approx
+        true // to approx
+        true // amplified
+        Breed.B_TERMINATOR
 let marker =
     makeSimpleSlice
         (Dna "TGTACTGACGTAGTCGTACACGTAGTCGTATCGATGTGCGACGTACTGAGCGTAGTCTGATGCGTATGCTCGTAGTAGTCGTACGTACGTGTCGTCGTGTGTGTAGTCGTGTACGAGCGTACGATCGATCAGTCTGACGTAGTGTAGTCGTAGTGTCGTAGTACGTA")
