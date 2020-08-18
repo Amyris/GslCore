@@ -1,3 +1,7 @@
+#### 0.4.48 - Aug 18th 2020
+
+* Demetrix production release - Maintenance release - downgrading to netstandard2.0, updating dependencies, fixing linker assignment/primer generation related  issues with rabitstard/rabitend
+
 #### 0.4.47 - Dec 16th 2019
 
 * Demetrix production release - Maintenance release - moving to netstandard2.1 introducing tool manifest
