@@ -167,3 +167,11 @@ type TestMapRyseLinkers() =
             ([linkerAlice; linkerBob;linkerCharlie; linkerDoug],[])
             [uFoo;  oBar ;fuse; uFoo ;fuse (* XXX *); shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; shortInlineWithRabitStart; dFoo]
             [linkerAlice ; uFoo;  linkerBob; oBar ;uFoo ;shortInline; dFoo ; shortInline ; oBar ;uFoo ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]
+    [<Test>]
+    member __.``inlineFusedExample3``() =
+        // This case is a more elaborate example where the fuse marked XXX is causing a linker to get inserted (fixed)
+        runOne "inlineFusedExample"
+            false
+            ([linkerAlice; linkerBob;linkerCharlie; linkerDoug],[])
+            [uFoo;  oBar ;fuse; uFoo (* no fuse c.f inlineFusedExample2 *); shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; shortInlineWithRabitStart; dFoo]
+            [linkerAlice ; uFoo;  linkerBob; oBar ;uFoo ;shortInline; dFoo ; shortInline ; oBar ;uFoo ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]
