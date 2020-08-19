@@ -168,6 +168,18 @@ let getLinkerSetsForDesign (aIn: DnaAssembly) =
         if verbose then printf "Using alternative linkers: %A,%A" altLinkers1 altLinkers2
         (altLinkers1, altLinkers2)
 
+/// active pattern for picking out inline slice types
+let (|InlineSlice|_|) = function
+    | x when x.sliceType = INLINEST -> Some(x)
+    | _ -> None
+let (|RegularSlice|_|) = function
+    | x when x.sliceType = REGULAR -> Some(x)
+    | _ -> None
+
+let (|FusionSlice|_|) = function
+    | x when x.sliceType = FUSIONST -> Some(x)
+    | _ -> None
+
 /// Determine how many junctions will require RYSE linkers.
 /// Inline dna segments won't for example unless they have rabitstart/end pragmas
 let rec countRyseLinkersNeeded printVerbose total (l:DNASlice list) =
@@ -227,7 +239,7 @@ let mapRyseLinkers
       + "]/" + dnaName
 
     /// Assign RYSE linkers to junctions that need them
-    let rec assign startLinkers (phase:bool) (l:DNASlice list) (linkers: string list) res =
+    let rec assign startLinkers (phase:bool) (inputList:DNASlice list) (linkers: string list) res =
         let prepLinker (n:string) =
             let linker = match ryseLinkers.TryFind n with
                             | Some x -> x
@@ -269,7 +281,7 @@ let mapRyseLinkers
         // partsTl are the remaining parts in the assembly
         // let markerTransition nextLinker markerHd partsTl =
         let markerTransition (lastParts:DNASlice list) markerHd partsTl =
-            // Reconstruct output with linker and moved piece
+            // Reconstruct output with linker and moved piece/
             // If we hit the marker, flip orientation, restart linker list but backwards
             printVerbose
                 "countRyseLinkersNeeded in phase II start with 1 for final leading 0 linker (note 9 linker not included in count)"
@@ -302,8 +314,11 @@ let mapRyseLinkers
         // linker to the left of the B stitch elements (downstream of Rabit in
         // B stitch orientation)
         printVerbose (sprintf
-            "\n\n==============================================\nin mapRyseLinkers:\nassign: sliceList=%A \nlinkers=%A"
-            (List.map (fun (x:DNASlice) ->x.description) l) linkers)
+            "\n\n==============================================\nin mapRyseLinkers(TOP):\nassign: sliceList=%A \nlinkers=%A\nresult=%A"
+                [|for i in inputList -> i.description|]
+                linkers
+                [|for r in res -> r.description|]
+            )
 
 
         let reportFinalAndReturn (res:DNASlice list) =
@@ -311,13 +326,15 @@ let mapRyseLinkers
             // (reverse temporarily here so we show them the final order, but return unreversed)
             printVerbose (sprintf
                     "\n\n==============================================\nin mapRyseLinkers:\nFinal output: sliceList=%A \n"
-                    (res |> List.rev |> List.map (fun (x:DNASlice) ->x.description) ) 
+                    (res |> List.rev |> List.map (fun (x:DNASlice) ->x.description) )
             )
             res
 
         // recursive match expression
-        match l with
+        match inputList with
+        // MRL-CASE 0
         | [] ->
+            printVerbose "MRL-CASE 0"
             if megaMono && linkers.Length > 0 then
                 let last = List.rev linkers |> List.head
                 printVerbose (sprintf
@@ -326,9 +343,9 @@ let mapRyseLinkers
                 (prepLinker last)::res |> reportFinalAndReturn
             else
                 if phase then // Must be in phase two by the time we get here
-                    let alreadyAssigned = 
-                            res 
-                            |> List.rev 
+                    let alreadyAssigned =
+                            res
+                            |> List.rev
                             |> List.map (fun x -> x.description)
                             |> fun x -> String.Join(" ; ",x)
                     failwithf "in mapRyseLinkers:assign, ran ut of linkers while still in phase one :(  .  Are you missing a ### marker for your megastitch?\n\nAssigned:%s"
@@ -345,10 +362,11 @@ let mapRyseLinkers
                         "mapRyseLinkers: unexpected linker complement  '%s' left at end \nphase=%s (%s)\n"
                         (x.ToString()) (if phase then "phase1" else "phase2") errorDesc
 
-        | a::b::c when
-                a.sliceType = INLINEST &&
+        // MRL-CASE 1
+        | InlineSlice(a)::b::c when
                 (b.sliceType = REGULAR || b.sliceType=SliceType.INLINEST || b.sliceType=SliceType.MARKER) &&
                 a.pragmas.ContainsKey("rabitstart") ->
+            printVerbose "MRL-CASE 1"
             // a in an inline type with a pragma telling us to initiate the
             // start of a rabit here, so it needs to be preceded by a linker in
             // the final part list
@@ -363,7 +381,7 @@ let mapRyseLinkers
                 let linker = prepLinker linkerName
                 if b.sliceType = MARKER then
                     // a takes the place of a linker in this scenario
-                    markerTransition [a;linker] b c 
+                    markerTransition [a;linker] b c
                 else
                     printVerbose (sprintf
                         "inlineST starting following rabit, assign linker %s"
@@ -372,10 +390,11 @@ let mapRyseLinkers
                     // (labeled b here) should come along for the ride with no additional linker in front of it
                     assign startLinkers phase c lt (b::a::linker::res)
 
-        | a::b::c when
-                a.sliceType = INLINEST &&
+        // MRL-CASE 2
+        | InlineSlice(a)::b::c when
                 (b.sliceType = REGULAR || b.sliceType = MARKER || b.sliceType = INLINEST)
                 && a.pragmas.ContainsKey("rabitend") ->
+            printVerbose "MRL-CASE 2"
             // a in an inline type with a pragma telling us to end a rabit here,
             // so it needs to be followed by a rabit in the final part list
             //
@@ -395,7 +414,9 @@ let mapRyseLinkers
                 // fixed this - wasn't pushing b out
                 assign startLinkers phase (b::c) linkers (a::res)
 
-        | [a;b] when b.sliceType = INLINEST && a.sliceType = REGULAR ->
+        // MRL-CASE 3
+        | [RegularSlice(a);InlineSlice(b)] ->
+            printVerbose "MRL-CASE 3"
             // a is regular and b inline - special terminal inline case
             //
             printVerbose "terminal regular::inlineST case, take one linker"
@@ -411,37 +432,88 @@ let mapRyseLinkers
 
                 //assign startLinkers phase c linkers (b::a::res)
 
-        | a::b::c when a.sliceType = INLINEST && b.sliceType = REGULAR ->
+        // MRL-CASE 4
+        | InlineSlice(a)::RegularSlice(b)::c ->
             // a is an inline and b regular, so take b and a and move them to
             // the output
+            printVerbose "MRL-CASE 4"
             printVerbose "inlineST no linker needed"
             assign startLinkers phase c linkers (b::a::res)
 
-        | a::b::c when a.sliceType = FUSIONST ->
+        // MRL-CASE 5
+        | FusionSlice(a) :: b :: InlineSlice(c) :: d when not (c.pragmas.ContainsKey("rabitstart")) ->
+            printVerbose "MRL-CASE 5"
+            printVerbose "fusionST followed by X and then inline that is not a rabit start"
+            // Note: a not emitted - we are not passing FUSIONST through in this case
+            assign startLinkers phase d linkers (c :: b :: res)
+
+        // MRL-CASE 6
+        | FusionSlice(a)::InlineSlice(b)::c::d when
+            not (b.pragmas.ContainsKey("rabitstart")) &&
+            not (b.pragmas.ContainsKey("rabitend")) ->
+            printVerbose "MRL-CASE 6"
+            printVerbose "fusionST followed by inline that is not a rabit start"
+            // No need for a linker before or after a fusion place holder, since
+            // it doesn't really exist, but is a hint to join the two adjacent/
+            // pieces.
+            printVerbose "Fusion ST before inlinest no linker needed"
+
+            // Note: a not emitted - we are not passing FUSIONST through in this case
+            assign startLinkers phase d linkers (c::b::res) // Was emitting A previously daz
+
+        // MRL-CASE 7
+        | FusionSlice(a)::b::c ->
+            printVerbose "MRL-CASE 7"
             // No need for a linker before or after a fusion place holder, since
             // it doesn't really exist, but is a hint to join the two adjacent/
             // pieces.
             printVerbose "Fusion ST no linker needed"
 
+            // Note: a not emitted - we are not passing FUSIONST through in this case
             assign startLinkers phase c linkers (b::res) // Was emitting A previously daz
 
-        | a::b::c when a.sliceType = INLINEST && b.sliceType = INLINEST ->
+        // MRL-CASE 8
+        | InlineSlice(a)::InlineSlice(b)::c ->
+            printVerbose "MRL-CASE 8"
             // Double inline slice type.  Room for more logic here to potentially merge short slices but for now
             // just avoid dropping linkers into the middle of it all
             printVerbose "Double inline no linker needed"
+            // a and b move to output list, c stays as the next input
             assign startLinkers phase c linkers (b::a::res)
 
-        | a::b::c when a.sliceType = INLINEST && b.sliceType = FUSIONST
-                        && (not (a.pragmas.ContainsKey("rabitstart")))
-                        && (not (a.pragmas.ContainsKey("rabitend"))) ->
-            // inline then fuse slice type and no directive to end or start here.  
+        // MRL-CASE 9
+        | InlineSlice(a)::FusionSlice(b)::c when
+                (not (a.pragmas.ContainsKey("rabitstart"))) &&
+                (not (a.pragmas.ContainsKey("rabitend"))) ->
+            printVerbose "MRL-CASE 9"
+            // inline then fuse slice type and no directive to end or start here.
             // avoid dropping linkers into the middle of it all
             printVerbose "inline then fuse no linker needed"
+            // a moves to the output list
+            // b and c stay on the stack of input slices to be processed later
             assign startLinkers phase (b::c) linkers (a::res)
 
+        // MRL-CASE 10
+        | [InlineSlice(hd)] when
+            (hd.pragmas.ContainsKey("rabitend") || hd.pragmas.ContainsKey("inline")) ->
+            printVerbose "MRL-CASE 10"
+            printVerbose "terminal inline slice that will be made off final linker, just move it to output list"
+            assign startLinkers phase [] linkers (hd::res)
 
+        // MRL-CASE 11
+        | hd::tl when (match res with
+                       | InlineSlice(x)::_  when not <| x.pragmas.ContainsKey("rabitend") -> true
+                       | _ -> false
+                       )  ->
+            printVerbose "MRL-CASE 11 - slice with preceding inline slice , don't drop linker"
+            assign startLinkers phase tl linkers (hd::res)
+
+        // MRL-CASE 999
         | hd::tl -> // General case, chomp one linker
+            printVerbose "MRL-CASE 999"
             printVerbose "General case - assign a linker"
+            sprintf "hd=%A" hd.description |> printVerbose
+            sprintf "tl=%A" [for x in tl -> x.description] |> printVerbose
             match linkers with
             | [] -> failwith noLinkersLeftMsg
             | linkerName::lt ->
@@ -453,7 +525,7 @@ let mapRyseLinkers
                 // DETECT MARKER, transition to phase II
                 if hd.sliceType = MARKER then
                     // enter marker transition with linker to go before the marker part, marker part and remaining parts to place
-                    markerTransition [linker] hd tl 
+                    markerTransition [linker] hd tl
                 else
                     // We are putting linker before the piece hd (output gets flipped at the end).
                     // Make sure linker is appropriate to precede part hd.
@@ -496,7 +568,7 @@ let mapRyseLinkers
 
     let res = {aIn with dnaParts = assign allLinkers1 true aIn.dnaParts allLinkers1 []|> List.rev |> recalcOffset }
 
-    
+
     printVerbose "DONE:  mapRyseLinkers"
     res
 

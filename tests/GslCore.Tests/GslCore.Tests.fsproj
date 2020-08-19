@@ -23,6 +23,7 @@
     <Compile Include="TestDnaAssemblyTransformation.fs" />
     <Compile Include="TestTagging.fs" />
     <Compile Include="TestProcAssembly.fs" />
+    <Compile Include="TestMapRyseLinkers.fs" />
     <Compile Include="TestDnaMaterialization.fs" />
   </ItemGroup>
   <ItemGroup>
