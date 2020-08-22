@@ -11,7 +11,7 @@ open Amyris.ErrorHandling
 type TestMapRyseLinkers() =
 
     /// Enable for detailed (very detailed) output from mapRyseLinkers - useful for debugging test cases
-    let verbose = true
+   let verbose = false
 
     do
         // initialize pragmas
@@ -175,3 +175,12 @@ type TestMapRyseLinkers() =
             ([linkerAlice; linkerBob;linkerCharlie; linkerDoug],[])
             [uFoo;  pBaz ;fuse; uFoo (* no fuse c.f inlineFusedExample2 *); shortInline; dFoo ; shortInline ; oBar2 ;fuse ; tShaz ; shortInlineWithRabitStart; dFoo]
             [linkerAlice ; uFoo; linkerBob; pBaz ; uFoo; shortInline; dFoo ; shortInline ; oBar2 ;tShaz ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]
+
+    [<Test>]
+    member __.``internalInlineMarkhell2Case``()  =
+        runOne "internalInlineMarkhell2Case"
+            false
+            ([linkerAlice ; linkerBob ; linkerCharlie ; linkerDoug ; linkerEmma],[])
+            [ uFoo ;pBaz ; fuse; oBar; shortInlineWithRabitStart; oBar2 ; shortInlineWithRabitEnd; tShaz ]
+            [ linkerAlice ; uFoo ; linkerBob ;pBaz ; oBar; linkerCharlie ; shortInlineWithRabitStart; oBar2 ; shortInlineWithRabitEnd; linkerDoug; tShaz ;linkerEmma ]
+

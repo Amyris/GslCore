@@ -34,7 +34,7 @@ module SharedSliceTesting =
 type TestProcAssembly() =
 
     // enable for detailed (very detailed) output from procAssembly. Useful for debugging test cases
-    let verbose = false
+    let verbose = true
 
     do
         // initialize pragmas
@@ -292,3 +292,11 @@ type TestProcAssembly() =
             [ linkerAlice; uFoo ; dFoo ; shortInlineWithRabitEnd ; linkerCharlie]
             "DGDGSD"
             [ linkerAlice; uFoo ; fuse ;  dFoo; shortInlineWithRabitEnd ; linkerCharlie]
+
+    [<Test>]
+    member __.``internalInlineMarkhell2Case``()  =
+        runOne "internalInlineMarkhell2Case"
+            [ linkerAlice ; uFoo ; linkerBob ;pBaz ; oBar; linkerCharlie ; shortInlineWithRabitStart; oBar2 ; shortInlineWithRabitEnd; linkerDoug; tShaz ;linkerEmma ]
+            "DGDGDGDSGSDGD"
+            [ linkerAlice ; uFoo ; linkerBob ;pBaz ; fuse ; oBar; linkerCharlie ; shortInlineWithRabitStart; oBar2 ; shortInlineWithRabitEnd; linkerDoug; tShaz ;linkerEmma ]
+

@@ -954,7 +954,7 @@ let rec procAssembly
         errorName
         (prev : DNASlice list)
         /// Emitted slices
-        sliceOut
+        (sliceOut : DNASlice list)
         /// Primer sets we have emitted.  They come in fwd/rev pairs (both of which can be None at ends)
         (primersOut:DivergedPrimerPair list)
         /// Remaining slices to process
@@ -972,10 +972,14 @@ can design (say) a primer against might be further back in the stack and it's ju
     if verbose then
         printfn ""
         printfn "procAssembly: ==========================================================================================="
-        printfn "procAssembly: TOP,  prev=[%s]\n                    n=[%s]\n                    l=[%s]\n            slice out=[%s]"
+        printfn "procAssembly: TOP,  prev(%2d)=[%s]\n                    n(%2d)=[%s]\n                    l(%2d)=[%s]\n            slice out(%2d)=[%s]"
+            prev.Length
             (String.Join(";",(prev |> Seq.map(nameFromSlice))))
+            l.Length
             (String.Join(";",(l |> Seq.map(nameFromSlice))))
+            primersOut.Length
             (String.Join(";",(primersOut |> Seq.map(prettyPrintPrimer))))
+            (sliceOut.Length)
             (String.Join(";",(sliceOut |> Seq.map(nameFromSlice))))
         printfn "procAssembly: ==========================================================================================="
         printfn ""
@@ -1048,6 +1052,7 @@ can design (say) a primer against might be further back in the stack and it's ju
     // linker::next
     // or /inline/ (but not rabit start/end) :: next
     // AND.. inline is after a previous slice that can be designed against
+    // PACASE 3
     | hd::next::tl when
         (hd.sliceType = LINKER) ||
         (hd.sliceType =
@@ -1065,7 +1070,7 @@ can design (say) a primer against might be further back in the stack and it's ju
         // If the inline is short enough (should probably check also for #inline pragma that forces inline)
         if hd.sliceType = INLINEST && hd.dna.Length < 12 then
             if verbose then
-                printfn "procAssembly: ... shortcase (DPP)"
+                printfn "procAssembly: ... PCASE 3.1 shortcase (DPP)"
             // SHORTINLINE Case
             //
             // Special case for short inline sequences.  We can sort of do a seamless design
@@ -1199,7 +1204,7 @@ can design (say) a primer against might be further back in the stack and it's ju
             // hd(linker)::next::tail..
 
             if verbose then
-                printfn "procAssembly: ... longcase (DPP)"
+                printfn "procAssembly: ... PACASE 3.2 longcase (DPP)"
             // LONGINLINE Case
             //
             // Regular inline case or linker case - just design fwd and reverse then prepend
@@ -1490,7 +1495,7 @@ can design (say) a primer against might be further back in the stack and it's ju
                     (if skipped then "yes" else "no")
                     (String.Join(";",[for x in sliceOut -> x.description]))
             let sliceOut' =
-                match prev with // look at previous slices to consider sliceOut update
+                match sliceOut with // look at previous slices to consider sliceOut update
                 | [] -> sliceOut // no changes to sliceout
                 | p1::p2::tl when skipped -> // skipped means we had to reach over a small inline while generating reverse primer
                     if verbose then
