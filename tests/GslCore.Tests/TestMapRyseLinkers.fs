@@ -11,7 +11,7 @@ open Amyris.ErrorHandling
 type TestMapRyseLinkers() =
 
     /// Enable for detailed (very detailed) output from mapRyseLinkers - useful for debugging test cases
-   let verbose = false
+    let verbose = false
 
     do
         // initialize pragmas
