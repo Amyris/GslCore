@@ -1,3 +1,7 @@
+#### 0.4.49 - Aug 24th 2020
+
+* Demetrix production release - Fixed another bug with linker assignment/primer emission
+
 #### 0.4.48 - Aug 18th 2020
 
 * Demetrix production release - Maintenance release - downgrading to netstandard2.0, updating dependencies, fixing linker assignment/primer generation related  issues with rabitstard/rabitend
