@@ -1,3 +1,8 @@
+#### 0.4.50 - Oct 20th 2020
+
+* Demetrix production release - Maintenance release - upgrading dotnet sdk and dependencies
+
+
 #### 0.4.49 - Aug 24th 2020
 
 * Demetrix production release - Fixed another bug with linker assignment/primer emission
