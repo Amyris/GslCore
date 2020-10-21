@@ -1,13 +1,13 @@
 STORAGE: NONE
 RESTRICTION: >= netstandard2.0
 NUGET
-  remote: https://www.nuget.org/api/v2
-    Dmx.Amyris.Bio (2.0.29)
-      FSharp.Core
+  remote: https://api.nuget.org/v3/index.json
+    Dmx.Amyris.Bio (2.0.30)
+      FSharp.Core (>= 4.0 < 5.0)
     FSharp.Collections.ParallelSeq (1.1.4)
       FSharp.Core (>= 4.7.1)
       System.ValueTuple (>= 4.4) - restriction: && (>= net45) (>= netstandard2.0)
-    FSharp.Core (5.0)
+    FSharp.Core (4.7.2)
     FSharp.Data (3.3.3)
       FSharp.Core (>= 4.0.0.1) - restriction: && (>= net45) (>= netstandard2.0)
       FSharp.Core (>= 4.3.4) - restriction: && (< net45) (>= netstandard2.0)
@@ -24,7 +24,8 @@ GROUP Test
 STORAGE: NONE
 RESTRICTION: >= netstandard2.0
 NUGET
-  remote: https://www.nuget.org/api/v2
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (4.7.2)
     Microsoft.CodeCoverage (16.7.1) - restriction: || (&& (>= net45) (>= netstandard2.0)) (>= netcoreapp2.1)
     Microsoft.DotNet.InternalAbstractions (1.0) - restriction: >= netcoreapp2.1
       System.AppContext (>= 4.1) - restriction: && (< net451) (>= netstandard2.0)

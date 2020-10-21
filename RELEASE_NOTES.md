@@ -1,6 +1,6 @@
-#### 0.4.50 - Oct 20th 2020
+#### 0.4.51 - Oct 21st 2020
 
-* Demetrix production release - Maintenance release - upgrading dotnet sdk and dependencies
+* Demetrix production release - Maintenance release - upgrading Dmx.Amyris.Bio, pinning down FSharp.Core
 
 
 #### 0.4.49 - Aug 24th 2020

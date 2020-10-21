@@ -1,6 +1,7 @@
-source https://nuget.org/api/v2
+source https://api.nuget.org/v3/index.json
 framework: >= netstandard2.0
 storage none
+nuget FSharp.Core ~> 4
 nuget Dmx.Amyris.Bio 
 nuget FSharp.Data
 nuget Newtonsoft.Json
@@ -9,10 +10,11 @@ nuget MathNet.Numerics
 nuget FSharp.Collections.ParallelSeq
 
 group Test
-  source https://nuget.org/api/v2
+  source https://api.nuget.org/v3/index.json
   framework: >= netstandard2.0
   storage none
-  
+
+  nuget FSharp.Core ~> 4
   nuget NUnit ~> 3
   nuget NUnit.ConsoleRunner ~> 3
   nuget Microsoft.NET.Test.Sdk
