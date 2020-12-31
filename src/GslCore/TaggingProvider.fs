@@ -41,12 +41,18 @@ let tagPragmaDef =
      desc = "tag assemblies with terms from a namespace.";
      invertsTo = None; validate = validateTag} 
 
+let gTagPragmaDef =
+    { name = "gtag"; argShape = AtLeast 1; scope = BlockOnly(PersistentCumulative);
+      desc = "global tag assemblies with terms from a namespace.";
+      invertsTo = None; validate = validateTag }  
+
 /// Take previous #tag namespace:tagvalue  lines and fold into the assembly structure
-let foldInTags (cmdlineTags:AssemblyTag list) (_at:ATContext) (a:DnaAssembly) =
-    match a.pragmas.TryFind("tag") with
-    | None -> ok a
-    | Some pragma ->
-        match parseTags pragma.args with
+let foldInTags (cmdlineTags : AssemblyTag list) (_at : ATContext) (a : DnaAssembly) =
+    // gtag is global tag, tag is dna assembly tag
+    match List.collect (fun pragma -> pragma.args) ([ a.pragmas.TryFind("tag") ; a.pragmas.TryFind("gtag") ] |> List.choose id) with
+    | [] -> ok a
+    | args ->
+        match parseTags args with
         | Ok(newTags,_) ->
             ok {a with tags = cmdlineTags@newTags |> List.fold (fun tags tag -> tags.Add(tag)) a.tags}
         | Bad msg -> fail {msg = String.Join(";",msg) ; kind = ATError ; assembly = a ; stackTrace = None ; fromException = None}
@@ -84,7 +90,7 @@ let createTaggingPlugin extraArgProcessor =
       [{name = None;
         description = None;
         behavior = AssemblyTransform({cmdlineTags = []; processExtraArgs = extraArgProcessor})}]
-    providesPragmas = [tagPragmaDef];
+    providesPragmas = [tagPragmaDef ; gTagPragmaDef];
     providesCapas = []}
 
 let taggingPlugin = createTaggingPlugin (fun _ x -> x)
