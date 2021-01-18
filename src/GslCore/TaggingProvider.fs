@@ -37,14 +37,17 @@ let validateTag args =
     >>= (fun _ -> ok ())
 
 let tagPragmaDef =
-    {name = "tag"; argShape = AtLeast 1; scope = BlockOnly(TransientCumulative);
-     desc = "tag assemblies with terms from a namespace.";
-     invertsTo = None; validate = validateTag} 
+    { name = "tag"; argShape = AtLeast 1; scope = BlockOnly(TransientCumulative);
+      desc = "tag assemblies with terms from a namespace.";
+      invertsTo = None; validate = validateTag } 
 
 let gTagPragmaDef =
-    { name = "gtag"; argShape = AtLeast 1; scope = BlockOnly(PersistentCumulative);
-      desc = "global tag assemblies with terms from a namespace.";
-      invertsTo = None; validate = validateTag }  
+    { name = "gtag"
+      argShape = AtLeast 1
+      scope = BlockOnly(PersistentCumulative);
+      desc = "global tag assemblies with tags from a namespace."
+      invertsTo = None
+      validate = validateTag }  
 
 /// Take previous #tag namespace:tagvalue  lines and fold into the assembly structure
 let foldInTags (cmdlineTags : AssemblyTag list) (_at : ATContext) (a : DnaAssembly) =
