@@ -37,9 +37,12 @@ let validateTag args =
     >>= (fun _ -> ok ())
 
 let tagPragmaDef =
-    { name = "tag"; argShape = AtLeast 1; scope = BlockOnly(TransientCumulative);
-      desc = "tag assemblies with terms from a namespace.";
-      invertsTo = None; validate = validateTag } 
+    { name = "tag"
+      argShape = AtLeast 1
+      scope = BlockOnly(TransientCumulative)
+      desc = "tag assemblies with terms from a namespace."
+      invertsTo = None
+      validate = validateTag } 
 
 let gTagPragmaDef =
     { name = "gtag"

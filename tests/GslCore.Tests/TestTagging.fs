@@ -105,6 +105,18 @@ uADH1; dADH1
 uADH1; dADH1
 """ 
 
+    /// one global tag, two scoped tag
+    let threeTagsOneGlobalTwoScoped = """#refgenome cenpk
+#platform stitch
+#gtag flavor:vanilla
+
+#tag temp:hot
+uADH1; dADH1
+
+#tag condiment:ketchup
+uADH2; dADH2
+""" 
+
     let runAndExtractTags code =
             code
             |> compileOne
@@ -261,13 +273,41 @@ uADH1; dADH1
         Assert.AreEqual(1, results.Length)
 
         match results with
-        | [ _assembly1, pragmas1 ] ->
-            // should be one pragma on this assembly with two parts
-            match pragmas1 with
-            | [p] ->
-                // should match the entered text - with both pragmas together
-                Assert.AreEqual([ "flavor:vanilla" ; "temp:hot" ], p.args)
+        | [ _assembly1, pragmas ] ->
+            // should be two pragmas on this assembly
+            match pragmas with
+            | [p1 ; p2] ->
+                // should have global tag and scoped tag
+                Assert.AreEqual([ "flavor:vanilla" ], p1.args)
+                Assert.AreEqual([ "temp:hot" ], p2.args)
 
             | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
 
         | x -> failwithf "bad assembly pattern %A in OneGlobalOneScopedTag" x
+
+    [<Test>]
+    member __.OneGlobalTwoScopedTag() =
+        let results = threeTagsOneGlobalTwoScoped |> runAndExtractTags
+
+        // should be two assemblies
+        Assert.AreEqual(2, results.Length)
+
+        match results with
+        | [_assembly1, pragmas1 ; _assembly2, pragmas2] ->
+            // should be two pragmas on assembly 1
+            match pragmas1 with
+            | [p1 ; p2] ->
+                // should have global tag and scoped tag
+                Assert.AreEqual([ "flavor:vanilla" ], p1.args)
+                Assert.AreEqual([ "temp:hot" ], p2.args)
+            | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
+
+            // should be two pragmas on assembly 2
+            match pragmas2 with
+            | [p1 ; p2] ->
+                // should have global tag and scoped tag
+                Assert.AreEqual([ "flavor:vanilla" ], p1.args)
+                Assert.AreEqual([ "condiment:ketchup" ], p2.args)
+            | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
+
+        | x -> failwithf "bad assembly pattern %A in OneGlobalTwoScopedTag" x

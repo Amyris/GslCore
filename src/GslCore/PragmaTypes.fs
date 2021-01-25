@@ -448,7 +448,8 @@ type Pragma = {
     member x.name = x.definition.name
     member x.isTransient =
         match x.definition.scope with
-        | BlockOnly(Persistent) | BlockOrPart(Persistent) -> false
+        | BlockOnly(Persistent) | BlockOrPart(Persistent)
+        | BlockOnly(PersistentCumulative) | BlockOrPart(PersistentCumulative) -> false
         | _ -> true
     /// Does this pragma announce the availability of an extension capability?
     member x.SetsCapability =
