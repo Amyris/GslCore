@@ -195,3 +195,4 @@ paket.local
 .idea
 .tool
 **/AssemblyInfo.fs
+.ionide/

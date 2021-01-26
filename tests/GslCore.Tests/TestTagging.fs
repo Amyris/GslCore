@@ -87,6 +87,36 @@ uADH1; dADH1
 #tag id:1234
 uADH2; dADH2
 """ 
+
+    /// one global tag
+    let oneGlobalTag = """#refgenome cenpk
+#platform stitch
+#gtag flavor:vanilla
+
+uADH1; dADH1
+""" 
+
+    /// one global tag, one scoped tag
+    let twoTagsOneGlobalOneScoped = """#refgenome cenpk
+#platform stitch
+#gtag flavor:vanilla
+
+#tag temp:hot
+uADH1; dADH1
+""" 
+
+    /// one global tag, two scoped tag
+    let threeTagsOneGlobalTwoScoped = """#refgenome cenpk
+#platform stitch
+#gtag flavor:vanilla
+
+#tag temp:hot
+uADH1; dADH1
+
+#tag condiment:ketchup
+uADH2; dADH2
+""" 
+
     let runAndExtractTags code =
             code
             |> compileOne
@@ -97,6 +127,8 @@ uADH2; dADH2
                                     match n with
                                     | Pragma(p) when p.x.name = "tag" ->
                                         Some p.x
+                                    | Pragma(p) when p.x.name = "gtag" ->
+                                        Some p.x
                                     | _ -> 
                                         None
                                 )
@@ -105,7 +137,7 @@ uADH2; dADH2
 
     do
         // initialize pragmas
-        pragmaTypes.finalizePragmas [TaggingPlugin.tagPragmaDef]
+        pragmaTypes.finalizePragmas [ TaggingPlugin.tagPragmaDef ; TaggingPlugin.gTagPragmaDef ]
 
     [<Test>]
     member __.TestNoTag() =
@@ -218,3 +250,64 @@ uADH2; dADH2
             | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
 
         | x -> failwithf "bad assembly pattern %A in TwoParallelTags" x
+
+    [<Test>]
+    member __.OneGlobalTag() =
+        let results = oneGlobalTag |> runAndExtractTags
+
+        // should be one assembly
+        Assert.AreEqual(1, results.Length)
+
+        let (_assembly, pragmas) = results.Head
+
+        // should just be one pragma
+        Assert.AreEqual(1, pragmas.Length)
+        // should match the entered text
+        Assert.IsTrue(pragmas.Head.hasVal "flavor:vanilla")
+
+    [<Test>]
+    member __.OneGlobalOneScopedTag() =
+        let results = twoTagsOneGlobalOneScoped |> runAndExtractTags
+
+        // should be one assembly
+        Assert.AreEqual(1, results.Length)
+
+        match results with
+        | [ _assembly1, pragmas ] ->
+            // should be two pragmas on this assembly
+            match pragmas with
+            | [p1 ; p2] ->
+                // should have global tag and scoped tag
+                Assert.AreEqual([ "flavor:vanilla" ], p1.args)
+                Assert.AreEqual([ "temp:hot" ], p2.args)
+
+            | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
+
+        | x -> failwithf "bad assembly pattern %A in OneGlobalOneScopedTag" x
+
+    [<Test>]
+    member __.OneGlobalTwoScopedTag() =
+        let results = threeTagsOneGlobalTwoScoped |> runAndExtractTags
+
+        // should be two assemblies
+        Assert.AreEqual(2, results.Length)
+
+        match results with
+        | [_assembly1, pragmas1 ; _assembly2, pragmas2] ->
+            // should be two pragmas on assembly 1
+            match pragmas1 with
+            | [p1 ; p2] ->
+                // should have global tag and scoped tag
+                Assert.AreEqual([ "flavor:vanilla" ], p1.args)
+                Assert.AreEqual([ "temp:hot" ], p2.args)
+            | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
+
+            // should be two pragmas on assembly 2
+            match pragmas2 with
+            | [p1 ; p2] ->
+                // should have global tag and scoped tag
+                Assert.AreEqual([ "flavor:vanilla" ], p1.args)
+                Assert.AreEqual([ "condiment:ketchup" ], p2.args)
+            | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
+
+        | x -> failwithf "bad assembly pattern %A in OneGlobalTwoScopedTag" x

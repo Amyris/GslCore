@@ -23,7 +23,7 @@ type PragmaArgShape =
 
 type PragmaValidationResult = Result<unit,string>
 
-type PragmaPersistence = | Persistent | Transient | TransientCumulative
+type PragmaPersistence = | Persistent | PersistentCumulative | Transient | TransientCumulative
 
 ///<summary>
 /// Pragmas are scoped within a GSL document.  Some pragmas
@@ -448,7 +448,8 @@ type Pragma = {
     member x.name = x.definition.name
     member x.isTransient =
         match x.definition.scope with
-        | BlockOnly(Persistent) | BlockOrPart(Persistent) -> false
+        | BlockOnly(Persistent) | BlockOrPart(Persistent)
+        | BlockOnly(PersistentCumulative) | BlockOrPart(PersistentCumulative) -> false
         | _ -> true
     /// Does this pragma announce the availability of an extension capability?
     member x.SetsCapability =
@@ -586,6 +587,8 @@ type PragmaCollection = PragmaCollection of Map<string,Pragma>
     member x.Add(p:Pragma) =
         PragmaCollection (
             match p.definition.scope with
+            | BlockOnly(PersistentCumulative)
+            | BlockOrPart(PersistentCumulative)
             | BlockOnly(TransientCumulative)
             | BlockOrPart(TransientCumulative) ->
                 match x.pmap.TryFind(p.name) with
