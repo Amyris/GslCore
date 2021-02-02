@@ -1,3 +1,7 @@
+#### 0.4.52 - Feb 2nd 2021
+
+* Demetrix production release - Add global tags to tagging provider
+
 #### 0.4.51 - Oct 21st 2020
 
 * Demetrix production release - Maintenance release - upgrading Dmx.Amyris.Bio, pinning down FSharp.Core
