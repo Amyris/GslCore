@@ -1,3 +1,8 @@
+#### 0.4.53 - Feb 5th 2021
+
+* Demetrix production release - Upgraded to .net 5, updated dependencies
+
+
 #### 0.4.52 - Feb 2nd 2021
 
 * Demetrix production release - Add global tags to tagging provider

@@ -1,7 +1,7 @@
 source https://api.nuget.org/v3/index.json
 framework: >= netstandard2.0
 storage none
-nuget FSharp.Core ~> 4
+nuget FSharp.Core ~> 5
 nuget Dmx.Amyris.Bio 
 nuget FSharp.Data
 nuget Newtonsoft.Json
@@ -14,7 +14,7 @@ group Test
   framework: >= netstandard2.0
   storage none
 
-  nuget FSharp.Core ~> 4
+  nuget FSharp.Core ~> 5
   nuget NUnit ~> 3
   nuget NUnit.ConsoleRunner ~> 3
   nuget Microsoft.NET.Test.Sdk

@@ -5,6 +5,7 @@
 #r "paket:
     storage: none
     source https://api.nuget.org/v3/index.json
+    nuget FSharp.Core ~> 4
     nuget Fake.Core.Target
     nuget Fake.IO.FileSystem
     nuget Fake.Core.Environment
