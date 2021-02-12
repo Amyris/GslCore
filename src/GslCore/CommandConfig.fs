@@ -5,8 +5,8 @@ open commonTypes
 open pragmaTypes
 open Amyris.Bio.utils
 
-let v = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version
-let version = sprintf "%d.%d.%d" v.Major v.Minor v.Build
+let informalVersion = AssemblyVersionInformation.AssemblyInformationalVersion // git hash
+let version = AssemblyVersionInformation.AssemblyVersion
 
 let libRoot =
     match Environment.GetEnvironmentVariable("GSL_LIB") with
@@ -92,7 +92,7 @@ let builtinCmdLineArgs =
             {name = "version"; param = []; alias = [];
              desc = "print version information"}
          proc = fun _ opts ->
-            printfn "GSL compiler version %s" version
+            printfn "GSL core compiler version %s (%s)" version informalVersion
             opts}
 
         {spec=
