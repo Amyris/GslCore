@@ -14,20 +14,20 @@ type SequenceLibrary = Map<string, Dna>
 
 /// Instructions gleaned from command line
 type ParsedOptions =
-   {quiet: bool;
-    refStrain: string;
-    libDir: string;
-    iter: bool;
-    onlyPhase1: bool;
-    doParallel: bool;
-    verbose: bool;
-    noPrimers: bool;
-    lexOnly: bool;
-    refList : bool;
-    refDump : string option;
-    listPlugins: bool;
-    doHelpPragmas : bool
-    }
+   { quiet: bool
+     refStrain: string 
+     libDir: string 
+     iter: bool 
+     onlyPhase1: bool
+     doParallel: bool
+     verbose: bool
+     noPrimers: bool
+     lexOnly: bool
+     refList : bool
+     refDump : string option
+     listPlugins: bool
+     doHelpPragmas : bool
+     isDeterministic: bool }
 
 type DNAIntervalType = ANNEAL | RYSELINKER | AMP | SANDWICH
 type DNAInterval = {il:int; ir:int; iType:DNAIntervalType}
