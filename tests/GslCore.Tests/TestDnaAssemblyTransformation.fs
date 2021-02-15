@@ -10,9 +10,7 @@ open pragmaTypes
 open Amyris.Dna
 open constants
 
-[<TestFixture>]
-type Test() = 
-
+module AssemblyTestBase =
     let emptyAssembly: Assembly = {
         parts = []
         name = None
@@ -63,8 +61,10 @@ type Test() =
         materializedFrom = emptyAssembly
         tags=Set.empty
         topology = Linear
-    }
+    }    
 
+[<TestFixture>]
+type Test() = 
     let runTest assembly expectedSource =
         let transformed =
             cleanLongSlices () assembly
@@ -81,27 +81,29 @@ type Test() =
 
     [<Test>]
     member x.TestLongSliceUsesDnaSrc() =
-        let sliceNoSource = testSlice EmptyPragmas
-        let assemblyNoSource = testAssembly sliceNoSource EmptyPragmas
+        let sliceNoSource = AssemblyTestBase.testSlice EmptyPragmas
+        let assemblyNoSource = AssemblyTestBase.testAssembly sliceNoSource EmptyPragmas
 
         runTest assemblyNoSource "synthetic"
 
         let refGenomePragmas = EmptyPragmas.Add("refgenome", "foogenome") |> returnOrFail
 
-        let assemblyHasRefGenome = testAssembly sliceNoSource refGenomePragmas
+        let assemblyHasRefGenome = AssemblyTestBase.testAssembly sliceNoSource refGenomePragmas
 
         runTest assemblyHasRefGenome "foogenome"
 
         let sliceWithSource =
             EmptyPragmas.Add("dnasrc", "foosource")
             |> returnOrFail
-            |> testSlice
+            |> AssemblyTestBase.testSlice
 
-        let assemblyHasSource = testAssembly sliceWithSource EmptyPragmas
+        let assemblyHasSource = AssemblyTestBase.testAssembly sliceWithSource EmptyPragmas
 
         runTest assemblyHasSource "foosource"
 
-        let assemblyHasSourceAndRef = testAssembly sliceWithSource refGenomePragmas
+        let assemblyHasSourceAndRef = AssemblyTestBase.testAssembly sliceWithSource refGenomePragmas
 
         // #dnasrc should take precedence over refgenome if both are present
         runTest assemblyHasSourceAndRef "foosource"
+
+    

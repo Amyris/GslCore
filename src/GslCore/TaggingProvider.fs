@@ -56,11 +56,14 @@ let gTagPragmaDef =
 let foldInTags (cmdlineTags : AssemblyTag list) (_at : ATContext) (a : DnaAssembly) =
     // gtag is global tag, tag is dna assembly tag
     match List.collect (fun pragma -> pragma.args) ([ a.pragmas.TryFind("tag") ; a.pragmas.TryFind("gtag") ] |> List.choose id) with
-    | [] -> ok a
+    | [] ->
+        let newTags = cmdlineTags |> Set.ofList |> Set.union a.tags
+        ok { a with tags = newTags }
     | args ->
         match parseTags args with
         | Ok(newTags,_) ->
-            ok {a with tags = cmdlineTags@newTags |> List.fold (fun tags tag -> tags.Add(tag)) a.tags}
+            let newTags = (cmdlineTags @ newTags) |> Set.ofList |> Set.union a.tags 
+            ok { a with tags = newTags }
         | Bad msg -> fail {msg = String.Join(";",msg) ; kind = ATError ; assembly = a ; stackTrace = None ; fromException = None}
         
 type TaggingProvider = {

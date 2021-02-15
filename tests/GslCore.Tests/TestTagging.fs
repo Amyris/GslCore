@@ -1,12 +1,19 @@
 ﻿namespace gslc.Tests
-open System
+
+open System.Collections
+open GslCore.Tests
+open LegacyParseTypes
 open NUnit.Framework
 open Amyris.ErrorHandling
 open AstTypes
 open AstAssertions
 open AstExpansion
+open PluginTypes
+open commonTypes
 open constants
+open BasicCodonProvider
 
+open pragmaTypes
 [<TestFixture>]
 type TestTagging() = 
 
@@ -137,18 +144,17 @@ uADH2; dADH2
 
     do
         // initialize pragmas
-        pragmaTypes.finalizePragmas [ TaggingPlugin.tagPragmaDef ; TaggingPlugin.gTagPragmaDef ]
+        finalizePragmas [ TaggingPlugin.tagPragmaDef ; TaggingPlugin.gTagPragmaDef ]
 
     [<Test>]
     member __.TestNoTag() =
 
         let results = noTag |> runAndExtractTags
 
-        // should be one assembly
         Assert.AreEqual(1,results.Length)
 
         let _assembly,pragmas = results.Head
-        // should be zero pragmas
+
         Assert.AreEqual(0,pragmas.Length)
 
     [<Test>]
@@ -156,13 +162,12 @@ uADH2; dADH2
 
         let results = simpleTag |> runAndExtractTags
 
-        // should be one assembly
         Assert.AreEqual(1,results.Length)
 
         let _assembly,pragmas = results.Head
-        // should just be one pragma
+        
         Assert.AreEqual(1,pragmas.Length)
-        // should match the entered text
+
         Assert.IsTrue(pragmas.Head.hasVal "flavor:vanilla")
 
     [<Test>]
@@ -170,15 +175,14 @@ uADH2; dADH2
 
         let results = twoSerialTags |> runAndExtractTags
 
-        // should be two assemblies
         Assert.AreEqual(2,results.Length)
 
         match results with
         | [_assembly1,pragmas1 ; _assembly2,pragmas2] ->
-            // should just be one pragma on each
+
             Assert.AreEqual(1,pragmas1.Length)
             Assert.AreEqual(1,pragmas2.Length)
-            // should match the entered text
+
             Assert.IsTrue(pragmas1.Head.hasVal "flavor:vanilla")
             Assert.IsTrue(pragmas2.Head.hasVal "temp:hot")
         | x -> failwithf "bad config %A in TwoSerialTags" x
@@ -188,15 +192,12 @@ uADH2; dADH2
 
         let results = twoTandemTags |> runAndExtractTags
 
-        // should be one assemby
         Assert.AreEqual(1,results.Length)
 
         match results with
         | [_assembly1,pragmas1 ] ->
-            // should be two pragmas on this assembly
             match pragmas1 with
             | [p] ->
-                // should match the entered text - with both pragmas together
                 Assert.AreEqual(["flavor:vanilla";"temp:hot"],p.args)
 
             | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
@@ -209,15 +210,12 @@ uADH2; dADH2
 
         let results = twoParallelTags |> runAndExtractTags
 
-        // should be one assemby
         Assert.AreEqual(1,results.Length)
 
         match results with
         | [_assembly1,pragmas1 ] ->
-            // should be one pragma on this assembly with two parts
             match pragmas1 with
             | [p] ->
-                // should match the entered text - with both pragmas together
                 Assert.AreEqual(["flavor:vanilla";"temp:hot"],p.args)
 
             | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
@@ -228,23 +226,18 @@ uADH2; dADH2
     member __.MixedTags() =
         let results = mixedTags |> runAndExtractTags
 
-        // should be two assemblies
         Assert.AreEqual(2,results.Length)
 
         match results with
         | [_assembly1,pragmas1 ; _assembly2,pragmas2] ->
-            // should be one pragma on assembly1 with 3 parts
             match pragmas1 with
             | [p] ->
-                // should match the entered text - with both pragmas together
                 Assert.AreEqual(["flavor:vanilla";"temp:hot" ; "condiment:ketchup"],p.args)
 
             | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
 
-            // should be one pragma on assembly2 with 1 part
             match pragmas2 with
             | [p] ->
-                // should match the entered text - with both pragmas together
                 Assert.AreEqual(["id:1234"],p.args)
 
             | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
@@ -255,29 +248,24 @@ uADH2; dADH2
     member __.OneGlobalTag() =
         let results = oneGlobalTag |> runAndExtractTags
 
-        // should be one assembly
         Assert.AreEqual(1, results.Length)
 
         let (_assembly, pragmas) = results.Head
 
-        // should just be one pragma
         Assert.AreEqual(1, pragmas.Length)
-        // should match the entered text
+
         Assert.IsTrue(pragmas.Head.hasVal "flavor:vanilla")
 
     [<Test>]
     member __.OneGlobalOneScopedTag() =
         let results = twoTagsOneGlobalOneScoped |> runAndExtractTags
 
-        // should be one assembly
         Assert.AreEqual(1, results.Length)
 
         match results with
         | [ _assembly1, pragmas ] ->
-            // should be two pragmas on this assembly
             match pragmas with
             | [p1 ; p2] ->
-                // should have global tag and scoped tag
                 Assert.AreEqual([ "flavor:vanilla" ], p1.args)
                 Assert.AreEqual([ "temp:hot" ], p2.args)
 
@@ -289,25 +277,103 @@ uADH2; dADH2
     member __.OneGlobalTwoScopedTag() =
         let results = threeTagsOneGlobalTwoScoped |> runAndExtractTags
 
-        // should be two assemblies
         Assert.AreEqual(2, results.Length)
 
         match results with
         | [_assembly1, pragmas1 ; _assembly2, pragmas2] ->
-            // should be two pragmas on assembly 1
             match pragmas1 with
             | [p1 ; p2] ->
-                // should have global tag and scoped tag
                 Assert.AreEqual([ "flavor:vanilla" ], p1.args)
                 Assert.AreEqual([ "temp:hot" ], p2.args)
             | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
 
-            // should be two pragmas on assembly 2
             match pragmas2 with
             | [p1 ; p2] ->
-                // should have global tag and scoped tag
                 Assert.AreEqual([ "flavor:vanilla" ], p1.args)
                 Assert.AreEqual([ "condiment:ketchup" ], p2.args)
             | x -> failwithf "unexpected number of pragmas %d:\n%A" x.Length x
 
         | x -> failwithf "bad assembly pattern %A in OneGlobalTwoScopedTag" x
+        
+    static member dummyContext =
+        { ATContext.ga =
+            { GlobalAssets.rgs = Map.empty
+              seqLibrary = Map.empty
+              codonProvider =
+                { BasicCodonProvider.parameters = None
+                  cache = None } }
+          opts = commandConfig.defaultOpts }
+        
+    static member dummyDnaAssembly =
+        { DnaAssembly.id = None
+          dnaParts = []
+          name = "fooslice"
+          uri = None
+          linkerHint = "hint"
+          pragmas = createPragmaCollection Seq.empty
+          designParams = DesignParams.initialDesignParams
+          docStrings = []
+          materializedFrom = AssemblyTestBase.emptyAssembly
+          tags = Set.empty
+          topology = Topology.Linear }               
+
+    static member FoldTestCases with get(): IEnumerable =
+        seq {
+            TestCaseData(
+                {| CliTags = [ { AssemblyTag.nameSpace = "bar"; tag = "foo" } ]
+                   PragmaTags = ([| |] : string [])
+                   GlobalPragmaTags = ([| |]: string[])
+                   AssemblyTags = ([]: AssemblyTag list) |})
+                .Returns([ "bar:foo" ])
+            TestCaseData(
+                {| CliTags = ([]: AssemblyTag list)
+                   PragmaTags = ([| |] : string [])
+                   GlobalPragmaTags = ([| |]: string[])
+                   AssemblyTags = [ { AssemblyTag.nameSpace = "bar"; tag = "foo" } ] |})
+                .Returns([ "bar:foo" ])
+            TestCaseData(
+                {| CliTags = ([]: AssemblyTag list)
+                   PragmaTags = ([| "bar:foo" |] : string [])
+                   GlobalPragmaTags = ([| |]: string[])
+                   AssemblyTags = ([]: AssemblyTag list) |})
+                .Returns([ "bar:foo" ])
+            TestCaseData(
+                {| CliTags = [ { AssemblyTag.nameSpace = "bar"; tag = "foo" } ]
+                   PragmaTags = ([| |] : string [])
+                   GlobalPragmaTags = ([| "bar:foo" |]: string[])
+                   AssemblyTags = ([]: AssemblyTag list) |})
+                .Returns([ "bar:foo" ])
+            TestCaseData(
+                {| CliTags = [ { AssemblyTag.nameSpace = "bar"; tag = "foo" } ]
+                   PragmaTags = [| "car:foo"  |]
+                   GlobalPragmaTags = [| "dar:foo" |]
+                   AssemblyTags = [ { AssemblyTag.nameSpace = "ear"; tag = "foo" } ] |})
+                .Returns([ "bar:foo"; "car:foo"; "dar:foo"; "ear:foo" ])                    
+                 
+        } :> IEnumerable    
+    
+    [<TestCaseSource(typeof<TestTagging>, "FoldTestCases")>]
+    member __.TestFolding(input: {| CliTags: AssemblyTag list; PragmaTags: string[]; GlobalPragmaTags: string[]; AssemblyTags: AssemblyTag list |}) =
+        let cliTags = input.CliTags
+        let pragmaCollection =
+            createPragmaCollection
+                [ for pragma in input.PragmaTags do
+                      { Pragma.args = [ pragma ]
+                        definition = TaggingPlugin.tagPragmaDef } 
+
+                  for pragma in input.GlobalPragmaTags do
+                      { Pragma.args = [ pragma ]
+                        definition = TaggingPlugin.gTagPragmaDef } ]
+                
+        let context = TestTagging.dummyContext
+        let assembly =
+            { TestTagging.dummyDnaAssembly with
+                pragmas = pragmaCollection
+                tags = input.AssemblyTags |> Set.ofList }
+        match TaggingPlugin.foldInTags cliTags context assembly with
+        | Ok (result, _) ->
+            result.tags |> Set.toList |> List.map (fun tag -> sprintf "%s:%s" tag.nameSpace tag.tag) |> List.sort
+        | Bad _err ->
+            failwith "Unexpected error"
+
+    
