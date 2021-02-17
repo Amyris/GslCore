@@ -1,3 +1,11 @@
+#### 0.4.54 - Feb 17th 2021
+
+* Demetrix production release
+* Fixed a bug where `--tag` was considered only for those assemblies which already had tags added
+* Fixed version display
+* Added `--deterministic` flag to the compiler
+
+
 #### 0.4.53 - Feb 5th 2021
 
 * Demetrix production release - Upgraded to .net 5, updated dependencies
