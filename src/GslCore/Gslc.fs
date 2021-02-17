@@ -144,7 +144,7 @@ let configureGslc unconfiguredPlugins argv =
             let s = configure true legalCmdLineArgs unconfiguredPlugins args
 
             if not s.opts.quiet && not s.opts.refList && s.opts.refDump.IsNone then
-                printf "// GSL compiler version %s\n" version
+                printf "// GSL core compiler version %s (%s)\n" version informalVersion
 
             if s.opts.listPlugins then
                 let pluginDescs = s.plugins |> List.map (fun p -> p.Info) |> String.concat "\n\n"

@@ -38,7 +38,8 @@ type TestMapRyseLinkers() =
                                      refList = false
                                      refDump = None
                                      listPlugins = false
-                                     doHelpPragmas = false }
+                                     doHelpPragmas = false
+                                     isDeterministic = false }
 
         let leftLinkers,rightLinkers = linkersIn
         let linkers = [for l in leftLinkers@rightLinkers -> l.sliceName , { RYSELinker.name = l.sliceName ; dna = l.dna }] |> Map.ofList
