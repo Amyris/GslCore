@@ -1,3 +1,8 @@
+#### 0.4.55 - Feb 22th 2021
+
+* Demetrix production release
+* Fixing slicing bug: zero index is no longer allowed in slicing syntax
+
 #### 0.4.54 - Feb 17th 2021
 
 * Demetrix production release

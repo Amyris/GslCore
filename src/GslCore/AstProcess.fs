@@ -427,10 +427,14 @@ let private buildRelativePosition node =
         | Int({x=i; positions=_}) -> ok i
         | x -> internalTypeMismatch (Some "relative position building") "Int" x
         >>= (fun i ->
-            match prp.qualifier with
-            | None -> buildNode (i*1<OneOffset>) FivePrime
-            | Some(q) ->
-                match q, prp.position with
+            if i = 0 then
+                error ValueError "Slice index cannot be zero" prp.i
+            else
+                let qualifier =
+                    prp.qualifier
+                    |> Option.defaultValue S
+                    
+                match qualifier, prp.position with
                 | S, _ -> buildNode (i*1<OneOffset>) FivePrime
                 | E, _ -> buildNode (i*1<OneOffset>) ThreePrime
                 | A, Left | AS, Left | SA, Left ->
