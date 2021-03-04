@@ -365,7 +365,8 @@ let private reduceMathExpression node =
     // convenience function for type errors we may come across
     let wrongTypeErrorMsg whichKind (n: AstNode) =
         sprintf "'%s' is not allowed to appear in a %s." n.TypeName whichKind
-    let binOpErrMsg = wrongTypeErrorMsg "numeric binary operation"
+    let intBinOpErrMsg = wrongTypeErrorMsg "numeric binary operation"
+    let stringBinOpErrMsg = "operator is not allowed to appear in a string binary operation."
     let negationErrMsg = wrongTypeErrorMsg "negation"
 
     match node with
@@ -380,17 +381,18 @@ let private reduceMathExpression node =
                 | Multiply -> l.x * r.x
                 | Divide -> l.x / r.x
             ok (Int({x=result; positions=pos}))
-        // If we don't have two ints (because one or both are still variables), we can't reduce but
-        // this is an OK state of affairs.
-        | AllowedInMathExpression _, AllowedInMathExpression _ -> ok node
-        // One node is disallowed in a math expression, oh my.
-        | AllowedInMathExpression _, x
-        | x, AllowedInMathExpression _ ->
-            error TypeError (binOpErrMsg x) x
+        | String left, String right ->
+            match bo.op with
+            | Add ->
+                let result = left.x + right.x
+                ok (String({ x = result; positions = pos }))
+            | _ ->
+                error TypeError (stringBinOpErrMsg) bo.left
+        
         // Neither node is allowed here.  Wow, we sure screwed up somewhere.
         | x, y ->
-            error TypeError (binOpErrMsg x) x
-            |> mergeMessages [errorMessage TypeError (binOpErrMsg y) y]
+            error TypeError (intBinOpErrMsg x) x
+            |> mergeMessages [errorMessage TypeError (intBinOpErrMsg y) y]
     | Negation({x=inner; positions=pos}) ->
         match inner with
         | Int({x=i; positions=_}) ->
