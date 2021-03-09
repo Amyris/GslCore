@@ -179,6 +179,12 @@ end
         mathReductionTest source expected
 
     [<Test>]
+    member x.TestMathReductionForStrings() =
+        let source = "let foo = \"1\" + \"1\" \n"
+        let expected = "let foo = \"11\"\n"
+        mathReductionTest source expected  
+    
+    [<Test>]
     member x.TestAlwaysFailingRegressionTest() =
         let source = """
 let x = -12

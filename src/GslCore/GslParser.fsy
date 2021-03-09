@@ -118,7 +118,7 @@ InlinePragmas:
 TypedVariableDeclaration:
 	| LET ID EQUALS VARIABLE NEWLINE		  { createVariableBinding $2 NotYetTyped (tokenToVariable $4 NotYetTyped) }
     | LET ID EQUALS IntExp NEWLINE            { createVariableBinding $2 IntType $4 }
-    | LET ID EQUALS StringLiteral NEWLINE     { createVariableBinding $2 StringType $4 }
+    | LET ID EQUALS StringExp NEWLINE         { createVariableBinding $2 StringType $4 }
     | LET ID EQUALS FloatLiteral NEWLINE      { createVariableBinding $2 FloatType $4 }
     | LET ID EQUALS CompletePart NEWLINE      { createVariableBinding $2 PartType $4 }
     | LET ID EQUALS AssemblyPart NEWLINE      { createVariableBinding $2 PartType $4 }
@@ -144,7 +144,6 @@ FunctionDeclaration:
 TypedValue:
 	| VARIABLE      { createTypedValue NotYetTyped (tokenToVariable $1 NotYetTyped) } // passing variables to functions
     | IntExp        { createTypedValue IntType $1 } // integer expressions
-    | StringLiteral { createTypedValue StringType $1 }
     | FloatLiteral  { createTypedValue FloatType $1 } // no support yet for floating point math
     | CompletePart  { createTypedValue PartType $1 }
     | AssemblyPart  { createTypedValue PartType $1 }
@@ -185,6 +184,16 @@ IntExp:
     | IntExp SLASH IntExp           { (createBinaryOp Divide $1 $3) }
     | IntExp PLUS IntExp          { (createBinaryOp Add $1 $3) }
     | IntExp HYPHEN IntExp       { (createBinaryOp Subtract $1 $3) }
+    
+// ==================
+// string expressions
+// ==================
+
+StringExp:
+    | LPAREN StringExp RPAREN          { $2 }
+    | StringExp PLUS StringExp         { (createBinaryOp Add $1 $3) }    
+    | StringLiteral                    { $1 }
+    | VARIABLE                         { (tokenToVariable $1 StringType) }    
 
 // ==================
 // parts
