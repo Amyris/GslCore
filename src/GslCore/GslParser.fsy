@@ -144,7 +144,6 @@ FunctionDeclaration:
 TypedValue:
 	| VARIABLE      { createTypedValue NotYetTyped (tokenToVariable $1 NotYetTyped) } // passing variables to functions
     | IntExp        { createTypedValue IntType $1 } // integer expressions
-    | StringLiteral { createTypedValue StringType $1 }
     | FloatLiteral  { createTypedValue FloatType $1 } // no support yet for floating point math
     | CompletePart  { createTypedValue PartType $1 }
     | AssemblyPart  { createTypedValue PartType $1 }
