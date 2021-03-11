@@ -119,7 +119,7 @@ type nonTerminalId =
     | NONTERM_IntLiteral
     | NONTERM_FloatLiteral
     | NONTERM_StringLiteral
-    | NONTERM_IntExp
+    | NONTERM_Exp
     | NONTERM_Linker
     | NONTERM_Part
     | NONTERM_PartMaybeMods

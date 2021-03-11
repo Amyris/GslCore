@@ -365,7 +365,7 @@ let private reduceMathExpression node =
     // convenience function for type errors we may come across
     let wrongTypeErrorMsg whichKind (n: AstNode) =
         sprintf "'%s' is not allowed to appear in a %s." n.TypeName whichKind
-    let binOpErrMsg = wrongTypeErrorMsg "numeric binary operation"
+    let binOpErrMsg = wrongTypeErrorMsg "this binary operation"
     let negationErrMsg = wrongTypeErrorMsg "negation"
 
     match node with
@@ -380,14 +380,39 @@ let private reduceMathExpression node =
                 | Multiply -> l.x * r.x
                 | Divide -> l.x / r.x
             ok (Int({x=result; positions=pos}))
-        // If we don't have two ints (because one or both are still variables), we can't reduce but
-        // this is an OK state of affairs.
-        | AllowedInMathExpression _, AllowedInMathExpression _ -> ok node
-        // One node is disallowed in a math expression, oh my.
-        | AllowedInMathExpression _, x
-        | x, AllowedInMathExpression _ ->
-            error TypeError (binOpErrMsg x) x
-        // Neither node is allowed here.  Wow, we sure screwed up somewhere.
+        | Float(left), Float(right) ->
+            let result =
+                match bo.op with
+                | Add -> left.x + right.x
+                | Subtract -> left.x - right.x
+                | Multiply -> left.x * right.x
+                | Divide -> left.x / right.x
+            ok (Float({x=result; positions=pos}))
+        | Float(left), Int(right) ->
+            let right = float right.x
+            let result =
+                match bo.op with
+                | Add -> left.x + right
+                | Subtract -> left.x - right
+                | Multiply -> left.x * right
+                | Divide -> left.x / right
+            ok (Float({x=result; positions=pos}))
+        | Int(left), Float(right) ->
+            let result =
+                let left = float left.x
+                match bo.op with
+                | Add -> left + right.x
+                | Subtract -> left - right.x
+                | Multiply -> left * right.x
+                | Divide -> left / right.x
+            ok (Float({x=result; positions=pos}))            
+        | String(left), String(right) ->
+            match bo.op with
+            | Add ->
+                let result = left.x + right.x
+                ok (String({x=result; positions=pos}))
+            | x -> error TypeError (sprintf "%A operation is not permitted for strings" x) node
+                     
         | x, y ->
             error TypeError (binOpErrMsg x) x
             |> mergeMessages [errorMessage TypeError (binOpErrMsg y) y]

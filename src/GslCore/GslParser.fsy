@@ -117,9 +117,7 @@ InlinePragmas:
 // A complete let expression, deriving type from the context.
 TypedVariableDeclaration:
 	| LET ID EQUALS VARIABLE NEWLINE		  { createVariableBinding $2 NotYetTyped (tokenToVariable $4 NotYetTyped) }
-    | LET ID EQUALS IntExp NEWLINE            { createVariableBinding $2 IntType $4 }
-    | LET ID EQUALS StringLiteral NEWLINE     { createVariableBinding $2 StringType $4 }
-    | LET ID EQUALS FloatLiteral NEWLINE      { createVariableBinding $2 FloatType $4 }
+    | LET ID EQUALS Exp NEWLINE               { createVariableBinding $2 NotYetTyped $4 }
     | LET ID EQUALS CompletePart NEWLINE      { createVariableBinding $2 PartType $4 }
     | LET ID EQUALS AssemblyPart NEWLINE      { createVariableBinding $2 PartType $4 }
 
@@ -143,20 +141,18 @@ FunctionDeclaration:
 // Things that can be passed as args to functions.
 TypedValue:
 	| VARIABLE      { createTypedValue NotYetTyped (tokenToVariable $1 NotYetTyped) } // passing variables to functions
-    | IntExp        { createTypedValue IntType $1 } // integer expressions
-    | StringLiteral { createTypedValue StringType $1 }
-    | FloatLiteral  { createTypedValue FloatType $1 } // no support yet for floating point math
+    | Exp           { createTypedValue NotYetTyped $1 }
     | CompletePart  { createTypedValue PartType $1 }
     | AssemblyPart  { createTypedValue PartType $1 }
 
 // A list of comma-separated values that acquire type information.
 CommaSeparatedTypedValues:
     | TypedValue COMMA CommaSeparatedTypedValues  { $1::$3 }
-    | TypedValue { [$1] }
+    | TypedValue                                  { [$1] }
 
 FunctionCall:
     | ID LPAREN CommaSeparatedTypedValues RPAREN { createFunctionCall $1 $3 }
-    | ID LPAREN RPAREN { createFunctionCall $1 [] }
+    | ID LPAREN RPAREN                           { createFunctionCall $1 [] }
 
 // ==================
 // literals
@@ -176,15 +172,17 @@ StringLiteral:
 // integer expressions
 // ==================
 
-IntExp:
+Exp:
     | IntLiteral                    { $1 }
-    | VARIABLE                      { (tokenToVariable $1 IntType) }
-    | LPAREN IntExp RPAREN          { $2 }
-    | HYPHEN IntExp %prec UMINUS    { (negate $2) }
-    | IntExp STAR IntExp          { (createBinaryOp Multiply $1 $3) }
-    | IntExp SLASH IntExp           { (createBinaryOp Divide $1 $3) }
-    | IntExp PLUS IntExp          { (createBinaryOp Add $1 $3) }
-    | IntExp HYPHEN IntExp       { (createBinaryOp Subtract $1 $3) }
+    | StringLiteral                 { $1 }
+    | FloatLiteral                  { $1 }    
+    | VARIABLE                      { (tokenToVariable $1 NotYetTyped) }
+    | LPAREN Exp RPAREN             { $2 }
+    | HYPHEN Exp %prec UMINUS       { (negate $2) }
+    | Exp STAR Exp                  { (createBinaryOp Multiply $1 $3) }
+    | Exp SLASH Exp                 { (createBinaryOp Divide $1 $3) }
+    | Exp PLUS Exp                  { (createBinaryOp Add $1 $3) }
+    | Exp HYPHEN Exp                { (createBinaryOp Subtract $1 $3) }
 
 // ==================
 // parts
@@ -242,8 +240,8 @@ CompletePart:
 // ==================
 
 RelPos:
-    | IntExp      { ($1, None) } // rather than creating these as AST nodes here, we pass them on to Slice so it can apply context
-    | IntExp ID   { ($1, (Some $2)) }
+    | Exp      { ($1, None) } // rather than creating these as AST nodes here, we pass them on to Slice so it can apply context
+    | Exp ID   { ($1, (Some $2)) }
 
 Slice: // Slice ranges of form  [ a : b] where a or b may be qualified with ~ to be approximate
     | OPENSQBRACKET RelPos COLON RelPos CLOSESQBRACKET                { createParseSlice $2 $4 false false }
