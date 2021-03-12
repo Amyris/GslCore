@@ -10,13 +10,15 @@
 * Negation: `-(1), -(2.5), -(&foo)`
 
 ### *Binary* Expressions
-* two or more of **any kind** expressions, separated by a binary operator: 
+* two or more of **any kind** of expressions, separated by binary operators: 
   
 `1 + 2`
 
 `6.0 + &foo`
 
 `"hello" + "world"`
+
+`5 + 4 * 6 - (5 + 1)`
 
 ### Binary operators
 * `+`
