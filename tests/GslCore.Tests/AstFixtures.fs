@@ -37,10 +37,10 @@ let addPragsToPart prags a =
 let variableize name v =
     let t =
         match v with
-        | BinaryOperation(_) -> IntType // right now we only support integer math so this is OK
-        | Int(_) -> IntType
-        | Float(_) -> FloatType
-        | String(_) -> StringType
+        | BinaryOperation(_) -> NotYetTyped // right now we only support integer math so this is OK
+        | Int(_) -> NotYetTyped
+        | Float(_) -> NotYetTyped
+        | String(_) -> NotYetTyped
         | Part(_) -> PartType
     VariableBinding(nodeWrap {name=name; varType=t; value=v})
 

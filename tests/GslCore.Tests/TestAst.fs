@@ -179,12 +179,6 @@ end
         mathReductionTest source expected
 
     [<Test>]
-    member x.TestMathReductionForStrings() =
-        let source = "let foo = \"1\" + \"1\" \n"
-        let expected = "let foo = \"11\"\n"
-        mathReductionTest source expected  
-    
-    [<Test>]
     member x.TestAlwaysFailingRegressionTest() =
         let source = """
 let x = -12
@@ -199,7 +193,34 @@ let z = 42
 gHO[-12:42]
 gHO[2:~42]"""
         mathReductionTest source expected
-
+        
+    [<Test>]
+    member x.TestFloatReduction() =
+        let source = """
+let x = -12.0
+let y = 1.0 + 1.0
+let z = (4.0*10.0)+7.0-5.0
+"""
+        let expected = """
+let x = -12.000000
+let y = 2.000000
+let z = 42.000000"""
+        mathReductionTest source expected
+        
+        
+    [<Test>]
+    member x.TestStringReduction() =
+        let source = """
+let x = "foo"
+let y = "foo" + "bar"
+"""
+        let expected = """
+let x = "foo"
+let y = "foobar"
+"""
+        mathReductionTest source expected        
+    
+    
     [<Test>]
     member x.TestFunctionInlining() =
         let source = """
@@ -325,18 +346,17 @@ foo(1)"""
         let source = """
 let fooPart = gFOO
 let fooInt = 1
-let testFunc(int, part) =
-    let baz = 1 + &int
-    pFOO ; &part
+let testFunc(intvar, partvar) =
+    let baz = 1 + &intvar
+    pFOO ; &partvar
 end
 testFunc(&fooPart, &fooInt)
 """
         GslSourceCode(source)
         |> compile variableResolutionPipeline
         |> assertFailMany
-            [TypeError; TypeError]
-            [Some("The variable int has been inferred to have the type Part");
-             Some("The variable part has been inferred to have the type Int")]
+            [ TypeError ]
+            [Some("The variable partvar has been inferred to have the type Int")]
         |> ignore
 
     [<Test>]
