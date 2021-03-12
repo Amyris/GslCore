@@ -55,7 +55,7 @@ If both operands in a binary expression are integers, then
 * the supported operators are: `+, -, /, *`
 * the result is also *an integer* which we get when we apply the mathematical operation that the operator represents on the operands
 
-#### Flot
+#### Float
 
 If both operands in a binary expression are floats, then
 * the supported operators are: `+, -, /, *`
