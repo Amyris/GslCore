@@ -1,3 +1,9 @@
+#### 0.4.56 - Mar 15th 2021
+
+* Demetrix production release
+* Generalized IntExpressions and included Strings and Floats in expressions
+
+
 #### 0.4.55 - Feb 22th 2021
 
 * Demetrix production release
