@@ -872,8 +872,8 @@ let trimLinkerTailBody (dp:DesignParams) (p:Primer) =
             {p with body=p.body.[..bLen-1]; tail = p.tail.[p.tail.Length-tLen..]}
         else
             // Someone needs to lose a basepair
-            if bLen = dp.pp.minLength then find bLen (tLen-1)
-            elif tLen = dp.pp.minLength then find (bLen-1) tLen
+            if bLen <= dp.pp.minLength then find bLen (tLen-1)
+            elif tLen <= dp.pp.minLength then find (bLen-1) tLen
             else
                 let bLen' = bLen - 1
                 let tLen' = tLen - 1
