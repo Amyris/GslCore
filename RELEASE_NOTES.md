@@ -1,3 +1,6 @@
+#### 0.4.57 - Jul 30th 2021
+* Bug fix for trimLinkerTail array out of bounds error
+
 #### 0.4.56 - Mar 15th 2021
 
 * Demetrix production release
