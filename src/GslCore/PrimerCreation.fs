@@ -1678,7 +1678,7 @@ can design (say) a primer against might be further back in the stack and it's ju
                     (fun i ->
                         let len1 = if i < x.Length then x.[i].Length else 0
                         let len2 = if i < y.Length then y.[i].Length else 0
-                        printfn "l1=%d l2=%d" len1 len2
+                        //printfn "l1=%d l2=%d" len1 len2
                         max len1 len2
                     )
             let pad (s:string) n = if s.Length >=n then s else s+("                                              ".[0..n-s.Length-1])
