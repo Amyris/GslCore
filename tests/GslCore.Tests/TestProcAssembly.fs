@@ -300,3 +300,42 @@ type TestProcAssembly() =
             "DGDGDGDSGSDGD"
             [ linkerAlice ; uFoo ; linkerBob ;pBaz ; fuse ; oBar; linkerCharlie ; shortInlineWithRabitStart; oBar2 ; shortInlineWithRabitEnd; linkerDoug; tShaz ;linkerEmma ]
 
+    [<Test>]
+    /// basic /inline/ slice /inline/  setup
+    member __.``flankingInlines1``()  =
+        runOne "flankingInlines1"
+            [ linkerAlice ; shortInlineWithRabitStart ; oBar ; shortInlineWithRabitEnd; linkerBob ]
+            "DSGSD"
+            [ linkerAlice ; shortInlineWithRabitStart ; oBar ; shortInlineWithRabitEnd ; linkerBob ]
+
+    [<Test>]
+    /// /inline/ slice /inline/  setup with empty linkers on outside
+    member __.``flankingInlines2``()  =
+        runOne "flankingInlines2"
+            [ linkerEmpty ; shortInlineWithRabitStart ; oBar ; shortInlineWithRabitEnd; linkerEmpty ]
+            "DSGSD"
+            [ linkerEmpty ; shortInlineWithRabitStart ; oBar ; shortInlineWithRabitEnd ; linkerEmpty ]
+
+    [<Test>]
+    /// Implicit rabitstart for first inline
+    member __.``flankingInlines3``()  =
+        runOne "flankingInlines3"
+            [ linkerEmpty ; shortInline ; oBar ; shortInlineWithRabitEnd; linkerEmpty ]
+            "DSGSD"
+            [ linkerEmpty ; shortInline ; oBar ; shortInlineWithRabitEnd ; linkerEmpty ]
+    [<Test>]
+    [<Ignore("penultimate shortinlines not autoconverted to rabit ends yet, so this fails")>]
+    /// Implicit rabitend for last inline
+    member __.``flankingInlines4``()  =
+        runOne "flankingInlines4"
+            [ linkerEmpty ; shortInlineWithRabitStart ; oBar ; shortInline; linkerBob ]
+            "DSGSD"
+            [ linkerEmpty ; shortInlineWithRabitStart ; oBar ; shortInline; linkerBob ]
+    [<Test>]
+    [<Ignore("penultimate shortinlines not autoconverted to rabit ends yet, so this fails")>]
+    /// Implicit rabitend for last inline empty linker
+    member __.``flankingInlines5``()  =
+        runOne "flankingInlines5"
+            [ linkerEmpty ; shortInlineWithRabitStart ; oBar ; shortInline; linkerEmpty ]
+            "DSGSD"
+            [ linkerEmpty ; shortInlineWithRabitStart ; oBar ; shortInline; linkerEmpty ]

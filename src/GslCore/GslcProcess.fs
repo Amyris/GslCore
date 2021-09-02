@@ -48,7 +48,7 @@ let rec processGSL (s: ConfigurationState) gslText =
         >>= convertAndGatherAssemblies
     else
         phase1Result
-        //>>= failOnAssemblyInL2Promoter 
+        //>>= failOnAssemblyInL2Promoter
         >>= expandLevel2 legalCapas l2Providers ga.rgs
         >>= prepPhase2 ga.rgs ga.seqLibrary
         >>= phase2WithData
@@ -105,7 +105,7 @@ let materializeDna (s:ConfigurationState) (assem:seq<Assembly>) =
 let cleanLongSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice list) =
     l |> List.map (fun s ->
         if (s.sliceType = INLINEST &&
-            s.dna.Length > 30 &&
+            (s.pragmas.ContainsKey("amp") || s.dna.Length > 30) &&
             not (s.pragmas.ContainsKey("inline")))
         then
             {s with
@@ -121,10 +121,10 @@ let cleanLongSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice list
                 // not placing it inline using primers
                 pragmas = match s.pragmas.TryFind("amp") with
                             | Some _ -> s.pragmas // already there
-                            | None -> 
+                            | None ->
                                 match s.pragmas.Add("amp") with
                                 | Result.Ok(result,_) -> result
-                                | Bad messages -> 
+                                | Bad messages ->
                                     // has to be a cleaner way of converting result to
                                     // exn if necessary
                                     failwithf "%s" (String.Join(";",messages))

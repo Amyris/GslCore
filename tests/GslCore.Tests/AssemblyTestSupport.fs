@@ -328,6 +328,16 @@ let linkerEmma =
         false // to approx
         true // amplified
         Breed.B_LINKER
+let linkerEmpty =
+    makeSimpleSlice
+        (Dna "")
+        "linkerEmpty"
+        SliceType.LINKER
+        EmptyPragmas
+        false // from approx
+        false // to approx
+        true // amplified
+        Breed.B_LINKER
 let placeholder =
     makeSimpleSlice
         (Dna "")
