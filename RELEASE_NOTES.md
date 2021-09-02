@@ -1,3 +1,6 @@
+#### 0.4.58 - Sep 1st 2021
+* Enhancement to allow #amp to upgrade short inline sequences to real slices even if < 30 bases long
+
 #### 0.4.57 - Jul 30th 2021
 * Bug fix for trimLinkerTail array out of bounds error
 
