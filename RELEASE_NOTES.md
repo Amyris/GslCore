@@ -1,3 +1,6 @@
+#### 0.4.59 - Apr 5th 2022
+* Maintenance release - upgrading to .NET6 and updating dependencies
+
 #### 0.4.58 - Sep 1st 2021
 * Enhancement to allow #amp to upgrade short inline sequences to real slices even if < 30 bases long
 
