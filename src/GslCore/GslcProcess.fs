@@ -135,6 +135,42 @@ let cleanLongSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice list
 /// impossibly long things with oligos.
 let cleanLongSlices _ (a:DnaAssembly) =
     ok {a with dnaParts = cleanLongSlicesInPartsList a.pragmas a.dnaParts}
+    
+/// Demote short slices to inlinest to build in oligos
+/// rather than PCR 
+let cleanShortSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice list) =
+    l |> List.map (fun s ->
+        if (s.sliceType = REGULAR &&
+            (s.pragmas.ContainsKey("inline") || (s.dna.Length <= 30)) &&
+            not (s.pragmas.ContainsKey("amp")))
+        then
+            {s with
+                sliceType = INLINEST;
+                dnaSource =
+                    match s.pragmas.TryGetOne("dnasrc") with
+                    | Some(x) -> x
+                    | None ->
+                        match p.TryGetOne("refgenome") with
+                        | None -> "synthetic"
+                        | Some(x) -> x
+                // add in an amp tag on this guy too, since we are now comitting to
+                // not placing it inline using primers
+                pragmas = match s.pragmas.TryFind("inline") with
+                            | Some _ -> s.pragmas // already there
+                            | None ->
+                                match s.pragmas.Add("inline") with
+                                | Result.Ok(result,_) -> result
+                                | Bad messages ->
+                                    // has to be a cleaner way of converting result to
+                                    // exn if necessary
+                                    failwithf "%s" (String.Join(";",messages))
+            }
+        else s)
+
+/// Promote long slices to regular rabits to avoid trying to build
+/// impossibly long things with oligos.
+let cleanShortSlices _ (a:DnaAssembly) =
+    ok {a with dnaParts = cleanShortSlicesInPartsList a.pragmas a.dnaParts}
 
 
 /// we run into trouble during primer generation if a virtual part (fuse) gets between two parts that
@@ -161,6 +197,7 @@ let transformAssemblies (s: ConfigurationState) (assemblies:DnaAssembly list) =
 
     let builtinAssemblyTransforms =
         [cleanLongSlices;
+         cleanShortSlices;
          preProcessFuse;]
 
     let assemblyTransformers =

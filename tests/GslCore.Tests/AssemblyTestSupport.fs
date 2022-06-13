@@ -143,6 +143,20 @@ let tShaz =
         true // to approx
         true // amplified
         Breed.B_TERMINATOR
+        
+let oSmall =
+    makeSimpleSlice
+        (Dna "TACTGACTGAGTCTGACTGACG")
+        "oSmall"
+        SliceType.REGULAR
+        EmptyPragmas
+        false
+        false
+        true
+        Breed.B_GS
+            
+
+            
 let marker =
     makeSimpleSlice
         (Dna "TGTACTGACGTAGTCGTACACGTAGTCGTATCGATGTGCGACGTACTGAGCGTAGTCTGATGCGTATGCTCGTAGTAGTCGTACGTACGTGTCGTCGTGTGTGTAGTCGTGTACGAGCGTACGATCGATCAGTCTGACGTAGTGTAGTCGTAGTGTCGTAGTACGTA")
@@ -228,6 +242,7 @@ let smallInline =
         true // amplified
         Breed.B_INLINE
 
+        
 let uFooFuse = {uFoo with pragmas = uFoo.pragmas.Add(fusePragma) ; sliceName = uFoo.sliceName+"#fuse"}
 let smallInlineAmp = {smallInline with pragmas = smallInline.pragmas.Add(amp) ; sliceName = smallInline.sliceName+"#amp"}
 let smallInlineFuse = {smallInline with pragmas = smallInline.pragmas.Add(fusePragma) ; sliceName = smallInline.sliceName+"#fuse"}
@@ -239,7 +254,8 @@ let longInlineAmpFuse = {longInlineAmp with pragmas = longInlineAmp.pragmas.Add(
 let longInlineInline = {longInline with pragmas = longInline.pragmas.Add(inlinePragma)}
 let shortInlineWithRabitStart = { shortInline with pragmas = shortInline.pragmas.Add(rabitStart) ; sliceName = shortInline.sliceName+"#rabitstart"}
 let shortInlineWithRabitEnd = { shortInline with pragmas = shortInline.pragmas.Add(rabitEnd) ; sliceName = shortInline.sliceName+"#rabitend"}
-
+let oSmallInline = { oSmall with pragmas = oSmall.pragmas.Add(inlinePragma); sliceName = oSmall.sliceName+"Inline" }
+    
 let linkerAlice =
     makeSimpleSlice
         (Dna "GATCGATTAGATCGATAGGCTACG")

@@ -25,6 +25,11 @@ type TestMapRyseLinkers() =
         | _ -> failwith "building pragma"
     /// perform one test and check output pattern and sequences
     let runOne (name:string) isMegastitch (linkersIn:(DNASlice list*DNASlice list)) slicesIn expected =
+        
+        let cleanedSlices = slicesIn |>
+                            gslcProcess.cleanLongSlicesInPartsList pragmaTypes.EmptyPragmas |>
+                            gslcProcess.cleanShortSlicesInPartsList pragmaTypes.EmptyPragmas 
+        
         /// Boring default options
         let opts : ParsedOptions = { quiet = false
                                      refStrain = "cenpk"
@@ -47,7 +52,7 @@ type TestMapRyseLinkers() =
 
         /// Wrap up in a generic assembly
         let assemblyIn : DnaAssembly = { id = None
-                                         dnaParts = slicesIn
+                                         dnaParts = cleanedSlices
                                          name = name
                                          uri = None
                                          linkerHint =
@@ -99,6 +104,14 @@ type TestMapRyseLinkers() =
                 [uFoo ; shortInline; dFoo]
                 [linkerAlice ; uFoo ; shortInline ; dFoo ; linkerBob]
 
+    [<Test>]
+    member __.TwoPartsPlusShortGeneSliceInline() =
+        runOne "TwoPartsShortGeneSLiceInline"
+                false // is stitch
+                ([linkerAlice ; linkerBob],[]) // A and B part linkers
+                [uFoo ; oSmallInline; dFoo]
+                [linkerAlice ; uFoo ; oSmallInline ; dFoo ; linkerBob]
+                
     [<Test>]
     member __.FuseTwoNormalSlices() =
         // Note - we need to use the explicit fusionSlice here to test
