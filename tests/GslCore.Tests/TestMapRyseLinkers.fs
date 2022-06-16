@@ -105,12 +105,28 @@ type TestMapRyseLinkers() =
                 [linkerAlice ; uFoo ; shortInline ; dFoo ; linkerBob]
 
     [<Test>]
-    member __.TwoPartsPlusShortGeneSliceInline() =
-        runOne "TwoPartsShortGeneSLiceInline"
+    member __.TwoPartsPlusShortRegular() =
+        runOne "TwoPartsShortRegular"
                 false // is stitch
                 ([linkerAlice ; linkerBob],[]) // A and B part linkers
-                [uFoo ; oSmallInline; dFoo]
-                [linkerAlice ; uFoo ; oSmallInline ; dFoo ; linkerBob]
+                [uFoo ; shortRegular; dFoo]
+                [linkerAlice ; uFoo ; shortRegular ; dFoo ; linkerBob]
+
+    [<Test>]
+    member __.TwoPartsPlusSmallRegularInline() =
+        runOne "TwoPartsPlusSmallRegularInline"
+                false // is stitch
+                ([linkerAlice ; linkerBob],[]) // A and B part linkers
+                [uFoo ; smallRegularInline; dFoo]
+                [linkerAlice ; uFoo ; smallRegularInline ; dFoo ; linkerBob]
+    
+    [<Test>]
+    member __.TwoPartsPlusSmallInlineAmp() =
+        runOne "TwoPartsPlusSmallInlineAmp"
+                false // is stitch
+                ([linkerAlice ; linkerBob ; linkerCharlie; linkerDoug],[]) // A and B part linkers
+                [uFoo ; smallInlineAmp; dFoo]
+                [linkerAlice ; uFoo ; linkerBob; smallInlineAmp ; linkerCharlie ; dFoo ; linkerDoug]
                 
     [<Test>]
     member __.FuseTwoNormalSlices() =
@@ -153,13 +169,22 @@ type TestMapRyseLinkers() =
                 [linkerAlice ; uFoo ; dFoo ; linkerBob ; shortInlineWithRabitStart ; oBar ; linkerDoug]
 
     [<Test>]
-    member __.``Last AMP with rabitstart + rabitend``() =
+    member __.``Last AMP with shortInline rabitstart + rabitend``() =
 
-        runOne "Last AMP with rabitstart + rabitend"
+        runOne "Last AMP with shortInline rabitstart + rabitend"
                 false // is stitch
                 ([linkerAlice ; linkerBob ; linkerCharlie ; linkerDoug],[]) // A and B part linkers
                 [ uFoo ; fuse; dFoo ; shortInlineWithRabitStart ; oBar; shortInlineWithRabitEnd]
                 [linkerAlice ; uFoo ; dFoo ; linkerBob ; shortInlineWithRabitStart ; oBar; shortInlineWithRabitEnd ; linkerDoug]
+    
+    [<Test>]
+    member __.``Last AMP with shorRegular rabitstart + rabitend``() =
+
+        runOne "Last AMP with shortInline rabitstart + rabitend"
+                false // is stitch
+                ([linkerAlice ; linkerBob ; linkerCharlie ; linkerDoug],[]) // A and B part linkers
+                [ uFoo ; fuse; dFoo ; shortRegularWithRabitStart ; oBar; shortRegularWithRabitEnd]
+                [linkerAlice ; uFoo ; dFoo ; linkerBob ; shortRegularWithRabitStart ; oBar; shortRegularWithRabitEnd ; linkerDoug]
 
 
     [<Test>]
@@ -181,6 +206,7 @@ type TestMapRyseLinkers() =
             ([linkerAlice; linkerBob;linkerCharlie; linkerDoug],[])
             [uFoo;  oBar ;fuse; uFoo ;fuse (* XXX *); shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; shortInlineWithRabitStart; dFoo]
             [linkerAlice ; uFoo;  linkerBob; oBar ;uFoo ;shortInline; dFoo ; shortInline ; oBar ;uFoo ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]
+    
     [<Test>]
     member __.``inlineFusedExample3``() =
         // similar to previous case but omits fuse before shortInline

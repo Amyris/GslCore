@@ -143,20 +143,7 @@ let tShaz =
         true // to approx
         true // amplified
         Breed.B_TERMINATOR
-        
-let oSmall =
-    makeSimpleSlice
-        (Dna "TACTGACTGAGTCTGACTGACG")
-        "oSmall"
-        SliceType.REGULAR
-        EmptyPragmas
-        false
-        false
-        true
-        Breed.B_GS
-            
-
-            
+                    
 let marker =
     makeSimpleSlice
         (Dna "TGTACTGACGTAGTCGTACACGTAGTCGTATCGATGTGCGACGTACTGAGCGTAGTCTGATGCGTATGCTCGTAGTAGTCGTACGTACGTGTCGTCGTGTGTGTAGTCGTGTACGAGCGTACGATCGATCAGTCTGACGTAGTGTAGTCGTAGTGTCGTAGTACGTA")
@@ -167,6 +154,7 @@ let marker =
         false // to approx
         true // amplified
         Breed.B_MARKER
+        
 /// really short inline (14) which will be implemented with primers
 let shortInline =
     makeSimpleSlice
@@ -178,6 +166,18 @@ let shortInline =
         false // to approx
         true // amplified
         Breed.B_MARKER
+        
+/// really short regular (14) which will be implemented with primers        
+let shortRegular =
+    makeSimpleSlice
+        (Dna "CACATGTGGAGATT")
+        "shortRegular"
+        SliceType.REGULAR
+        EmptyPragmas
+        false
+        false
+        true
+        Breed.B_GS
 
 let rabitStart = {definition = {name = "rabitstart"; argShape = Zero; scope = PartOnly;
                      desc = "Designate part as the start of a RYSE rabit.";
@@ -241,6 +241,42 @@ let smallInline =
         false // to approx
         true // amplified
         Breed.B_INLINE
+        
+/// 102 bp regular
+let longRegular =
+    makeSimpleSlice
+        (Dna "ATGTCTCAGAACGTTTACATTGTATCGACTGCCAGAACCCCAATTGGTTCATTCCAGGGTTCTCTATCCTCCAAGACAGCAGTGGAATTGGGTGCTGTTATG")
+        "longregular"
+        SliceType.REGULAR
+        EmptyPragmas
+        false // from approx
+        false // to approx
+        true // amplified
+        Breed.B_GS
+
+/// 75 bp regular
+let mediumRegular =
+    makeSimpleSlice
+        (Dna "TTTGACGTGTAGTCGTGCGCGGTCGCGCGCGTCTATTTTTGTCGTCGTACGTACGTACGGCTAGCGTACGTACGT")
+        "mediumregular"
+        SliceType.REGULAR
+        EmptyPragmas
+        false // from approx
+        false // to approx
+        true // amplified
+        Breed.B_GS
+
+/// small 48 bp regular
+let smallRegular =
+    makeSimpleSlice
+        (Dna "TAGCTATATAGGTAGCTAGACTATCTTTATCTTACTACTTCTCTTTAT")
+        "smallregular"
+        SliceType.REGULAR
+        EmptyPragmas
+        false // from approx
+        false // to approx
+        true // amplified
+        Breed.B_GS
 
         
 let uFooFuse = {uFoo with pragmas = uFoo.pragmas.Add(fusePragma) ; sliceName = uFoo.sliceName+"#fuse"}
@@ -252,9 +288,15 @@ let mediumInlineFuse = {mediumInline with pragmas = mediumInline.pragmas.Add(fus
 let longInlineAmp = {longInline with pragmas = longInline.pragmas.Add(amp) ; sliceName = longInline.sliceName+"#amp"}
 let longInlineAmpFuse = {longInlineAmp with pragmas = longInlineAmp.pragmas.Add(fusePragma) ; sliceName = longInlineAmp.sliceName+"#fuse"}
 let longInlineInline = {longInline with pragmas = longInline.pragmas.Add(inlinePragma)}
-let shortInlineWithRabitStart = { shortInline with pragmas = shortInline.pragmas.Add(rabitStart) ; sliceName = shortInline.sliceName+"#rabitstart"}
-let shortInlineWithRabitEnd = { shortInline with pragmas = shortInline.pragmas.Add(rabitEnd) ; sliceName = shortInline.sliceName+"#rabitend"}
-let oSmallInline = { oSmall with pragmas = oSmall.pragmas.Add(inlinePragma); sliceName = oSmall.sliceName+"Inline" }
+let smallRegularInline = { smallRegular with pragmas = smallRegular.pragmas.Add(inlinePragma); sliceName = smallRegular.sliceName+"#inline"}
+let mediumRegularInline = { mediumRegular with pragmas = mediumRegular.pragmas.Add(inlinePragma); sliceName = mediumRegular.sliceName+"#inline"}
+
+let longRegularInline = { longRegular with pragmas = longRegular.pragmas.Add(inlinePragma); sliceName = longRegular.sliceName+"#inline"}
+let shortInlineWithRabitStart = { shortInline with pragmas = shortInline.pragmas.Add(rabitStart) ; sliceName = shortInline.sliceName+"#rabitstart" }
+let shortInlineWithRabitEnd = { shortInline with pragmas = shortInline.pragmas.Add(rabitEnd) ; sliceName = shortInline.sliceName+"#rabitend" }
+let shortRegularWithRabitStart = { shortRegular with pragmas = shortRegular.pragmas.Add(rabitStart) ; sliceName = shortRegular.sliceName+"#rabitstart" }
+let shortRegularWithRabitEnd = { shortRegular with pragmas = shortRegular.pragmas.Add(rabitEnd) ; sliceName = shortRegular.sliceName+"#rabitend" }
+
     
 let linkerAlice =
     makeSimpleSlice

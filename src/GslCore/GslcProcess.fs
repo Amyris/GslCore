@@ -129,6 +129,9 @@ let cleanLongSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice list
                                     // exn if necessary
                                     failwithf "%s" (String.Join(";",messages))
             }
+        else if (s.pragmas.ContainsKey("amp") && s.pragmas.ContainsKey("inline"))
+        then
+            failwithf "ERROR: Part %s has incompatible pragmas #amp and #inline. Please pick one." s.sliceName
         else s)
 
 /// Promote long slices to regular rabits to avoid trying to build
