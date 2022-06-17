@@ -1,3 +1,7 @@
+#### 0.4.60 - June 13th 2022
+* Enhancement to allow #inline to change regular sequences to inline, and convert short <30bp regular sequences to inline
+* Added error state if #inline and #amp are used together
+
 #### 0.4.59 - Apr 5th 2022
 * Maintenance release - upgrading to .NET6 and updating dependencies
 

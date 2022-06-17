@@ -25,6 +25,11 @@ type TestMapRyseLinkers() =
         | _ -> failwith "building pragma"
     /// perform one test and check output pattern and sequences
     let runOne (name:string) isMegastitch (linkersIn:(DNASlice list*DNASlice list)) slicesIn expected =
+        
+        let cleanedSlices = slicesIn |>
+                            gslcProcess.cleanLongSlicesInPartsList pragmaTypes.EmptyPragmas |>
+                            gslcProcess.cleanShortSlicesInPartsList pragmaTypes.EmptyPragmas 
+        
         /// Boring default options
         let opts : ParsedOptions = { quiet = false
                                      refStrain = "cenpk"
@@ -47,7 +52,7 @@ type TestMapRyseLinkers() =
 
         /// Wrap up in a generic assembly
         let assemblyIn : DnaAssembly = { id = None
-                                         dnaParts = slicesIn
+                                         dnaParts = cleanedSlices
                                          name = name
                                          uri = None
                                          linkerHint =
@@ -100,6 +105,30 @@ type TestMapRyseLinkers() =
                 [linkerAlice ; uFoo ; shortInline ; dFoo ; linkerBob]
 
     [<Test>]
+    member __.TwoPartsPlusShortRegular() =
+        runOne "TwoPartsShortRegular"
+                false // is stitch
+                ([linkerAlice ; linkerBob],[]) // A and B part linkers
+                [uFoo ; shortRegular; dFoo]
+                [linkerAlice ; uFoo ; shortRegular ; dFoo ; linkerBob]
+
+    [<Test>]
+    member __.TwoPartsPlusSmallRegularInline() =
+        runOne "TwoPartsPlusSmallRegularInline"
+                false // is stitch
+                ([linkerAlice ; linkerBob],[]) // A and B part linkers
+                [uFoo ; smallRegularInline; dFoo]
+                [linkerAlice ; uFoo ; smallRegularInline ; dFoo ; linkerBob]
+    
+    [<Test>]
+    member __.TwoPartsPlusSmallInlineAmp() =
+        runOne "TwoPartsPlusSmallInlineAmp"
+                false // is stitch
+                ([linkerAlice ; linkerBob ; linkerCharlie; linkerDoug],[]) // A and B part linkers
+                [uFoo ; smallInlineAmp; dFoo]
+                [linkerAlice ; uFoo ; linkerBob; smallInlineAmp ; linkerCharlie ; dFoo ; linkerDoug]
+                
+    [<Test>]
     member __.FuseTwoNormalSlices() =
         // Note - we need to use the explicit fusionSlice here to test
         // rather than just putting a #fuse pragma inside foo since that expansion
@@ -140,13 +169,22 @@ type TestMapRyseLinkers() =
                 [linkerAlice ; uFoo ; dFoo ; linkerBob ; shortInlineWithRabitStart ; oBar ; linkerDoug]
 
     [<Test>]
-    member __.``Last AMP with rabitstart + rabitend``() =
+    member __.``Last AMP with shortInline rabitstart + rabitend``() =
 
-        runOne "Last AMP with rabitstart + rabitend"
+        runOne "Last AMP with shortInline rabitstart + rabitend"
                 false // is stitch
                 ([linkerAlice ; linkerBob ; linkerCharlie ; linkerDoug],[]) // A and B part linkers
                 [ uFoo ; fuse; dFoo ; shortInlineWithRabitStart ; oBar; shortInlineWithRabitEnd]
                 [linkerAlice ; uFoo ; dFoo ; linkerBob ; shortInlineWithRabitStart ; oBar; shortInlineWithRabitEnd ; linkerDoug]
+    
+    [<Test>]
+    member __.``Last AMP with shorRegular rabitstart + rabitend``() =
+
+        runOne "Last AMP with shortInline rabitstart + rabitend"
+                false // is stitch
+                ([linkerAlice ; linkerBob ; linkerCharlie ; linkerDoug],[]) // A and B part linkers
+                [ uFoo ; fuse; dFoo ; shortRegularWithRabitStart ; oBar; shortRegularWithRabitEnd]
+                [linkerAlice ; uFoo ; dFoo ; linkerBob ; shortRegularWithRabitStart ; oBar; shortRegularWithRabitEnd ; linkerDoug]
 
 
     [<Test>]
@@ -168,6 +206,7 @@ type TestMapRyseLinkers() =
             ([linkerAlice; linkerBob;linkerCharlie; linkerDoug],[])
             [uFoo;  oBar ;fuse; uFoo ;fuse (* XXX *); shortInline; dFoo ; shortInline ; oBar ;fuse ; uFoo ; shortInlineWithRabitStart; dFoo]
             [linkerAlice ; uFoo;  linkerBob; oBar ;uFoo ;shortInline; dFoo ; shortInline ; oBar ;uFoo ; linkerCharlie; shortInlineWithRabitStart; dFoo ; linkerDoug]
+    
     [<Test>]
     member __.``inlineFusedExample3``() =
         // similar to previous case but omits fuse before shortInline

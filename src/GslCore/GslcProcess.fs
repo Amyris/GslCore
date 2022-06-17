@@ -129,12 +129,51 @@ let cleanLongSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice list
                                     // exn if necessary
                                     failwithf "%s" (String.Join(";",messages))
             }
+        else if (s.pragmas.ContainsKey("amp") && s.pragmas.ContainsKey("inline"))
+        then
+            failwithf "ERROR: Part %s has incompatible pragmas #amp and #inline. Please pick one." s.sliceName
         else s)
 
 /// Promote long slices to regular rabits to avoid trying to build
 /// impossibly long things with oligos.
 let cleanLongSlices _ (a:DnaAssembly) =
     ok {a with dnaParts = cleanLongSlicesInPartsList a.pragmas a.dnaParts}
+    
+/// Demote short slices to inlinest to build in oligos
+/// rather than PCR 
+let cleanShortSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice list) =
+    l |> List.map (fun s ->
+        if (s.sliceType = REGULAR &&
+            (s.pragmas.ContainsKey("inline") || (s.dna.Length <= 30)) &&
+            not (s.pragmas.ContainsKey("amp")))
+        then
+            {s with
+                sliceType = INLINEST;
+                dnaSource =
+                    match s.pragmas.TryGetOne("dnasrc") with
+                    | Some(x) -> x
+                    | None ->
+                        match p.TryGetOne("refgenome") with
+                        | None -> "synthetic"
+                        | Some(x) -> x
+                // add in an inline tag on this guy too, since we are now comitting to
+                // not making it as an amplicon
+                pragmas = match s.pragmas.TryFind("inline") with
+                            | Some _ -> s.pragmas // already there
+                            | None ->
+                                match s.pragmas.Add("inline") with
+                                | Result.Ok(result,_) -> result
+                                | Bad messages ->
+                                    // has to be a cleaner way of converting result to
+                                    // exn if necessary
+                                    failwithf "%s" (String.Join(";",messages))
+            }
+        else s)
+
+/// Demote short slices to inline rabits to build in oligos 
+/// rather than PCR
+let cleanShortSlices _ (a:DnaAssembly) =
+    ok {a with dnaParts = cleanShortSlicesInPartsList a.pragmas a.dnaParts}
 
 
 /// we run into trouble during primer generation if a virtual part (fuse) gets between two parts that
@@ -161,6 +200,7 @@ let transformAssemblies (s: ConfigurationState) (assemblies:DnaAssembly list) =
 
     let builtinAssemblyTransforms =
         [cleanLongSlices;
+         cleanShortSlices;
          preProcessFuse;]
 
     let assemblyTransformers =
