@@ -156,8 +156,8 @@ let cleanShortSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice lis
                         match p.TryGetOne("refgenome") with
                         | None -> "synthetic"
                         | Some(x) -> x
-                // add in an amp tag on this guy too, since we are now comitting to
-                // not placing it inline using primers
+                // add in an inline tag on this guy too, since we are now comitting to
+                // not making it as an amplicon
                 pragmas = match s.pragmas.TryFind("inline") with
                             | Some _ -> s.pragmas // already there
                             | None ->
@@ -170,8 +170,8 @@ let cleanShortSlicesInPartsList (p:pragmaTypes.PragmaCollection) (l:DNASlice lis
             }
         else s)
 
-/// Promote long slices to regular rabits to avoid trying to build
-/// impossibly long things with oligos.
+/// Demote short slices to inline rabits to build in oligos 
+/// rather than PCR
 let cleanShortSlices _ (a:DnaAssembly) =
     ok {a with dnaParts = cleanShortSlicesInPartsList a.pragmas a.dnaParts}
 
