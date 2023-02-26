@@ -23,6 +23,6 @@ jobs:
     - name: Restore tool dependencies
       run: dotnet tool restore
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet paket restore
     - name: Build
       run: dotnet run --project build
