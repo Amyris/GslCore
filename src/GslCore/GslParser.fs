@@ -3,7 +3,7 @@ module GslParser
 #nowarn "64";; // turn off warnings that type variables used in production annotations are instantiated to concrete type
 open FSharp.Text.Lexing
 open FSharp.Text.Parsing.ParseHelpers
-# 1 "./GslParser.fsy"
+# 1 ".\GslParser.fsy"
 
 // F# code goes here
 open System
@@ -536,10 +536,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 59 "./GslParser.fsy"
+# 59 ".\GslParser.fsy"
                                     AstTreeHead(_1) 
                    )
-# 59 "./GslParser.fsy"
+# 59 ".\GslParser.fsy"
                  : AstTreeHead));
 # 544 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -547,20 +547,20 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 62 "./GslParser.fsy"
+# 62 ".\GslParser.fsy"
                                                Block(nodeWrap _1) 
                    )
-# 62 "./GslParser.fsy"
+# 62 ".\GslParser.fsy"
                  : 'gentype_Final));
 # 555 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 63 "./GslParser.fsy"
+# 63 ".\GslParser.fsy"
                                                Block(nodeWrap []) 
                    )
-# 63 "./GslParser.fsy"
+# 63 ".\GslParser.fsy"
                  : 'gentype_Final));
 # 565 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -568,10 +568,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 66 "./GslParser.fsy"
+# 66 ".\GslParser.fsy"
                                                                Block(nodeWrap _2) 
                    )
-# 66 "./GslParser.fsy"
+# 66 ".\GslParser.fsy"
                  : 'gentype_ScopedBlock));
 # 576 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -579,10 +579,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 69 "./GslParser.fsy"
+# 69 ".\GslParser.fsy"
                                                                match _1 with | Some(l) -> [l] | None -> [] 
                    )
-# 69 "./GslParser.fsy"
+# 69 ".\GslParser.fsy"
                  : 'gentype_CodeSection));
 # 587 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -591,20 +591,20 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 70 "./GslParser.fsy"
+# 70 ".\GslParser.fsy"
                                                                match _1 with | Some(l) -> l::_2 | None -> _2 
                    )
-# 70 "./GslParser.fsy"
+# 70 ".\GslParser.fsy"
                  : 'gentype_CodeSection));
 # 599 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 74 "./GslParser.fsy"
+# 74 ".\GslParser.fsy"
                                         None 
                    )
-# 74 "./GslParser.fsy"
+# 74 ".\GslParser.fsy"
                  : 'gentype_Line));
 # 609 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -612,10 +612,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 75 "./GslParser.fsy"
+# 75 ".\GslParser.fsy"
                                                             Some(_1) 
                    )
-# 75 "./GslParser.fsy"
+# 75 ".\GslParser.fsy"
                  : 'gentype_Line));
 # 620 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -623,10 +623,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 76 "./GslParser.fsy"
+# 76 ".\GslParser.fsy"
                                                     Some(Docstring(tokenAsNode _1)) 
                    )
-# 76 "./GslParser.fsy"
+# 76 ".\GslParser.fsy"
                  : 'gentype_Line));
 # 631 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -634,10 +634,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 77 "./GslParser.fsy"
+# 77 ".\GslParser.fsy"
                                                   Some(_1) 
                    )
-# 77 "./GslParser.fsy"
+# 77 ".\GslParser.fsy"
                  : 'gentype_Line));
 # 642 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -645,10 +645,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 78 "./GslParser.fsy"
+# 78 ".\GslParser.fsy"
                                                                            Some(Block(nodeWrap _2)) 
                    )
-# 78 "./GslParser.fsy"
+# 78 ".\GslParser.fsy"
                  : 'gentype_Line));
 # 653 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -656,10 +656,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 79 "./GslParser.fsy"
+# 79 ".\GslParser.fsy"
                                                             Some(_1) 
                    )
-# 79 "./GslParser.fsy"
+# 79 ".\GslParser.fsy"
                  : 'gentype_Line));
 # 664 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -667,10 +667,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 80 "./GslParser.fsy"
+# 80 ".\GslParser.fsy"
                                                             Some(_1) 
                    )
-# 80 "./GslParser.fsy"
+# 80 ".\GslParser.fsy"
                  : 'gentype_Line));
 # 675 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -678,10 +678,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 81 "./GslParser.fsy"
+# 81 ".\GslParser.fsy"
                                                             Some(_1) 
                    )
-# 81 "./GslParser.fsy"
+# 81 ".\GslParser.fsy"
                  : 'gentype_Line));
 # 686 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -689,10 +689,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 82 "./GslParser.fsy"
+# 82 ".\GslParser.fsy"
                                                             Some(_1) 
                    )
-# 82 "./GslParser.fsy"
+# 82 ".\GslParser.fsy"
                  : 'gentype_Line));
 # 697 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -700,10 +700,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 83 "./GslParser.fsy"
+# 83 ".\GslParser.fsy"
                                                             Some(_1) 
                    )
-# 83 "./GslParser.fsy"
+# 83 ".\GslParser.fsy"
                  : 'gentype_Line));
 # 708 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -711,10 +711,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 93 "./GslParser.fsy"
+# 93 ".\GslParser.fsy"
                                                (tokenToVariable _1 NotYetTyped) 
                    )
-# 93 "./GslParser.fsy"
+# 93 ".\GslParser.fsy"
                  : 'gentype_PragmaValue));
 # 719 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -722,10 +722,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 94 "./GslParser.fsy"
+# 94 ".\GslParser.fsy"
                                                String(tokenAsNode _1) 
                    )
-# 94 "./GslParser.fsy"
+# 94 ".\GslParser.fsy"
                  : 'gentype_PragmaValue));
 # 730 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -734,10 +734,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 97 "./GslParser.fsy"
+# 97 ".\GslParser.fsy"
                                                       _1::_2 
                    )
-# 97 "./GslParser.fsy"
+# 97 ".\GslParser.fsy"
                  : 'gentype_PragmaValues));
 # 742 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -745,10 +745,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 98 "./GslParser.fsy"
+# 98 ".\GslParser.fsy"
                                                       [_1] 
                    )
-# 98 "./GslParser.fsy"
+# 98 ".\GslParser.fsy"
                  : 'gentype_PragmaValues));
 # 753 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -757,10 +757,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 101 "./GslParser.fsy"
+# 101 ".\GslParser.fsy"
                                                 (createPragma _1 _2) 
                    )
-# 101 "./GslParser.fsy"
+# 101 ".\GslParser.fsy"
                  : 'gentype_Pragma));
 # 765 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -768,10 +768,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 102 "./GslParser.fsy"
+# 102 ".\GslParser.fsy"
                                    (createPragma _1 []) 
                    )
-# 102 "./GslParser.fsy"
+# 102 ".\GslParser.fsy"
                  : 'gentype_Pragma));
 # 776 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -779,10 +779,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 105 "./GslParser.fsy"
+# 105 ".\GslParser.fsy"
                                     [_1]
                    )
-# 105 "./GslParser.fsy"
+# 105 ".\GslParser.fsy"
                  : 'gentype_Pragmas));
 # 787 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -791,10 +791,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 106 "./GslParser.fsy"
+# 106 ".\GslParser.fsy"
                                             _1::_2
                    )
-# 106 "./GslParser.fsy"
+# 106 ".\GslParser.fsy"
                  : 'gentype_Pragmas));
 # 799 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -802,10 +802,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 109 "./GslParser.fsy"
+# 109 ".\GslParser.fsy"
                                                    _2 
                    )
-# 109 "./GslParser.fsy"
+# 109 ".\GslParser.fsy"
                  : 'gentype_InlinePragmas));
 # 810 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -814,10 +814,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 110 "./GslParser.fsy"
+# 110 ".\GslParser.fsy"
                                                                  _2@_4 
                    )
-# 110 "./GslParser.fsy"
+# 110 ".\GslParser.fsy"
                  : 'gentype_InlinePragmas));
 # 822 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -826,10 +826,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 119 "./GslParser.fsy"
+# 119 ".\GslParser.fsy"
                                                             createVariableBinding _2 NotYetTyped (tokenToVariable _4 NotYetTyped) 
                    )
-# 119 "./GslParser.fsy"
+# 119 ".\GslParser.fsy"
                  : 'gentype_TypedVariableDeclaration));
 # 834 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -838,10 +838,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 120 "./GslParser.fsy"
+# 120 ".\GslParser.fsy"
                                                                      createVariableBinding _2 NotYetTyped _4 
                    )
-# 120 "./GslParser.fsy"
+# 120 ".\GslParser.fsy"
                  : 'gentype_TypedVariableDeclaration));
 # 846 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -850,10 +850,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 121 "./GslParser.fsy"
+# 121 ".\GslParser.fsy"
                                                                      createVariableBinding _2 PartType _4 
                    )
-# 121 "./GslParser.fsy"
+# 121 ".\GslParser.fsy"
                  : 'gentype_TypedVariableDeclaration));
 # 858 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -862,10 +862,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 122 "./GslParser.fsy"
+# 122 ".\GslParser.fsy"
                                                                      createVariableBinding _2 PartType _4 
                    )
-# 122 "./GslParser.fsy"
+# 122 ".\GslParser.fsy"
                  : 'gentype_TypedVariableDeclaration));
 # 870 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -873,10 +873,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 130 "./GslParser.fsy"
+# 130 ".\GslParser.fsy"
                                 [ _1.i ] 
                    )
-# 130 "./GslParser.fsy"
+# 130 ".\GslParser.fsy"
                  : 'gentype_FunctionDefArgs));
 # 881 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -885,10 +885,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 131 "./GslParser.fsy"
+# 131 ".\GslParser.fsy"
                                                       _1.i::_3 
                    )
-# 131 "./GslParser.fsy"
+# 131 ".\GslParser.fsy"
                  : 'gentype_FunctionDefArgs));
 # 893 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -898,10 +898,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 134 "./GslParser.fsy"
+# 134 ".\GslParser.fsy"
                                                                                          createFunctionDeclaration _2 _4 _7 
                    )
-# 134 "./GslParser.fsy"
+# 134 ".\GslParser.fsy"
                  : 'gentype_FunctionDeclaration));
 # 906 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -910,10 +910,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 135 "./GslParser.fsy"
+# 135 ".\GslParser.fsy"
                                                                          createFunctionDeclaration _2 [] _6 
                    )
-# 135 "./GslParser.fsy"
+# 135 ".\GslParser.fsy"
                  : 'gentype_FunctionDeclaration));
 # 918 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -921,10 +921,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 143 "./GslParser.fsy"
+# 143 ".\GslParser.fsy"
                                         createTypedValue NotYetTyped (tokenToVariable _1 NotYetTyped) 
                    )
-# 143 "./GslParser.fsy"
+# 143 ".\GslParser.fsy"
                  : 'gentype_TypedValue));
 # 929 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -932,10 +932,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 144 "./GslParser.fsy"
+# 144 ".\GslParser.fsy"
                                            createTypedValue NotYetTyped _1 
                    )
-# 144 "./GslParser.fsy"
+# 144 ".\GslParser.fsy"
                  : 'gentype_TypedValue));
 # 940 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -943,10 +943,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 145 "./GslParser.fsy"
+# 145 ".\GslParser.fsy"
                                            createTypedValue PartType _1 
                    )
-# 145 "./GslParser.fsy"
+# 145 ".\GslParser.fsy"
                  : 'gentype_TypedValue));
 # 951 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -954,10 +954,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 146 "./GslParser.fsy"
+# 146 ".\GslParser.fsy"
                                            createTypedValue PartType _1 
                    )
-# 146 "./GslParser.fsy"
+# 146 ".\GslParser.fsy"
                  : 'gentype_TypedValue));
 # 962 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -966,10 +966,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 150 "./GslParser.fsy"
+# 150 ".\GslParser.fsy"
                                                                          _1::_3 
                    )
-# 150 "./GslParser.fsy"
+# 150 ".\GslParser.fsy"
                  : 'gentype_CommaSeparatedTypedValues));
 # 974 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -977,10 +977,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 151 "./GslParser.fsy"
+# 151 ".\GslParser.fsy"
                                                                          [_1] 
                    )
-# 151 "./GslParser.fsy"
+# 151 ".\GslParser.fsy"
                  : 'gentype_CommaSeparatedTypedValues));
 # 985 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -989,10 +989,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 154 "./GslParser.fsy"
+# 154 ".\GslParser.fsy"
                                                                         createFunctionCall _1 _3 
                    )
-# 154 "./GslParser.fsy"
+# 154 ".\GslParser.fsy"
                  : 'gentype_FunctionCall));
 # 997 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1000,10 +1000,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 155 "./GslParser.fsy"
+# 155 ".\GslParser.fsy"
                                                                         createFunctionCall _1 [] 
                    )
-# 155 "./GslParser.fsy"
+# 155 ".\GslParser.fsy"
                  : 'gentype_FunctionCall));
 # 1008 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1011,10 +1011,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 163 "./GslParser.fsy"
+# 163 ".\GslParser.fsy"
                                            Int(tokenAsNode _1) 
                    )
-# 163 "./GslParser.fsy"
+# 163 ".\GslParser.fsy"
                  : 'gentype_IntLiteral));
 # 1019 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1023,10 +1023,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 166 "./GslParser.fsy"
+# 166 ".\GslParser.fsy"
                                            createFloat _1 _3 
                    )
-# 166 "./GslParser.fsy"
+# 166 ".\GslParser.fsy"
                  : 'gentype_FloatLiteral));
 # 1031 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1034,10 +1034,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 169 "./GslParser.fsy"
+# 169 ".\GslParser.fsy"
                                            String(tokenAsNode _1) 
                    )
-# 169 "./GslParser.fsy"
+# 169 ".\GslParser.fsy"
                  : 'gentype_StringLiteral));
 # 1042 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1045,10 +1045,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 176 "./GslParser.fsy"
+# 176 ".\GslParser.fsy"
                                                            _1 
                    )
-# 176 "./GslParser.fsy"
+# 176 ".\GslParser.fsy"
                  : 'gentype_Exp));
 # 1053 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1056,10 +1056,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 177 "./GslParser.fsy"
+# 177 ".\GslParser.fsy"
                                                            _1 
                    )
-# 177 "./GslParser.fsy"
+# 177 ".\GslParser.fsy"
                  : 'gentype_Exp));
 # 1064 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1067,10 +1067,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 178 "./GslParser.fsy"
+# 178 ".\GslParser.fsy"
                                                            _1 
                    )
-# 178 "./GslParser.fsy"
+# 178 ".\GslParser.fsy"
                  : 'gentype_Exp));
 # 1075 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1078,10 +1078,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 179 "./GslParser.fsy"
+# 179 ".\GslParser.fsy"
                                                            (tokenToVariable _1 NotYetTyped) 
                    )
-# 179 "./GslParser.fsy"
+# 179 ".\GslParser.fsy"
                  : 'gentype_Exp));
 # 1086 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1089,10 +1089,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 180 "./GslParser.fsy"
+# 180 ".\GslParser.fsy"
                                                            _2 
                    )
-# 180 "./GslParser.fsy"
+# 180 ".\GslParser.fsy"
                  : 'gentype_Exp));
 # 1097 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1100,10 +1100,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 181 "./GslParser.fsy"
+# 181 ".\GslParser.fsy"
                                                            (negate _2) 
                    )
-# 181 "./GslParser.fsy"
+# 181 ".\GslParser.fsy"
                  : 'gentype_Exp));
 # 1108 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1112,10 +1112,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 182 "./GslParser.fsy"
+# 182 ".\GslParser.fsy"
                                                            (createBinaryOp Multiply _1 _3) 
                    )
-# 182 "./GslParser.fsy"
+# 182 ".\GslParser.fsy"
                  : 'gentype_Exp));
 # 1120 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1124,10 +1124,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 183 "./GslParser.fsy"
+# 183 ".\GslParser.fsy"
                                                            (createBinaryOp Divide _1 _3) 
                    )
-# 183 "./GslParser.fsy"
+# 183 ".\GslParser.fsy"
                  : 'gentype_Exp));
 # 1132 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1136,10 +1136,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 184 "./GslParser.fsy"
+# 184 ".\GslParser.fsy"
                                                            (createBinaryOp Add _1 _3) 
                    )
-# 184 "./GslParser.fsy"
+# 184 ".\GslParser.fsy"
                  : 'gentype_Exp));
 # 1144 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1148,10 +1148,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 185 "./GslParser.fsy"
+# 185 ".\GslParser.fsy"
                                                            (createBinaryOp Subtract _1 _3) 
                    )
-# 185 "./GslParser.fsy"
+# 185 ".\GslParser.fsy"
                  : 'gentype_Exp));
 # 1156 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1159,13 +1159,13 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 192 "./GslParser.fsy"
+# 192 ".\GslParser.fsy"
                                        match _1.i.Split([| '-' |]) with
                                        | [| a;b;c |] -> {l1 = a ; l2 = b; orient = c}
                                        | _ -> failwithf "bad linker format '%s'" (_1.i)
                                      
                    )
-# 192 "./GslParser.fsy"
+# 192 ".\GslParser.fsy"
                  : 'gentype_Linker));
 # 1170 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1173,10 +1173,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 198 "./GslParser.fsy"
+# 198 ".\GslParser.fsy"
                                                            _2 
                    )
-# 198 "./GslParser.fsy"
+# 198 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1181 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1185,10 +1185,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 200 "./GslParser.fsy"
+# 200 ".\GslParser.fsy"
                                                            createGenePart _3 (Some(_1)) 
                    )
-# 200 "./GslParser.fsy"
+# 200 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1193 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1196,10 +1196,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 202 "./GslParser.fsy"
+# 202 ".\GslParser.fsy"
                                                            createGenePart _1 None 
                    )
-# 202 "./GslParser.fsy"
+# 202 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1204 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1207,10 +1207,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 203 "./GslParser.fsy"
+# 203 ".\GslParser.fsy"
                                                            createPartWithBase (Marker(tokenAsNode _1)) 
                    )
-# 203 "./GslParser.fsy"
+# 203 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1215 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1218,10 +1218,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 205 "./GslParser.fsy"
+# 205 ".\GslParser.fsy"
                                                            createPartWithBase (InlineDna(tokenAsNodeAfter uppercase _2)) 
                    )
-# 205 "./GslParser.fsy"
+# 205 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1226 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1229,10 +1229,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 207 "./GslParser.fsy"
+# 207 ".\GslParser.fsy"
                                                            createPartWithBase (InlineProtein(tokenAsNodeAfter uppercase _3))
                    )
-# 207 "./GslParser.fsy"
+# 207 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1237 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1240,20 +1240,20 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 209 "./GslParser.fsy"
+# 209 ".\GslParser.fsy"
                                                            createPartWithBase (InlineProtein(tokenAsNodeAfter (fun s -> (s |> uppercase, "*") ||> (+) ) _3 )) 
                    )
-# 209 "./GslParser.fsy"
+# 209 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1248 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 211 "./GslParser.fsy"
+# 211 ".\GslParser.fsy"
                                                            createPartWithBase (InlineProtein(nodeWrap "*")) 
                    )
-# 211 "./GslParser.fsy"
+# 211 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1258 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1261,10 +1261,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 212 "./GslParser.fsy"
+# 212 ".\GslParser.fsy"
                                                            createPartWithBase (HetBlock(tokenAsNode _1)) 
                    )
-# 212 "./GslParser.fsy"
+# 212 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1269 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1272,10 +1272,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 214 "./GslParser.fsy"
+# 214 ".\GslParser.fsy"
                                                            createPartWithBase (tokenToVariable _1 PartType) 
                    )
-# 214 "./GslParser.fsy"
+# 214 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1280 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1283,10 +1283,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 216 "./GslParser.fsy"
+# 216 ".\GslParser.fsy"
                                                            createPartWithBase (PartId(tokenAsNode _2)) 
                    )
-# 216 "./GslParser.fsy"
+# 216 ".\GslParser.fsy"
                  : 'gentype_Part));
 # 1291 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1294,10 +1294,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 220 "./GslParser.fsy"
+# 220 ".\GslParser.fsy"
                                            _1 
                    )
-# 220 "./GslParser.fsy"
+# 220 ".\GslParser.fsy"
                  : 'gentype_PartMaybeMods));
 # 1302 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1306,10 +1306,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 221 "./GslParser.fsy"
+# 221 ".\GslParser.fsy"
                                            stuffModsIntoPart _1 _2 
                    )
-# 221 "./GslParser.fsy"
+# 221 ".\GslParser.fsy"
                  : 'gentype_PartMaybeMods));
 # 1314 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1318,10 +1318,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 226 "./GslParser.fsy"
+# 226 ".\GslParser.fsy"
                                                                stuffPragmasIntoPart _1 _2 
                    )
-# 226 "./GslParser.fsy"
+# 226 ".\GslParser.fsy"
                  : 'gentype_PartMaybePragma));
 # 1326 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1329,10 +1329,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 227 "./GslParser.fsy"
+# 227 ".\GslParser.fsy"
                                                                _1 
                    )
-# 227 "./GslParser.fsy"
+# 227 ".\GslParser.fsy"
                  : 'gentype_PartMaybePragma));
 # 1337 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1340,10 +1340,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 231 "./GslParser.fsy"
+# 231 ".\GslParser.fsy"
                                              _1 
                    )
-# 231 "./GslParser.fsy"
+# 231 ".\GslParser.fsy"
                  : 'gentype_PartFwdRev));
 # 1348 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1351,10 +1351,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 232 "./GslParser.fsy"
+# 232 ".\GslParser.fsy"
                                                    revPart _2 
                    )
-# 232 "./GslParser.fsy"
+# 232 ".\GslParser.fsy"
                  : 'gentype_PartFwdRev));
 # 1359 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1362,10 +1362,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 236 "./GslParser.fsy"
+# 236 ".\GslParser.fsy"
                                        _1
                    )
-# 236 "./GslParser.fsy"
+# 236 ".\GslParser.fsy"
                  : 'gentype_CompletePart));
 # 1370 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1373,10 +1373,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 243 "./GslParser.fsy"
+# 243 ".\GslParser.fsy"
                                       (_1, None) 
                    )
-# 243 "./GslParser.fsy"
+# 243 ".\GslParser.fsy"
                  : 'gentype_RelPos));
 # 1381 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1385,10 +1385,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 244 "./GslParser.fsy"
+# 244 ".\GslParser.fsy"
                                       (_1, (Some _2)) 
                    )
-# 244 "./GslParser.fsy"
+# 244 ".\GslParser.fsy"
                  : 'gentype_RelPos));
 # 1393 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1397,10 +1397,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 247 "./GslParser.fsy"
+# 247 ".\GslParser.fsy"
                                                                                              createParseSlice _2 _4 false false 
                    )
-# 247 "./GslParser.fsy"
+# 247 ".\GslParser.fsy"
                  : 'gentype_Slice));
 # 1405 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1410,10 +1410,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 248 "./GslParser.fsy"
+# 248 ".\GslParser.fsy"
                                                                                              createParseSlice _3 _5 true false 
                    )
-# 248 "./GslParser.fsy"
+# 248 ".\GslParser.fsy"
                  : 'gentype_Slice));
 # 1418 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1423,10 +1423,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 249 "./GslParser.fsy"
+# 249 ".\GslParser.fsy"
                                                                                              createParseSlice _2 _5 false true 
                    )
-# 249 "./GslParser.fsy"
+# 249 ".\GslParser.fsy"
                  : 'gentype_Slice));
 # 1431 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1437,10 +1437,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 250 "./GslParser.fsy"
+# 250 ".\GslParser.fsy"
                                                                                              createParseSlice _3 _6 true true 
                    )
-# 250 "./GslParser.fsy"
+# 250 ".\GslParser.fsy"
                  : 'gentype_Slice));
 # 1445 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1448,10 +1448,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 253 "./GslParser.fsy"
+# 253 ".\GslParser.fsy"
                                             createMutation _1 NT 
                    )
-# 253 "./GslParser.fsy"
+# 253 ".\GslParser.fsy"
                  : 'gentype_Mod));
 # 1456 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1459,10 +1459,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 254 "./GslParser.fsy"
+# 254 ".\GslParser.fsy"
                                             createMutation _1 AA 
                    )
-# 254 "./GslParser.fsy"
+# 254 ".\GslParser.fsy"
                  : 'gentype_Mod));
 # 1467 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1470,10 +1470,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 255 "./GslParser.fsy"
+# 255 ".\GslParser.fsy"
                                             _1 
                    )
-# 255 "./GslParser.fsy"
+# 255 ".\GslParser.fsy"
                  : 'gentype_Mod));
 # 1478 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1481,10 +1481,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 256 "./GslParser.fsy"
+# 256 ".\GslParser.fsy"
                                          DotMod(tokenAsNode _2) 
                    )
-# 256 "./GslParser.fsy"
+# 256 ".\GslParser.fsy"
                  : 'gentype_Mod));
 # 1489 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1492,10 +1492,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 259 "./GslParser.fsy"
+# 259 ".\GslParser.fsy"
                                                            [ _1 ] 
                    )
-# 259 "./GslParser.fsy"
+# 259 ".\GslParser.fsy"
                  : 'gentype_ModList));
 # 1500 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1504,10 +1504,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 260 "./GslParser.fsy"
+# 260 ".\GslParser.fsy"
                                                            _2 :: _1 
                    )
-# 260 "./GslParser.fsy"
+# 260 ".\GslParser.fsy"
                  : 'gentype_ModList));
 # 1512 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1515,10 +1515,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 267 "./GslParser.fsy"
+# 267 ".\GslParser.fsy"
                                                                    [_1] 
                    )
-# 267 "./GslParser.fsy"
+# 267 ".\GslParser.fsy"
                  : 'gentype_PartList));
 # 1523 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1528,10 +1528,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 268 "./GslParser.fsy"
+# 268 ".\GslParser.fsy"
                                                                    _1::_3 
                    )
-# 268 "./GslParser.fsy"
+# 268 ".\GslParser.fsy"
                  : 'gentype_PartList));
 # 1536 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1539,10 +1539,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 273 "./GslParser.fsy"
+# 273 ".\GslParser.fsy"
                                            createAssemblyPart _1 
                    )
-# 273 "./GslParser.fsy"
+# 273 ".\GslParser.fsy"
                  : 'gentype_AssemblyPart));
 # 1547 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1550,10 +1550,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 283 "./GslParser.fsy"
+# 283 ".\GslParser.fsy"
                                      tokenAsNode _1 
                    )
-# 283 "./GslParser.fsy"
+# 283 ".\GslParser.fsy"
                  : 'gentype_L2IdWrap));
 # 1558 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1561,10 +1561,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 284 "./GslParser.fsy"
+# 284 ".\GslParser.fsy"
                                      tokenAsNode _1 
                    )
-# 284 "./GslParser.fsy"
+# 284 ".\GslParser.fsy"
                  : 'gentype_L2IdWrap));
 # 1569 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1572,10 +1572,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 294 "./GslParser.fsy"
+# 294 ".\GslParser.fsy"
                                            createL2Id None _1 
                    )
-# 294 "./GslParser.fsy"
+# 294 ".\GslParser.fsy"
                  : 'gentype_L2Id));
 # 1580 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1584,10 +1584,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 295 "./GslParser.fsy"
+# 295 ".\GslParser.fsy"
                                                     createL2Id (Some(_1)) _3 
                    )
-# 295 "./GslParser.fsy"
+# 295 ".\GslParser.fsy"
                  : 'gentype_L2Id));
 # 1592 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1595,10 +1595,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 299 "./GslParser.fsy"
+# 299 ".\GslParser.fsy"
                                       createL2Id None (tokenAsNode _1) 
                    )
-# 299 "./GslParser.fsy"
+# 299 ".\GslParser.fsy"
                  : 'gentype_L2Promoter));
 # 1603 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1607,10 +1607,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 300 "./GslParser.fsy"
+# 300 ".\GslParser.fsy"
                                                 createL2Id (Some(tokenAsNode _1)) (tokenAsNode _3) 
                    )
-# 300 "./GslParser.fsy"
+# 300 ".\GslParser.fsy"
                  : 'gentype_L2Promoter));
 # 1615 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1619,10 +1619,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 301 "./GslParser.fsy"
+# 301 ".\GslParser.fsy"
                                                 createL2Id (Some(tokenAsNode _1)) (tokenAsNode _3) 
                    )
-# 301 "./GslParser.fsy"
+# 301 ".\GslParser.fsy"
                  : 'gentype_L2Promoter));
 # 1627 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1630,10 +1630,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 302 "./GslParser.fsy"
+# 302 ".\GslParser.fsy"
                                           _1 
                    )
-# 302 "./GslParser.fsy"
+# 302 ".\GslParser.fsy"
                  : 'gentype_L2Promoter));
 # 1638 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1641,10 +1641,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 307 "./GslParser.fsy"
+# 307 ".\GslParser.fsy"
                                           _1 
                    )
-# 307 "./GslParser.fsy"
+# 307 ".\GslParser.fsy"
                  : 'gentype_L2Locus));
 # 1649 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1653,10 +1653,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 311 "./GslParser.fsy"
+# 311 ".\GslParser.fsy"
                                                           createL2Element _1 _3 
                    )
-# 311 "./GslParser.fsy"
+# 311 ".\GslParser.fsy"
                  : 'gentype_L2ExpElement));
 # 1661 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1664,10 +1664,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 315 "./GslParser.fsy"
+# 315 ".\GslParser.fsy"
                                           [_1] 
                    )
-# 315 "./GslParser.fsy"
+# 315 ".\GslParser.fsy"
                  : 'gentype_L2ExpElementList));
 # 1672 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1677,10 +1677,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 316 "./GslParser.fsy"
+# 316 ".\GslParser.fsy"
                                                                      _1::_3 
                    )
-# 316 "./GslParser.fsy"
+# 316 ".\GslParser.fsy"
                  : 'gentype_L2ExpElementList));
 # 1685 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1688,10 +1688,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 320 "./GslParser.fsy"
+# 320 ".\GslParser.fsy"
                                                   createL2Expression (Some(_1)) [] 
                    )
-# 320 "./GslParser.fsy"
+# 320 ".\GslParser.fsy"
                  : 'gentype_L2ExpLine));
 # 1696 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1701,10 +1701,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 321 "./GslParser.fsy"
+# 321 ".\GslParser.fsy"
                                                                  createL2Expression (Some(_1)) _3 
                    )
-# 321 "./GslParser.fsy"
+# 321 ".\GslParser.fsy"
                  : 'gentype_L2ExpLine));
 # 1709 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1712,10 +1712,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 322 "./GslParser.fsy"
+# 322 ".\GslParser.fsy"
                                                     createL2Expression None _1 
                    )
-# 322 "./GslParser.fsy"
+# 322 ".\GslParser.fsy"
                  : 'gentype_L2ExpLine));
 # 1720 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1723,10 +1723,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 330 "./GslParser.fsy"
+# 330 ".\GslParser.fsy"
                                  createL2IdNode None (tokenAsNode _1) 
                    )
-# 330 "./GslParser.fsy"
+# 330 ".\GslParser.fsy"
                  : 'gentype_RID));
 # 1731 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1735,10 +1735,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 331 "./GslParser.fsy"
+# 331 ".\GslParser.fsy"
                                        createL2IdNode (Some(tokenAsNode _1)) (tokenAsNode _3) 
                    )
-# 331 "./GslParser.fsy"
+# 331 ".\GslParser.fsy"
                  : 'gentype_RID));
 # 1743 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1746,10 +1746,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 334 "./GslParser.fsy"
+# 334 ".\GslParser.fsy"
                                                           tokenAsNode _2 
                    )
-# 334 "./GslParser.fsy"
+# 334 ".\GslParser.fsy"
                  : 'gentype_RoughageMarker));
 # 1754 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1757,20 +1757,20 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 338 "./GslParser.fsy"
+# 338 ".\GslParser.fsy"
                                             Some(_1) 
                    )
-# 338 "./GslParser.fsy"
+# 338 ".\GslParser.fsy"
                  : 'gentype_RoughageMarkerMaybe));
 # 1765 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 339 "./GslParser.fsy"
+# 339 ".\GslParser.fsy"
                              None 
                    )
-# 339 "./GslParser.fsy"
+# 339 ".\GslParser.fsy"
                  : 'gentype_RoughageMarkerMaybe));
 # 1775 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1779,10 +1779,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 342 "./GslParser.fsy"
+# 342 ".\GslParser.fsy"
                                                createRoughagePart RoughageFwd _1 _3 
                    )
-# 342 "./GslParser.fsy"
+# 342 ".\GslParser.fsy"
                  : 'gentype_RoughagePartFwd));
 # 1787 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1791,10 +1791,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 345 "./GslParser.fsy"
+# 345 ".\GslParser.fsy"
                                             createRoughagePart RoughageRev _3 _1 
                    )
-# 345 "./GslParser.fsy"
+# 345 ".\GslParser.fsy"
                  : 'gentype_RoughagePartRev));
 # 1799 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1803,10 +1803,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 350 "./GslParser.fsy"
+# 350 ".\GslParser.fsy"
                                                                  createRoughageElement _1 None _2 
                    )
-# 350 "./GslParser.fsy"
+# 350 ".\GslParser.fsy"
                  : 'gentype_RoughageElement));
 # 1811 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1816,10 +1816,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 352 "./GslParser.fsy"
+# 352 ".\GslParser.fsy"
                                                                                         createRoughageElement _1 (Some(_3)) _4 
                    )
-# 352 "./GslParser.fsy"
+# 352 ".\GslParser.fsy"
                  : 'gentype_RoughageElement));
 # 1824 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1827,10 +1827,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 355 "./GslParser.fsy"
+# 355 ".\GslParser.fsy"
                                              [_1] 
                    )
-# 355 "./GslParser.fsy"
+# 355 ".\GslParser.fsy"
                  : 'gentype_RoughageElementList));
 # 1835 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1839,10 +1839,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 356 "./GslParser.fsy"
+# 356 ".\GslParser.fsy"
                                                                              _1::_4 
                    )
-# 356 "./GslParser.fsy"
+# 356 ".\GslParser.fsy"
                  : 'gentype_RoughageElementList));
 # 1847 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1850,10 +1850,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 360 "./GslParser.fsy"
+# 360 ".\GslParser.fsy"
                                          (Some(_1), None) 
                    )
-# 360 "./GslParser.fsy"
+# 360 ".\GslParser.fsy"
                  : 'gentype_RoughageLocus));
 # 1858 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1862,10 +1862,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 361 "./GslParser.fsy"
+# 361 ".\GslParser.fsy"
                                                       (Some(_1), Some(_3)) 
                    )
-# 361 "./GslParser.fsy"
+# 361 ".\GslParser.fsy"
                  : 'gentype_RoughageLocus));
 # 1870 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1873,10 +1873,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 364 "./GslParser.fsy"
+# 364 ".\GslParser.fsy"
                                                   createRoughageLine _1 [] 
                    )
-# 364 "./GslParser.fsy"
+# 364 ".\GslParser.fsy"
                  : 'gentype_RoughageLine));
 # 1881 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1885,10 +1885,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 365 "./GslParser.fsy"
+# 365 ".\GslParser.fsy"
                                                                             createRoughageLine _1 _4 
                    )
-# 365 "./GslParser.fsy"
+# 365 ".\GslParser.fsy"
                  : 'gentype_RoughageLine));
 # 1893 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1896,10 +1896,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 366 "./GslParser.fsy"
+# 366 ".\GslParser.fsy"
                                                   createRoughageLine (None, None) _1 
                    )
-# 366 "./GslParser.fsy"
+# 366 ".\GslParser.fsy"
                  : 'gentype_RoughageLine));
 # 1904 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1907,10 +1907,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 369 "./GslParser.fsy"
+# 369 ".\GslParser.fsy"
                                                              [_1] 
                    )
-# 369 "./GslParser.fsy"
+# 369 ".\GslParser.fsy"
                  : 'gentype_RoughageLineList));
 # 1915 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1918,20 +1918,20 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 370 "./GslParser.fsy"
+# 370 ".\GslParser.fsy"
                                                              _2 
                    )
-# 370 "./GslParser.fsy"
+# 370 ".\GslParser.fsy"
                  : 'gentype_RoughageLineList));
 # 1926 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 371 "./GslParser.fsy"
+# 371 ".\GslParser.fsy"
                                                              [] 
                    )
-# 371 "./GslParser.fsy"
+# 371 ".\GslParser.fsy"
                  : 'gentype_RoughageLineList));
 # 1936 "GslParser.fs"
         (fun (parseState : FSharp.Text.Parsing.IParseState) ->
@@ -1940,10 +1940,10 @@ let _fsyacc_reductions ()  =    [|
             Microsoft.FSharp.Core.Operators.box
                 (
                    (
-# 372 "./GslParser.fsy"
+# 372 ".\GslParser.fsy"
                                                              _1::_2 
                    )
-# 372 "./GslParser.fsy"
+# 372 ".\GslParser.fsy"
                  : 'gentype_RoughageLineList));
 |]
 # 1949 "GslParser.fs"

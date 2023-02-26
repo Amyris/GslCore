@@ -1,0 +1,15 @@
+group netcorebuild
+
+Fake.Api.GitHub
+Fake.DotNet.Cli
+Fake.DotNet.Paket
+Fake.DotNet.AssemblyInfoFile
+Fake.DotNet.Testing.Expecto
+Fake.Core.Process
+Fake.Core.String
+Fake.Core.UserInput
+Fake.Core.ReleaseNotes
+Fake.IO.FileSystem
+Fake.Tools.Git
+Fake.Core.SemVer
+Fake.Core.Target
