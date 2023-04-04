@@ -1,3 +1,6 @@
+#### 0.5.0 - Feb 26th 2023
+* net7 update, cleaned up build process
+
 #### 0.4.60 - June 13th 2022
 * Enhancement to allow #inline to change regular sequences to inline, and convert short <30bp regular sequences to inline
 * Added error state if #inline and #amp are used together
