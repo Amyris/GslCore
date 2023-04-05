@@ -1191,7 +1191,7 @@ can design (say) a primer against might be further back in the stack and it's ju
                 (DPP({fwd = primerF'; rev = primerR'; name = "shortinline"+hd.sliceName})::primersOut)
                 next' // Remove bases from the next slice if we moved the primer
         else // phew..
-            // (as an aisde, this match case violates every last thing I was taught in school about reasonable function sizes).
+            // (as an aside, this match case violates every last thing I was taught in school about reasonable function sizes).
             // Probably worth breaking up and writing damn unit tests against cases but be careful to not break tail recursion
 
             // In this case the inline sequence is too long (we should also look for the #amp pragma technically to
@@ -1836,22 +1836,26 @@ can design (say) a primer against might be further back in the stack and it's ju
                 pragmas = EmptyPragmas
                 dnaSource = ""
                 breed = B_VIRTUAL
-                /// Keep track of the part this slice was materialized from.
-                materializedFrom = None
+                materializedFrom = None // Keep track of the part this slice was materialized from.
                 annotations = []
             }
 
+            let hd' =
+                if offsetF = 0 then hd
+                else
+                    cutLeft verbose hd offsetF
             procAssembly
                 verbose
                 dp
                 errorName
-                (hd::prev) // head goes onto previous
-                (hd::fusionSlice::sliceOut') // push out the head with fusion slice to note what we did (there has to be a slice corresponding to the primer pair in that position)
+                (hd'::prev) // head goes onto previous
+                (hd'::fusionSlice::sliceOut') // push out the head with fusion slice to note what we did (there has to be a slice corresponding to the primer pair in that position)
                 (GAP::DPP({fwd = primerF ; rev = primerR ; name = hd.sliceName})::primersOut)
-                tl // Remove bases from the next slice if we moved the primer
-                // FIXFIX - I am pretty sure this will result in a bug if the next slice has an approximate end.  We should minimally assert that this is not true...
-                //((cutLeft hd offsetF)::tl) // Remove bases from the next slice if we moved the primer
-        // This is another monster match inside a match case.  Badly needs some gentle dissection into more managable pieces.  I'd probably start with test coverage though before we break too much
+                // remaining slices to process
+                // Remove bases from the next slice if we moved the primer
+                //
+                tl// Remove bases from the next slice if we moved the end generating primer
+        // This is another monster match inside a match case.  Badly needs some gentle dissection into more manageable pieces.  I'd probably start with test coverage though before we break too much
         | _ -> // Catch all case for prev when prev was just one item.  todo: should be [hd] with an error case for anything else?
             if verbose then
                 printfn "procAssembly: ... PACASE 7.2 regular branch of catch all"
@@ -1880,6 +1884,12 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                         | None -> primerMinDefault
                         | Some(v) -> int v
 
+                    // fusion slices are just guides for the linker layout
+                    // stage.  We can't feed them into the primer generation stage
+                    // because they mess up their junctions.  So we filter them out
+                    // this really only affects seamless generation where there is no linker assignment process
+                    let cleanedDNAParts =
+                        a.dnaParts |> List.filter (fun x -> x.sliceType <> FUSIONST)
                     procAssembly
                         verbose
                         {a.designParams with
@@ -1888,7 +1898,7 @@ let designPrimers (opts:ParsedOptions) (linkedTree : DnaAssembly list) =
                         []
                         []
                         []
-                        a.dnaParts)
+                        cleanedDNAParts)
         |> Array.unzip
 
     /// Slightly ugly hack.  If we are doing linkerless designs, there is no anneal region between
