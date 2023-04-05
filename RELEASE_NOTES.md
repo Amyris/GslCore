@@ -1,3 +1,6 @@
+#### 0.5.1 - April 4th 2023
+* bug fix for --seamless true case, also covers certain linker junction problems where floating ends of a part (e.g. pTDH3) don't get updated when the part end moves
+
 #### 0.5.0 - Feb 26th 2023
 * net7 update, cleaned up build process
 
